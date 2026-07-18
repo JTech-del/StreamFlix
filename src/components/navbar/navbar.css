@@ -1,0 +1,335 @@
+/*==================================================
+  NAVBAR
+  Version: 1.0
+==================================================*/
+
+@import "../components/navbar/navbar.css";
+
+/*--------------------------------------
+  1. Root
+--------------------------------------*/
+
+.navbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    width: 100%;
+    height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+    background: transparent;
+    transition: background-color var(--transition-normal), backdrop-filter var(--transition-normal), box-shadow var(--transition-normal);
+    z-index: var(--z-fixed);
+}
+
+
+/*--------------------------------------
+  2. Layout
+--------------------------------------*/
+
+.navbar__container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+}
+
+.navbar__navigation {
+    flex: 1;
+}
+
+.navbar__menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+
+/*--------------------------------------
+  3. Brand
+--------------------------------------*/
+
+.navbar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.navbar__brand-icon {
+    color: var(--color-primary);
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.navbar__brand-name {
+    font-family: var(--font-family-heading);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+/*--------------------------------------
+  4. Navigation Links
+--------------------------------------*/
+
+.navbar__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: var(--navbar-height);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+}
+
+.navbar__link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 1.2rem;
+    width: 100%;
+    height: 2px;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--transition-normal);
+}
+
+.navbar__link:hover {
+    color: var(--color-text-primary);
+}
+
+.navbar__link:hover::after {
+    transform: scaleX(1);
+}
+
+.navbar__link--active {
+    color: var(--color-text-primary);
+}
+
+.navbar__link--active::after {
+    transform: scaleX(1);
+}
+
+
+/*--------------------------------------
+  5. Action Buttons
+--------------------------------------*/
+
+.navbar__action {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.navbar__action:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.navbar__action:active {
+    transform: translateY(0);
+}
+
+
+/*--------------------------------------
+  6. Mobile Elements
+--------------------------------------*/
+
+.navbar__toggle,
+.navbar__drawer,
+.navbar__overlay {
+    display: none;
+}
+
+
+/*--------------------------------------
+  7. Focus States
+--------------------------------------*/
+
+.navbar__link:focus-visible,
+.navbar__action:focus-visible,
+.navbar__brand:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+}
+
+
+/*--------------------------------------
+  8. Mobile Toggle
+--------------------------------------*/
+
+.navbar__toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: var(--radius-full);
+    transition: background-color var(--transition-fast);
+}
+
+.navbar__toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.navbar__toggle-line {
+    width: 1.3rem;
+    height: 2px;
+    background: var(--color-text-primary);
+    border-radius: var(--radius-full);
+    transition: var(--transition-normal);
+}
+
+
+/*--------------------------------------
+  9. Mobile Drawer
+--------------------------------------*/
+
+.navbar__drawer {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(320px, 85vw);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    z-index: calc(var(--z-fixed) + 2);
+}
+
+.navbar__drawer-header {
+    height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.navbar__drawer-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semi-bold);
+}
+
+.navbar__close {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
+    transition: background-color var(--transition-fast);
+}
+
+.navbar__close:hover {
+    background: rgba(255, 255, 255, .08);
+}
+
+.navbar__drawer-navigation {
+    flex: 1;
+}
+
+.navbar__drawer-menu {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-5);
+}
+
+.navbar__drawer-link {
+    display: block;
+    padding: var(--space-4) 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    transition: color var(--transition-fast);
+}
+
+.navbar__drawer-link:hover,
+.navbar__drawer-link--active {
+    color: var(--color-text-primary);
+}
+
+.navbar__drawer-footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-top: 1px solid var(--color-border);
+}
+
+.navbar__drawer-button {
+    padding: .85rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    color: var(--color-text-primary);
+    text-align: left;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.navbar__drawer-button:hover {
+    background: var(--color-border-light);
+}
+
+
+/*--------------------------------------
+  10. Overlay
+--------------------------------------*/
+
+.navbar__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    z-index: calc(var(--z-fixed) + 1);
+}
+
+
+/*--------------------------------------
+  11. Tablet
+--------------------------------------*/
+
+@media (max-width: 1023px) {
+    .navbar__menu {
+        gap: var(--space-4);
+    }
+}
+
+
+/*--------------------------------------
+  12. Mobile
+--------------------------------------*/
+
+@media (max-width: 767px) {
+    .navbar__navigation,
+    .navbar__actions {
+        display: none;
+    }
+    .navbar__toggle {
+        display: flex;
+    }
+}
