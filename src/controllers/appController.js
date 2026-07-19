@@ -1,49 +1,116 @@
-//--------------------------------------
-// App Controller
-//--------------------------------------
-import { createHomeLayout } from "../layouts/home/homeLayout.js";
-import { HomeView } from "../views/home/homeView.js";
+"use strict";
 
+/*======================================
+  File:
+  src/controllers/appController.js
 
+  Description:
+  Root application controller.
 
+  Responsibilities:
+  ✓ Bootstrap the application.
+  ✓ Cache root DOM elements.
+  ✓ Initialize feature controllers.
 
-//--------------------------------------
-// App Controller
-//--------------------------------------
+======================================*/
 
-class AppController {
+import { NavbarController } from "../components/navbar/index.js";
+
+export class AppController {
+
     constructor() {
-        this.appRoot = null;
-        this.homeView = new HomeView();
+
+        /**
+         * Root application elements.
+         *
+         * @type {{
+         *  app: HTMLElement|null,
+         *  navbar: HTMLElement|null,
+         *  main: HTMLElement|null,
+         *  footer: HTMLElement|null
+         * }}
+         */
+        this.elements = {
+            app: null,
+            navbar: null,
+            main: null,
+            footer: null
+        };
+
+        /**
+         * Feature controllers.
+         */
+        this.controllers = {
+            navbar: null
+        };
+
     }
 
-    initialize() {
-        this.cacheDOMElements();
-        this.renderApplication();
+    /**
+     * Starts the application.
+     */
+    init() {
+
+        this.cacheElements();
+
+        this.initializeNavbar();
+
+        console.info("✅ StreamFlix started successfully.");
+
     }
 
-    //--------------------------------------
-    // Cache DOM Elements
-    //--------------------------------------
+    /**
+     * Cache root DOM elements.
+     */
+    cacheElements() {
 
-    cacheDOMElements() {
-        this.appRoot = document.querySelector("#app");
+        this.elements.app =
+            document.getElementById("app");
 
-        if (!this.appRoot) {
-            throw new Error("Application root (#app) was not found.");
+        this.elements.navbar =
+            document.getElementById("navbar");
+
+        this.elements.main =
+            document.getElementById("main-content");
+
+        this.elements.footer =
+            document.getElementById("footer");
+
+        this.validateElements();
+
+    }
+
+    /**
+     * Validate root elements.
+     */
+    validateElements() {
+
+        for (const [name, element] of Object.entries(this.elements)) {
+
+            if (!(element instanceof HTMLElement)) {
+
+                throw new Error(
+                    `Missing required element: ${name}`
+                );
+
+            }
+
         }
+
     }
 
-    //--------------------------------------
-    // Render Application
-    //--------------------------------------
-    renderApplication() {
-        this.appRoot.innerHTML = this.homeView.render();
+    /**
+     * Initialize Navbar.
+     */
+    initializeNavbar() {
+
+        this.controllers.navbar =
+            new NavbarController(
+                this.elements.navbar
+            );
+
+        this.controllers.navbar.init();
+
     }
+
 }
-
-//--------------------------------------
-// Export
-//--------------------------------------
-
-export { AppController };

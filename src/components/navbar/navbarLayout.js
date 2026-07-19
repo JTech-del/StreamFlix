@@ -1,260 +1,97 @@
-//--------------------------------------
-// Navbar Layout
-//--------------------------------------
+"use strict";
 
-function createNavbarLayout() {
+/*======================================
+  File:
+  src/components/navbar/navbarLayout.js
+
+  Description:
+  Generates the StreamFlix navbar markup.
+======================================*/
+
+import {
+    BRAND,
+    NAVIGATION,
+    NAVBAR_ACTIONS
+} from "../../data/navbar/index.js";
+
+export function createNavbarLayout() {
+
+    const navigationMarkup = NAVIGATION.map(item => `
+        <li class="navbar__item">
+            <a href="${item.href}"class="navbar__link
+             ${item.active ? "is-active" : ""}" data-route="${item.route}">
+
+                ${item.label}
+            </a>
+        </li>
+    `).join("");
+
+    const actionsMarkup = NAVBAR_ACTIONS
+        .filter(action => action.visible && !action.mobileOnly)
+        .map(action => `
+            <button
+                class="navbar__action"
+                type="button"
+                data-action="${action.name}"
+                aria-label="${action.ariaLabel}"
+            >
+                <i data-lucide="${action.icon}"></i>
+            </button>
+        `).join("");
+
     return `
-    <header class="navbar" id="navbar">
+<header class="navbar">
 
-      <div class="navbar__container container">
+    <div class="navbar__container">
 
-        <!--==================================
-          Brand
-        ===================================-->
+        <!-- Brand -->
+
         <a
-          href="/"
-          class="navbar__brand"
-          aria-label="StreamFlix Home"
+            href="#home"
+            class="navbar__brand"
+            aria-label="${BRAND.name}"
         >
-          <span class="navbar__brand-icon">
-            ▶
-          </span>
+            <i
+                class="navbar__logo"
+                data-lucide="${BRAND.logo.icon}"
+            ></i>
 
-          <span class="navbar__brand-name">
-            StreamFlix
-          </span>
+            <span class="navbar__title">
+                ${BRAND.logo.text}
+            </span>
         </a>
 
-        <!--==================================
-          Desktop Navigation
-        ===================================-->
+        <!-- Desktop Navigation -->
+
         <nav
-          class="navbar__navigation"
-          aria-label="Primary Navigation"
+            class="navbar__navigation"
+            aria-label="Primary Navigation"
         >
-
-          <ul class="navbar__menu">
-
-            <li class="navbar__item">
-              <a
-                href="#"
-                class="navbar__link navbar__link--active"
-                data-route="home"
-                aria-current="page"
-              >
-                Home
-              </a>
-            </li>
-
-            <li class="navbar__item">
-              <a
-                href="#"
-                class="navbar__link"
-                data-route="movies"
-              >
-                Movies
-              </a>
-            </li>
-
-            <li class="navbar__item">
-              <a
-                href="#"
-                class="navbar__link"
-                data-route="tv-shows"
-              >
-                TV Shows
-              </a>
-            </li>
-
-            <li class="navbar__item">
-              <a
-                href="#"
-                class="navbar__link"
-                data-route="discover"
-              >
-                Discover
-              </a>
-            </li>
-
-            <li class="navbar__item">
-              <a
-                href="#"
-                class="navbar__link"
-                data-route="watchlist"
-              >
-                My List
-              </a>
-            </li>
-
-          </ul>
-
+            <ul class="navbar__menu">
+                ${navigationMarkup}
+            </ul>
         </nav>
 
-        <!--==================================
-          Desktop Actions
-        ===================================-->
+        <!-- Right Actions -->
+
         <div class="navbar__actions">
 
-          <button
-            class="navbar__action"
-            type="button"
-            aria-label="Open Search"
-          >
-            <span aria-hidden="true">🔍</span>
-          </button>
+            ${actionsMarkup}
 
-          <button
-            class="navbar__action"
-            type="button"
-            aria-label="User Profile"
-          >
-            <span aria-hidden="true">👤</span>
-          </button>
+            <button
+                class="navbar__action navbar__menu-toggle"
+                type="button"
+                aria-label="Open navigation"
+                data-action="menu"
+                aria-expanded="false"
+            >
+                <i data-lucide="menu"></i>
+            </button>
 
         </div>
 
-        <!--==================================
-          Mobile Menu Toggle
-        ===================================-->
-        <button
-          class="navbar__toggle"
-          id="navbar-toggle"
-          type="button"
-          aria-label="Open Menu"
-          aria-expanded="false"
-          aria-controls="navbar-drawer"
-        >
+    </div>
 
-          <span class="navbar__toggle-line"></span>
-          <span class="navbar__toggle-line"></span>
-          <span class="navbar__toggle-line"></span>
-
-        </button>
-
-      </div>
-
-      <!--==================================
-        Mobile Navigation Drawer
-      ===================================-->
-      <aside
-        class="navbar__drawer"
-        id="navbar-drawer"
-        aria-hidden="true"
-      >
-
-        <div class="navbar__drawer-header">
-
-          <span class="navbar__drawer-title">
-            Navigation
-          </span>
-
-          <button
-            class="navbar__close"
-            id="navbar-close"
-            type="button"
-            aria-label="Close Menu"
-          >
-            ✕
-          </button>
-
-        </div>
-
-        <nav
-          class="navbar__drawer-navigation"
-          aria-label="Mobile Navigation"
-        >
-
-          <ul class="navbar__drawer-menu">
-
-            <li>
-              <a
-                href="#"
-                class="navbar__drawer-link navbar__drawer-link--active"
-                data-route="home"
-              >
-                Home
-              </a>
-            </li>
-
-            <li>
-              <a
-                href="#"
-                class="navbar__drawer-link"
-                data-route="movies"
-              >
-                Movies
-              </a>
-            </li>
-
-            <li>
-              <a
-                href="#"
-                class="navbar__drawer-link"
-                data-route="tv-shows"
-              >
-                TV Shows
-              </a>
-            </li>
-
-            <li>
-              <a
-                href="#"
-                class="navbar__drawer-link"
-                data-route="discover"
-              >
-                Discover
-              </a>
-            </li>
-
-            <li>
-              <a
-                href="#"
-                class="navbar__drawer-link"
-                data-route="watchlist"
-              >
-                My List
-              </a>
-            </li>
-
-          </ul>
-
-        </nav>
-
-        <div class="navbar__drawer-footer">
-
-          <button
-            class="navbar__drawer-button"
-            type="button"
-          >
-            Profile
-          </button>
-
-          <button
-            class="navbar__drawer-button"
-            type="button"
-          >
-            Settings
-          </button>
-
-        </div>
-
-      </aside>
-
-      <!--==================================
-        Mobile Overlay
-      ===================================-->
-      <div
-        class="navbar__overlay"
-        id="navbar-overlay"
-        hidden
-      ></div>
-
-    </header>
-  `;
+</header>
+`;
 }
-
-//--------------------------------------
-// Export
-//--------------------------------------
-
-export { createNavbarLayout };

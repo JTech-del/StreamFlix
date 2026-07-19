@@ -1,0 +1,33 @@
+/*==================================================/
+  STREAMFLIX MAIN STYLESHEET
+
+  This is the ONLY stylesheet that should be linked
+  from index.html.
+
+  Loading Order
+
+  1. Design Tokens
+  2. CSS Reset
+  3. Typography
+  4. Global Styles
+  5. Components
+==================================================*/
+
+
+/*==============================================
+  Design System
+==============================================*/
+
+@import url("./variables.css");
+@import url("./reset.css");
+@import url("./typography.css");
+@import url("./global.css");
+@import url("../components/navbar/navbar.css");
+
+/* Future Components
+@import url("../components/hero/hero.css");
+@import url("../components/movie-card/movieCard.css");
+@import url("../components/search/search.css");
+@import url("../components/player/player.css");
+@import url("../components/footer/footer.css");
+*/

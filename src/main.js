@@ -1,13 +1,34 @@
-//--------------------------------------
-// Internal Imports
-//--------------------------------------
+"use strict";
 
-import { App } from "./app.js";
+/*======================================
+  File: src/main.js
 
-//--------------------------------------
-// Bootstrap Application
-//--------------------------------------
+  Description:
+  Application entry point.
 
-const app = new App();
+  Responsibilities:
+  ✓ Wait for the DOM to be ready.
+  ✓ Start the application.
 
-app.initialize();
+  Does NOT:
+  ✗ Render UI
+  ✗ Handle state
+  ✗ Access APIs
+======================================*/
+
+import { startApp } from "./app.js";
+
+/**
+ * Bootstraps the application once the DOM
+ * has finished loading.
+ */
+function bootstrap() {
+    startApp();
+}
+
+// Start immediately if the DOM is already loaded.
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap);
+} else {
+    bootstrap();
+}

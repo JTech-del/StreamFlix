@@ -1,0 +1,154 @@
+/*==================================================
+  STREAMFLIX TYPOGRAPHY
+==================================================*/
+
+
+/*--------------------------------------
+  Base Typography
+--------------------------------------*/
+
+body {
+    font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-text);
+    letter-spacing: 0.01em;
+}
+
+
+/*--------------------------------------
+  Headings
+--------------------------------------*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--color-text);
+    letter-spacing: -0.03em;
+}
+
+h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+}
+
+h2 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+}
+
+h3 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+h4 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+h6 {
+    font-size: 1.05rem;
+}
+
+
+/*--------------------------------------
+  Paragraph
+--------------------------------------*/
+
+p {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+}
+
+
+/*--------------------------------------
+  Small Text
+--------------------------------------*/
+
+small {
+    font-size: .875rem;
+    color: var(--color-text-muted);
+}
+
+
+/*--------------------------------------
+  Strong
+--------------------------------------*/
+
+strong {
+    font-weight: 700;
+}
+
+
+/*--------------------------------------
+  Text Utilities
+--------------------------------------*/
+
+.text-primary {
+    color: var(--color-primary);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-uppercase {
+    text-transform: uppercase;
+}
+
+.text-gradient {
+    background: linear-gradient( 135deg, #ffffff, #bfc7d5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+
+/*--------------------------------------
+  Hero Display Title
+--------------------------------------*/
+
+.display-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: .95;
+    letter-spacing: -.05em;
+}
+
+
+/*--------------------------------------
+  Section Title
+--------------------------------------*/
+
+.section-title {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 700;
+    margin-bottom: var(--space-5);
+}
+
+
+/*--------------------------------------
+  Caption
+--------------------------------------*/
+
+.caption {
+    font-size: .875rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .15em;
+}
