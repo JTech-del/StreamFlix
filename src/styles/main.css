@@ -23,8 +23,11 @@
 @import url("./typography.css");
 @import url("./global.css");
 @import url("../components/navbar/navbar.css");
+@import url("../components/hero/hero.css");
+@import url("../components/thumbnail/thumbnail.css");
 
-/* Future Components
+/**
+
 @import url("../components/hero/hero.css");
 @import url("../components/movie-card/movieCard.css");
 @import url("../components/search/search.css");

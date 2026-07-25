@@ -1,29 +1,20 @@
 "use strict";
 
-/*======================================
-  File: src/app.js
+/*==================================================
+    StreamFlix
 
-  Description:
-  Application bootstrap.
+    File:
+    src/app.js
 
-  Responsibilities:
-  ✓ Create the application controller.
-  ✓ Start the application.
+    Responsibility:
+    Starts the application.
 
-  Does NOT:
-  ✗ Render UI directly.
-  ✗ Handle business logic.
-======================================*/
+==================================================*/
 
-import { AppController } from "./controllers/appController.js";
+import { appController } from "./controllers/appController.js";
 
-/**
- * Starts the StreamFlix application.
- *
- * @returns {void}
- */
 export function startApp() {
-    const app = new AppController();
+    console.log("✅ startApp");
+    appController.init();
 
-    app.init();
 }

@@ -18,9 +18,11 @@ export function createNavbarLayout() {
 
     const navigationMarkup = NAVIGATION.map(item => `
         <li class="navbar__item">
-            <a href="${item.href}"class="navbar__link
-             ${item.active ? "is-active" : ""}" data-route="${item.route}">
-
+            <a
+                href="${item.href}"
+                class="navbar__link ${item.active ? "is-active" : ""}"
+                data-route="${item.route}"
+            >
                 ${item.label}
             </a>
         </li>
@@ -71,6 +73,14 @@ export function createNavbarLayout() {
                 ${navigationMarkup}
             </ul>
         </nav>
+
+        <!-- Search Mount Point -->
+
+        <div
+            id="navbar-search"
+            class="navbar__search"
+            aria-label="Search"
+        ></div>
 
         <!-- Right Actions -->
 

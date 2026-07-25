@@ -21,15 +21,15 @@ const heroItems = [
 
         title: "Blood Sisters",
 
-        logo: "assets/images/logos/blood-sisters.png",
+        logo: "assets/images/logo/image-2.jpg",
 
-        backdrop: "assets/images/backgrounds/blood-sisters.jpg",
+        backdrop: "assets/images/backdrop/image-2.jpg",
 
-        poster: "assets/images/posters/blood-sisters.jpg",
+        poster: "assets/images/posters/image-2.jpg",
 
-        trailer: "assets/videos/trailers/blood-sisters.mp4",
+        trailer: "assets/videos/trailers/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
 
-        movie: "assets/videos/movies/blood-sisters.mp4",
+        movie: "assets/videos/movies/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
 
         year: 2022,
 
@@ -57,19 +57,19 @@ const heroItems = [
 
         id: 2,
 
-        slug: "no-one-will-save-you",
+        slug: "No-one-will-save-you",
 
         title: "No One Will Save You",
 
-        logo: "assets/images/logos/no-one-will-save-you.png",
+        logo: "assets/images/logo/image.jpg",
 
-        backdrop: "assets/images/backgrounds/no-one-will-save-you.jpg",
+        backdrop: "assets/images/backdrop/image.jpg",
 
-        poster: "assets/images/posters/no-one-will-save-you.jpg",
+        poster: "assets/images/posters/image.jpg",
 
-        trailer: "assets/videos/trailers/no-one-will-save-you.mp4",
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
 
-        movie: "assets/videos/movies/no-one-will-save-you.mp4",
+        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
 
         year: 2023,
 
@@ -91,7 +91,222 @@ const heroItems = [
 
         featured: true
 
-    })
+    }),
+
+
+    Object.freeze({
+        id: 3,
+
+        slug: "gotham",
+
+        title: "Gotham Season 2",
+
+        logo: "assets/images/logo/image-6.jpg",
+
+        backdrop: "assets/images/backdrop/image-6.jpg",
+
+        thumbnail: "image/thumb3.jpg",
+
+        poster: "assets/images/posters/image-6.jpg",
+
+        video: "assets/videos/movies/Gotham.S05E02.(THENKIRI.COM).mkv",
+
+        trailer: "assets/videos/trailers/Gotham.S05E02.(THENKIRI.COM).mkv",
+
+
+        movie: "assets/videos/movies/Gotham.S05E02.(THENKIRI.COM).mkv",
+
+        year: 2025,
+
+        duration: "43m",
+
+        rating: "PG-18",
+
+        imdb: 8.8,
+
+        quality: "4K",
+
+        genres: Object.freeze([
+            "Action",
+            "Trailer",
+            "Drama"
+        ]),
+
+        description: "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+
+        featured: true
+
+    }),
+
+
+    Object.freeze({
+        id: 4,
+
+        slug: "Peaky Blinders",
+
+        title: "Peaky Blinders",
+
+        logo: "assets/images/logo/image-3.jpg",
+
+        backdrop: "assets/images/backdrop/image-3.jpg",
+
+        thumbnail: "image/thumb3.jpg",
+
+        poster: "assets/images/posters/image-3.jpg",
+
+        video: "assets/videos/movies/Gotham.S05E02.(THENKIRI.COM).mkv",
+
+        trailer: "assets/videos/trailers/Gotham.S05E02.(THENKIRI.COM).mkv",
+
+
+        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
+        year: 2023,
+
+        duration: "1h 33m",
+
+        rating: "PG-13",
+
+        imdb: 6.8,
+
+        quality: "4K",
+
+        genres: Object.freeze([
+            "Sci-Fi",
+            "Horror",
+            "Mystery"
+        ]),
+
+        description: "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+
+        featured: true
+
+    }),
+
+    Object.freeze({
+
+        id: 5,
+
+        slug: "The Sea ",
+
+        title: "The Sea",
+
+        logo: "assets/images/logo/image1.jpg",
+
+        backdrop: "assets/images/backdrop/image1.jpg",
+
+        poster: "assets/images/posters/image1.jpg",
+
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+
+        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
+        year: 2023,
+
+        duration: "1h 48m",
+
+        rating: "PG-13",
+
+        imdb: 8.8,
+
+        quality: "4K",
+
+        genres: Object.freeze([
+            "Trialer",
+            "Mystery"
+        ]),
+
+        description: "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+
+        featured: true
+
+    }),
+
+
+
+    Object.freeze({
+
+        id: 6,
+
+        slug: "A man From Beyound",
+
+        title: "A Man From Beyound",
+
+        logo: "assets/images/logo/image2.jpg",
+
+        backdrop: "assets/images/backdrop/image2.jpg",
+
+        poster: "assets/images/posters/image2.jpg",
+
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+
+        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
+        year: 2023,
+
+        duration: "1h 33m",
+
+        rating: "PG-13",
+
+        imdb: 6.8,
+
+        quality: "4K",
+
+        genres: Object.freeze([
+            "Sci-Fi",
+            "Horror",
+            "Mystery"
+        ]),
+
+        description: "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+
+        featured: true
+
+    }),
+
+
+
+    Object.freeze({
+
+        id: 7,
+
+        slug: "The Last Monach",
+
+        title: "The last Monach ",
+
+        logo: "assets/images/logo/image3.jpg",
+
+        backdrop: "assets/images/backdrop/image3.jpg",
+
+        poster: "assets/images/posters/image3.jpg",
+
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+
+        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
+        year: 2026,
+
+        duration: "1h 33m",
+
+        rating: "PG-13",
+
+        imdb: 6.8,
+
+        quality: "4K",
+
+        genres: Object.freeze([
+            "Sci-Fi",
+            "Horror",
+            "Mystery"
+        ]),
+
+        description: "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+
+        featured: true
+
+    }),
+
+
 
 ];
 

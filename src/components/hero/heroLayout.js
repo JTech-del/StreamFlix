@@ -142,7 +142,13 @@ export function heroLayout(hero) {
         </div>
 
     </div>
+<div class="hero__scroll">
 
+    <span>Explore</span>
+
+    <i data-lucide="chevrons-down"></i>
+
+</div>
 </section>
 
 `;

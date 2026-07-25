@@ -9,6 +9,8 @@
 
 ======================================*/
 
+
+
 import { NavbarView } from "./navbarView.js";
 
 export class NavbarController {
@@ -46,6 +48,10 @@ export class NavbarController {
 
     }
 
+    /*==============================================
+        Initialize 
+    ==============================================*/
+
     init() {
 
         this.render();
@@ -63,6 +69,10 @@ export class NavbarController {
         this.renderIcons();
 
     }
+
+    /*==============================================
+        Cache Element 
+    ==============================================*/
 
     cacheElements() {
 
@@ -86,6 +96,11 @@ export class NavbarController {
         ];
 
     }
+
+
+    /*==============================================
+        Event 
+    ==============================================*/
 
     bindEvents() {
 
@@ -117,7 +132,59 @@ export class NavbarController {
             this.handleKeyDown
         );
 
+        if (this.elements.actions) {
+
+            this.elements.actions.addEventListener(
+
+                "click",
+
+                this.handleActionClick.bind(this)
+
+            );
+
+        }
+
     }
+
+
+    /*==============================================
+    Handle Action Buttons
+==============================================*/
+
+    handleActionClick(event) {
+
+            const button = event.target.closest(
+
+                ".navbar__action"
+
+            );
+
+            if (!button) {
+
+                return;
+
+            }
+
+            const action = button.dataset.action;
+
+            switch (action) {
+
+                case "search":
+
+                    if (this.onSearchToggle) {
+
+                        this.onSearchToggle();
+
+                    }
+
+                    break;
+
+            }
+
+        }
+        /*==============================================
+            Handle Navigation
+        ==============================================*/
 
     handleNavigationClick(event) {
 
@@ -130,6 +197,11 @@ export class NavbarController {
         this.closeMobileMenu();
 
     }
+
+
+    /*==============================================
+        SetActive Navigation 
+    ==============================================*/
 
     setActiveNavigation(route) {
 
@@ -146,6 +218,11 @@ export class NavbarController {
 
     }
 
+
+    /*==============================================
+        Moble Toggle
+    ==============================================*/
+
     handleMobileToggle(event) {
 
         event.stopPropagation();
@@ -155,6 +232,10 @@ export class NavbarController {
         this.updateMobileMenu();
 
     }
+
+    /*==============================================
+        Update Moblemenu
+    ==============================================*/
 
     updateMobileMenu() {
 
@@ -174,6 +255,10 @@ export class NavbarController {
 
     }
 
+    /*==============================================
+        Update Toggle Icon
+    ==============================================*/
+
     updateMobileToggleIcon() {
         if (!this.elements.mobileButton) return;
 
@@ -190,6 +275,10 @@ export class NavbarController {
     }
 
 
+    /*==============================================
+        Event click
+    ==============================================*/
+
     handleDocumentClick(event) {
 
         if (!this.state.mobileMenuOpen) return;
@@ -199,6 +288,10 @@ export class NavbarController {
         this.closeMobileMenu();
 
     }
+
+    /*==============================================
+        KeyDown event Handler
+    ==============================================*/
 
     handleKeyDown(event) {
 
@@ -210,6 +303,10 @@ export class NavbarController {
 
     }
 
+    /*==============================================
+        Close moble menu
+    ==============================================*/
+
     closeMobileMenu() {
 
         this.state.mobileMenuOpen = false;
@@ -217,6 +314,10 @@ export class NavbarController {
         this.updateMobileMenu();
 
     }
+
+    /*==============================================
+        Icons 
+    ==============================================*/
 
     renderIcons() {
 
@@ -230,6 +331,29 @@ export class NavbarController {
         }
 
     }
+
+    /*==============================================
+        Set Search Toggle Handler
+    ==============================================*/
+
+    setSearchToggleHandler(callback) {
+
+        if (typeof callback !== "function") {
+
+            console.error(
+
+                "Search toggle handler must be a function."
+
+            );
+
+            return;
+
+        }
+
+        this.onSearchToggle = callback;
+
+    }
+
 
     destroy() {
 

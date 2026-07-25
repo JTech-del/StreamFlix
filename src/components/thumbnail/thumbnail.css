@@ -1,0 +1,253 @@
+/*==================================================
+    StreamFlix Thumbnail
+
+    Responsibility:
+    Styles the Thumbnail component.
+
+==================================================*/
+
+
+/*==============================================
+    Section
+==============================================*/
+
+.thumbnail {
+    width: 100%;
+    padding: 2rem 0 3rem;
+}
+
+
+/*==============================================
+    Container
+==============================================*/
+
+.thumbnail__container {
+    width: min(95%, 1600px);
+    margin: 0 auto;
+}
+
+
+/*==============================================
+    Header
+==============================================*/
+
+.thumbnail__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.thumbnail__heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+
+/*==============================================
+    Slider
+==============================================*/
+
+.thumbnail__slider {
+    position: relative;
+}
+
+
+/*==============================================
+    Viewport
+==============================================*/
+
+.thumbnail__viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+}
+
+.thumbnail__viewport::-webkit-scrollbar {
+    display: none;
+}
+
+
+/*==============================================
+    Track
+==============================================*/
+
+.thumbnail__track {
+    display: flex;
+    gap: 1.2rem;
+    padding-bottom: .5rem;
+}
+
+
+/*==============================================
+    Card
+==============================================*/
+
+.thumbnail__card {
+    flex: 0 0 220px;
+    cursor: pointer;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .08);
+    transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+
+
+/*==============================================
+    Hover
+==============================================*/
+
+.thumbnail__card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(229, 9, 20, .45);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .35), 0 0 20px rgba(229, 9, 20, .18);
+}
+
+
+/*==============================================
+    Active Card
+==============================================*/
+
+.thumbnail__card.is-active {
+    transform: translateY(-10px);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(229, 9, 20, .35), 0 25px 50px rgba(0, 0, 0, .45), 0 0 35px rgba(229, 9, 20, .25);
+}
+
+.thumbnail__image {
+    transition: transform .35s ease;
+}
+
+.thumbnail__card:hover .thumbnail__image,
+.thumbnail__card.is-active .thumbnail__image {
+    transform: scale(1.06);
+}
+
+
+/*==============================================
+    Poster
+==============================================*/
+
+.thumbnail__image {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+}
+
+
+/*==============================================
+    Content
+==============================================*/
+
+.thumbnail__content {
+    padding: 1rem;
+}
+
+.thumbnail__title {
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: .6rem;
+    line-height: 1.3;
+}
+
+.thumbnail__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(255, 255, 255, .65);
+    font-size: .85rem;
+}
+
+
+/*==============================================
+    Navigation Buttons
+==============================================*/
+
+.thumbnail__button {
+    position: absolute;
+    top: 40%;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    transition: .3s;
+}
+
+.thumbnail__button:hover {
+    background: var(--color-primary);
+}
+
+.thumbnail__button--prev {
+    left: -18px;
+}
+
+.thumbnail__button--next {
+    right: -18px;
+}
+
+
+/*==============================================
+    Responsive
+==============================================*/
+
+@media (max-width:1200px) {
+    .thumbnail__card {
+        flex: 0 0 200px;
+    }
+}
+
+@media (max-width:992px) {
+    .thumbnail__heading {
+        font-size: 1.6rem;
+    }
+    .thumbnail__card {
+        flex: 0 0 180px;
+    }
+}
+
+@media (max-width:768px) {
+    .thumbnail {
+        padding: 1.5rem 0;
+    }
+    .thumbnail__container {
+        width: 94%;
+    }
+    .thumbnail__card {
+        flex: 0 0 160px;
+    }
+    .thumbnail__button {
+        display: none;
+    }
+}
+
+@media (max-width:480px) {
+    .thumbnail__heading {
+        font-size: 1.3rem;
+    }
+    .thumbnail__card {
+        flex: 0 0 140px;
+    }
+    .thumbnail__content {
+        padding: .75rem;
+    }
+    .thumbnail__title {
+        font-size: .9rem;
+    }
+    .thumbnail__meta {
+        font-size: .75rem;
+    }
+}

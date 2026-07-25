@@ -28,50 +28,110 @@ export class NavbarView {
     constructor(rootElement) {
 
         if (!(rootElement instanceof HTMLElement)) {
+
             throw new Error(
                 "NavbarView requires a valid HTMLElement."
             );
+
         }
 
         this.rootElement = rootElement;
+
     }
 
-    /**
-     * Initial render.
-     */
+    /*==============================================
+        Render
+    ==============================================*/
+
     render() {
+
         this.rootElement.innerHTML = createNavbarLayout();
+
     }
 
-    /**
-     * Re-render the navbar.
-     */
+    /*==============================================
+        Update
+    ==============================================*/
+
     update() {
+
         this.render();
+
     }
 
-    /**
-     * Remove navbar markup.
-     */
+    /*==============================================
+        Remove
+    ==============================================*/
+
     remove() {
+
         this.rootElement.innerHTML = "";
+
     }
 
-    /**
-     * Destroy the view.
-     */
-    destroy() {
-        this.remove();
-        this.rootElement = null;
-    }
+    /*==============================================
+        Get Root Element
+    ==============================================*/
 
-    /**
-     * Returns the root element.
-     *
-     * @returns {HTMLElement|null}
-     */
     getElement() {
+
         return this.rootElement;
+
     }
+
+    /*==============================================
+    Open
+==============================================*/
+
+    open() {
+
+        if (!this.elements.section) {
+
+            return;
+
+        }
+
+        this.elements.section.classList.add(
+
+            "is-open"
+
+        );
+
+    }
+
+
+    /*==============================================
+        Close
+    ==============================================*/
+
+    close() {
+
+        if (!this.elements.section) {
+
+            return;
+
+        }
+
+        this.elements.section.classList.remove(
+
+            "is-open"
+
+        );
+
+    }
+
+    /*==============================================
+        Destroy
+    ==============================================*/
+
+    destroy() {
+
+        this.remove();
+
+        this.rootElement = null;
+
+    }
+
+
 
 }
