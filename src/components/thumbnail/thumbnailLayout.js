@@ -12,7 +12,7 @@
 export function thumbnailLayout() {
 
     return `
-
+    
 <section class="thumbnail" aria-label="Trending Movies">
 
     <div class="thumbnail__container">

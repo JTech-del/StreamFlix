@@ -89,6 +89,7 @@
 .thumbnail__card {
     flex: 0 0 220px;
     cursor: pointer;
+    position: relative;
     border-radius: 18px;
     overflow: hidden;
     background: rgba(255, 255, 255, .05);
@@ -118,6 +119,34 @@
     box-shadow: 0 0 0 2px rgba(229, 9, 20, .35), 0 25px 50px rgba(0, 0, 0, .45), 0 0 35px rgba(229, 9, 20, .25);
 }
 
+.thumbnail__card.is-active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient( 90deg, #e50914, #ff6a00);
+}
+
+.thumbnail__card.is-active .thumbnail__overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, .32);
+}
+
+.thumbnail__card.is-active .thumbnail__play {
+    background: rgba(229, 9, 20, .95);
+    transform: scale(1);
+}
+
+.thumbnail__card.is-active .thumbnail__title {
+    color: #fff;
+}
+
+.thumbnail__card.is-active .thumbnail__meta {
+    color: rgba(255, 255, 255, .82);
+}
+
 .thumbnail__image {
     transition: transform .35s ease;
 }
@@ -127,16 +156,92 @@
     transform: scale(1.06);
 }
 
+.thumbnail__title,
+.thumbnail__meta {
+    transition: color .35s ease;
+}
+
 
 /*==============================================
     Poster
 ==============================================*/
+
+.thumbnail__image-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+}
 
 .thumbnail__image {
     width: 100%;
     aspect-ratio: 2/3;
     object-fit: cover;
     display: block;
+}
+
+
+/*Thumbanial Overlay*/
+
+.thumbnail__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, .45);
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+
+/* Play Button */
+
+.thumbnail__play {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(12px);
+    transform: scale(.8);
+    transition: transform .35s ease, background .35s ease;
+}
+
+.thumbnail__play svg {
+    width: 28px;
+    height: 28px;
+    color: var(--color-text);
+}
+
+
+/* Hover Animation */
+
+.thumbnail__card:hover .thumbnail__overlay {
+    opacity: 1;
+}
+
+.thumbnail__card:hover .thumbnail__play {
+    transform: scale(1);
+}
+
+.thumbnail__card:hover .thumbnail__image {
+    transform: scale(1.08);
+}
+
+
+/* Image Transition */
+
+.thumbnail__image {
+    transition: transform .45s ease;
+}
+
+
+/* Primum Touch when hovering */
+
+.thumbnail__play:hover {
+    background: rgba(229, 9, 20, .9);
 }
 
 
@@ -250,4 +355,152 @@
     .thumbnail__meta {
         font-size: .75rem;
     }
+}
+
+
+/* Premium header  AFTER ARRANGE THE CODE  IN ODER */
+
+.thumbnail__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+}
+
+.thumbnail__heading {
+    color: var(--color-text);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.thumbnail__navigation {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.thumbnail__button {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-glass);
+    backdrop-filter: blur(var(--blur-md));
+    color: var(--color-text);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.thumbnail__button:hover {
+    background: var(--color-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+.thumbnail__button:active {
+    transform: scale(.96);
+}
+
+
+/*==============================================
+    Interaction Lock
+==============================================*/
+
+.thumbnail__track.is-disabled {
+    pointer-events: none;
+}
+
+
+/* New overlya effect */
+
+.thumbnail__card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.thumbnail__overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-dark);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+}
+
+.thumbnail__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(.85);
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(var(--blur-sm));
+    color: var(--color-text);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-normal), transform var(--transition-spring), background var(--transition-fast);
+    z-index: 3;
+}
+
+.thumbnail__play:hover {
+    background: var(--color-primary);
+    transform: translate(-50%, -50%) scale(1.08);
+}
+
+.thumbnail__play svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5;
+}
+
+.thumbnail__card:hover .thumbnail__overlay {
+    opacity: 1;
+}
+
+.thumbnail__card:hover .thumbnail__play {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.thumbnail__card.is-active .thumbnail__play {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .thumbnail__overlay {
+        opacity: 1;
+    }
+    .thumbnail__play {
+        opacity: 1;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+
+/* Thumbnail focus Ring */
+
+.thumbnail__card:focus-visible {
+    outline: none;
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+}
+
+
+/* Focus Animation */
+
+.thumbnail__card:focus-visible {
+    transform: translateY(-4px);
+}
+
+.thumbnail__card.is-active:focus-visible {
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
 }

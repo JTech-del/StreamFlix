@@ -22,7 +22,32 @@ class ThumbnailController {
 
         this.onMovieSelect = null;
 
+        /*
+                this.onMovieNavigate = null;
+        */
+
+        this.onMoviePlay = null;
+
+        this.isNavigating = false;
+
+        // Bound Event Handler
+        this.boundHandleKeyboard =
+            this.handleKeyboard.bind(this);
+
+        /* Touch Statr */
+
+        this.touchStartX = 0;
+
+        this.touchEndX = 0;
+
+        this.boundHandleTouchStart =
+            this.handleTouchStart.bind(this);
+
+        this.boundHandleTouchEnd =
+            this.handleTouchEnd.bind(this);
+
     }
+
 
     /*==============================================
         Initialize
@@ -45,6 +70,11 @@ class ThumbnailController {
         this.loadMovies();
 
         this.bindEvents();
+
+        this.bindKeyboardEvents();
+
+
+
 
     }
 
@@ -70,6 +100,7 @@ class ThumbnailController {
 
         thumbnailView.renderMovies(this.movies);
 
+
     }
 
     /*==============================================
@@ -84,40 +115,59 @@ class ThumbnailController {
 
         } = thumbnailView.elements;
 
+
+        /* Thumbnail Previous Button  */
+
         if (previousButton) {
 
-            previousButton.addEventListener(
+            previousButton.addEventListener("pointerdown", () => {
 
-                "click",
+                this.isNavigating = true;
 
-                () => {
+            });
 
-                    console.log("Previous");
+            previousButton.addEventListener("click", (event) => {
 
-                }
+                event.preventDefault();
 
-            );
+                event.stopPropagation();
+
+                this.showPreviousMovie();
+
+            });
 
         }
 
-
-
+        /* ThumbnailNext Buttons */
         if (nextButton) {
 
-            nextButton.addEventListener(
+            nextButton.addEventListener("pointerdown", () => {
 
-                "click",
+                this.isNavigating = true;
 
-                () => {
+            });
 
-                    console.log("Next");
+            nextButton.addEventListener("click", (event) => {
 
-                }
+                event.preventDefault();
 
-            );
+                event.stopPropagation();
+
+                this.showNextMovie();
+
+            });
 
         }
 
+        document.addEventListener("pointerup", () => {
+
+            requestAnimationFrame(() => {
+
+                this.isNavigating = false;
+
+            });
+
+        });
 
         /* Listen to Hover event on the thumbnail track */
         const { track } = thumbnailView.elements;
@@ -132,15 +182,110 @@ class ThumbnailController {
 
             );
 
+            /*Track Touch Start Touch End */
+            track.addEventListener(
+                "touchstart",
+                this.boundHandleTouchStart, { passive: true }
+            );
+
+            track.addEventListener(
+                "touchend",
+                this.boundHandleTouchEnd, { passive: true }
+            );
+
         }
+    }
+
+    showPreviousMovie() {
+
+        if (!this.currentMovie) {
+
+            return;
+
+        }
+
+        const movie = thumbnailService.getPreviousMovie(
+
+            this.currentMovie.slug
+
+        );
+
+        if (!movie) {
+
+            return;
+
+        }
+
+        this.currentMovie = movie;
+
+        thumbnailView.setActiveMovie(movie.slug);
+
+        thumbnailView.focusMovie(movie.slug);
+
+
+    }
+
+
+    showNextMovie() {
+
+        if (!this.currentMovie) {
+
+            return;
+
+        }
+
+        const movie = thumbnailService.getNextMovie(
+
+            this.currentMovie.slug
+
+        );
+
+        if (!movie) {
+
+            return;
+
+        }
+
+        this.currentMovie = movie;
+
+        thumbnailView.setActiveMovie(movie.slug);
+
+        thumbnailView.focusMovie(movie.slug);
 
     }
 
 
 
     /*==============================================
-        Get Movies
+        Select Movie
     ==============================================*/
+
+    selectMovie(movie) {
+
+            if (!movie) {
+
+                return;
+
+            }
+
+            this.currentMovie = movie;
+
+            thumbnailView.setActiveMovie(
+
+                movie.slug
+
+            );
+
+            if (this.onMovieSelect) {
+
+                this.onMovieSelect(movie);
+
+            }
+
+        }
+        /*==============================================
+            Get Movies
+        ==============================================*/
 
     getMovies() {
 
@@ -148,12 +293,53 @@ class ThumbnailController {
 
     }
 
+    getNextMovie(slug) {
+
+        const index = this.getMovieIndex(slug);
+
+        if (index === -1) {
+
+            return null;
+
+        }
+
+        const nextIndex =
+
+            (index + 1) %
+
+            this.movies.length;
+
+        return this.movies[nextIndex];
+
+    }
+
+
+    getPreviousMovie(slug) {
+
+        const index = this.getMovieIndex(slug);
+
+        if (index === -1) {
+
+            return null;
+
+        }
+
+        const previousIndex =
+
+            (index - 1 + this.movies.length) %
+
+            this.movies.length;
+
+        return this.movies[previousIndex];
+
+    }
+
 
 
 
     /*==============================================
-    Select Callback
-==============================================*/
+        Select Callback
+    ==============================================*/
 
     setMovieSelectHandler(callback) {
 
@@ -174,26 +360,38 @@ class ThumbnailController {
     }
 
     /*==============================================
-    Handle Thumbnail Leave
-==============================================*/
+        Handle Thumbnail Leave
+    ==============================================*
 
     handleThumbnailLeave() {
 
-            clearTimeout(this.hoverTimer);
+        clearTimeout(this.hoverTimer);
 
-            if (this.onMovieLeave) {
+        if (this.onMovieLeave) {
 
-                this.onMovieLeave();
-
-            }
+            this.onMovieLeave();
 
         }
-        /*==============================================
-            Handle Thumbnail Click
-        ==============================================*/
+
+    }
+
+    /*==============================================
+         Handle Thumbnail Click
+==============================================*/
+
     handleThumbnailClick(event) {
 
-        const card = event.target.closest(".thumbnail__card");
+        const playButton = event.target.closest(
+
+            ".thumbnail__play"
+
+        );
+
+        const card = event.target.closest(
+
+            ".thumbnail__card"
+
+        );
 
         if (!card) {
 
@@ -201,40 +399,291 @@ class ThumbnailController {
 
         }
 
-        console.log("Thumbnail clicked:", card.dataset.slug);
-
         const movie = thumbnailService.getMovie(
 
             card.dataset.slug
 
         );
 
-        console.log(movie);
+        if (!movie) {
 
-        if (this.onMovieSelect) {
+            return;
 
-            this.onMovieSelect(movie);
+        }
+
+        // Play button clicked
+        if (playButton) {
+
+            event.stopPropagation();
+
+            this.playMovie(movie);
+
+            return;
+
+        }
+
+        // Poster clicked
+        this.selectMovie(movie);
+
+    }
+
+    /*==============================================
+    Play Movie
+==============================================*/
+
+    playMovie(movie) {
+
+        if (!movie) {
+
+            return;
+
+        }
+
+        console.log(
+
+            "▶ Playing:",
+
+            movie.title
+
+        );
+
+        if (this.onMoviePlay) {
+
+            this.onMoviePlay(movie);
 
         }
 
     }
 
     /*==============================================
-    Set Active Movie (Public Mthod )
-==============================================*/
+        Set Active Movie (Public Mthod )
+    ==============================================*/
 
     setActiveMovie(slug) {
+
+        const movie = thumbnailService.getMovie(slug);
+
+        if (!movie) {
+
+            return;
+
+        }
+
+        this.currentMovie = movie;
 
         thumbnailView.setActiveMovie(slug);
 
     }
 
+    /*==============================================
+        Set Navigation Callback
+    ==============================================*/
+
+    setMovieNavigateHandler(callback) {
+
+        if (typeof callback !== "function") {
+
+            console.error(
+
+                "Movie navigation handler must be a function."
+
+            );
+
+            return;
+
+        }
+
+        this.onMovieNavigate = callback;
+
+    }
+
+    /*==============================================
+    Play Callback
+==============================================*/
+
+    setMoviePlayHandler(callback) {
+
+        if (typeof callback !== "function") {
+
+            console.error(
+
+                "Movie play handler must be a function."
+
+            );
+
+            return;
+
+        }
+
+        this.onMoviePlay = callback;
+
+    }
+
+    /*==============================================
+        Touch Start
+    ==============================================*/
+
+    handleTouchStart(event) {
+
+        this.touchStartX =
+
+            event.changedTouches[0].clientX;
+
+    }
+
+    /*==============================================
+    Handle Touch End
+==============================================*/
+    handleTouchEnd(event) {
+
+        this.touchEndX =
+            event.changedTouches[0].clientX;
+
+        this.detectSwipe();
+
+    }
+
+
+    /*==============================================
+    Detect Swipe
+==============================================*/
+
+    detectSwipe() {
+
+        const distance =
+
+            this.touchStartX -
+
+            this.touchEndX;
+
+        const threshold = 50;
+
+        if (Math.abs(distance) < threshold) {
+
+            return;
+
+        }
+
+        if (distance > 0) {
+
+            this.showNextMovie();
+
+        } else {
+
+            this.showPreviousMovie();
+
+        }
+
+    }
+
+
+
+
+    /*==============================================
+    Keyboard Events
+==============================================*/
+
+    bindKeyboardEvents() {
+
+            document.addEventListener(
+
+                "keydown",
+
+                this.boundHandleKeyboard
+
+            );
+
+        }
+        /*==============================================
+            Handle Keyboard
+        ==============================================*/
+
+    handleKeyboard(event) {
+
+        switch (event.key) {
+
+            case "ArrowLeft":
+
+                event.preventDefault();
+
+                this.showPreviousMovie();
+
+                break;
+
+            case "ArrowRight":
+
+                event.preventDefault();
+
+                this.showNextMovie();
+
+                break;
+
+            case "Enter":
+
+                event.preventDefault();
+
+                if (this.currentMovie) {
+
+                    this.selectMovie(this.currentMovie);
+
+                }
+
+                break;
+
+            case " ":
+
+            case "Space":
+
+            case "Spacebar":
+
+                event.preventDefault();
+
+                if (this.currentMovie) {
+
+                    this.playMovie(this.currentMovie);
+
+                }
+
+                break;
+
+        }
+
+    }
+
+    /*==============================================
+        Lock Interaction
+    ==============================================*/
+
+    lockInteraction() {
+
+        thumbnailView.disableInteraction();
+
+    }
+
+
+    /*==============================================
+        Unlock Interaction
+    ==============================================*/
+
+    unlockInteraction() {
+
+        thumbnailView.enableInteraction();
+
+    }
 
     /*==============================================
         Destroy
-    ==============================================*/
+ 
+       ==============================================*/
+
+
 
     destroy() {
+
+        document.removeEventListener(
+            "keydown",
+            this.boundHandleKeyboard
+        );
 
         thumbnailView.destroy();
 

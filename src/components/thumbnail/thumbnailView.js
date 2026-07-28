@@ -11,6 +11,9 @@
 
 import { thumbnailLayout } from "./thumbnailLayout.js";
 
+import { mediaRailView } from "../mediaRail/mediaRailView.js";
+
+
 class ThumbnailView {
 
     constructor() {
@@ -91,49 +94,78 @@ class ThumbnailView {
 
         }
 
+
         this.elements.track.innerHTML = movies.map(movie => `
 
-            <article
-                class="thumbnail__card"
-                data-slug="${movie.slug}"
-            >
 
-                <img
-                    class="thumbnail__image"
-                    src="${movie.poster}"
-                    alt="${movie.title}"
-                    loading="lazy"
-                >
+<article
+      class="thumbnail__card"
+    data-slug="${movie.slug}"
+    tabindex="0"
+    role="button"
+    aria-label="${movie.title}">
 
-                <div class="thumbnail__content">
+    <img
+        class="thumbnail__image"
+        src="${movie.poster}"
+        alt="${movie.title}"
+        loading="lazy">
 
-                    <h3 class="thumbnail__title">
+    <!-- Dark Overlay -->
+    <div class="thumbnail__overlay"></div>
 
-                        ${movie.title}
+    <!-- Play Button -->
+    <button
+        class="thumbnail__play"
+        type="button"
+        aria-label="Play ${movie.title}">
+        <i data-lucide="play"></i>
+    </button>
 
-                    </h3>
+    <!-- Movie Info -->
+    <div class="thumbnail__content">
 
-                    <div class="thumbnail__meta">
+        <h3 class="thumbnail__title">
 
-                        <span>
+            ${movie.title}
 
-                            ⭐ ${movie.rating ?? "N/A"}
+        </h3>
 
-                        </span>
+        <div class="thumbnail__meta">
 
-                        <span>
+            <span>
 
-                            ${movie.year}
+                ⭐ ${movie.rating ?? "N/A"}
 
-                        </span>
+            </span>
 
-                    </div>
+            <span>
 
-                </div>
+                ${movie.year}
 
-            </article>
+            </span>
 
-        `).join("");
+        </div>
+
+    </div>
+
+</article>
+
+       
+
+     
+   `).join("");
+        /* FOR OVELAY Effect */
+        if (
+
+            window.lucide &&
+            typeof window.lucide.createIcons === "function"
+
+        ) {
+
+            window.lucide.createIcons();
+
+        }
 
 
         const featured = movies.find(
@@ -160,7 +192,7 @@ class ThumbnailView {
 
     /*==============================================
     Set Active Movie (Center Active Movie)
-==============================================*/
+==============================================*
 
     setActiveMovie(slug) {
 
@@ -185,10 +217,42 @@ class ThumbnailView {
         this.scrollToMovie(slug);
 
     }
+        */
+    /*==============================================
+        Set Active Movie
+    ==============================================*/
+    setActiveMovie(slug) {
+
+        mediaRailView.setActiveItem(
+
+            ".thumbnail__card",
+
+            `.thumbnail__card[data-slug="${slug}"]`
+
+        );
+
+        this.scrollToMovie(slug);
+
+    }
+
+
 
     /*==============================================
         Scroll To Movie
-    ==============================================*/
+    ==============================================*
+
+    scrollToMovie(slug) {
+
+        mediaRailView.scrollToItem(
+
+            `.thumbnail__card[data-slug="${slug}"]`
+
+        );
+
+    }
+
+
+    /*
 
     scrollToMovie(slug) {
 
@@ -213,6 +277,73 @@ class ThumbnailView {
             block: "nearest"
 
         });
+
+    }
+*/
+
+    /*==============================================
+        Focus Movie
+    ==============================================*/
+
+    focusMovie(slug) {
+
+            const card = this.container.querySelector(
+
+                `.thumbnail__card[data-slug="${slug}"]`
+
+            );
+
+            if (!card) {
+
+                return;
+
+            }
+
+            card.focus({
+
+                preventScroll: true
+
+            });
+
+        }
+        /*==============================================
+    Disable Interaction
+==============================================*/
+
+    disableInteraction() {
+
+        if (!this.elements.track) {
+
+            return;
+
+        }
+
+        this.elements.track.classList.add(
+
+            "is-disabled"
+
+        );
+
+    }
+
+
+    /*==============================================
+        Enable Interaction
+    ==============================================*/
+
+    enableInteraction() {
+
+        if (!this.elements.track) {
+
+            return;
+
+        }
+
+        this.elements.track.classList.remove(
+
+            "is-disabled"
+
+        );
 
     }
 

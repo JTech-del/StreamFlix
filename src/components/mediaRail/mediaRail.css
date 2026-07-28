@@ -1,0 +1,15 @@
+.mediaRail__item.is-active {
+    /* Playing */
+}
+
+.mediaRail__item.is-focused {
+    /* Keyboard Focus */
+}
+
+.mediaRail__item.is-focused {
+    outline: 2px solid var(--primary);
+}
+
+.mediaRail__item.is-animating {
+    animation: railFocus .3s ease;
+}

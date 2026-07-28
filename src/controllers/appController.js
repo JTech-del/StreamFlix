@@ -12,14 +12,15 @@
 
 ==================================================*/
 import { NavbarController } from "../components/navbar/navbarController.js";
+
 import { HeroController } from "../components/hero/heroController.js";
 
 import { searchController } from "../components/search/searchController.js";
 
 import { thumbnailController } from "../components/thumbnail/thumbnailController.js";
-/*
-import { searchController } from "../components/search/searchController.js";
-*/
+
+import { miniTheatreController } from "../components/miniTheatre/index.js";
+
 class AppController {
 
     constructor() {
@@ -33,6 +34,8 @@ class AppController {
         this.search = null;
 
         this.thumbnail = null;
+
+        this.miniTheatre = null;
 
         this.state = {
 
@@ -76,8 +79,10 @@ class AppController {
 
         this.initializeThumbnail();
 
-        console.log("6 - thumbnail");
+        console.log("7 - thumbnail");
 
+        this.initializeMiniTheatre();
+        console.log("8 - miniTheatre");
 
         console.log("✅ StreamFlix initialized.");
 
@@ -111,9 +116,17 @@ class AppController {
 
                 thumbnail:
 
-                    document.getElementById("thumbnail")
+                    document.getElementById("thumbnail"),
 
-            };
+                miniTheatre:
+
+                    document.getElementById("mini-theatre"),
+
+            }
+
+
+
+
         }
         /*==============================================
             Cache Search Mount
@@ -222,7 +235,7 @@ class AppController {
         );
 
     }
-
+*/
 
     /*==============================================
         Hero
@@ -283,9 +296,49 @@ class AppController {
 
         );
 
+        this.thumbnail.setMoviePlayHandler(
+
+            this.playMovie.bind(this)
+
+        );
 
     }
 
+    /*==============================================
+    InitializeMinTheartre
+==============================================*/
+
+    initializeMiniTheatre() {
+
+        if (!this.elements.miniTheatre) {
+
+            return;
+
+        }
+
+        this.miniTheatre = miniTheatreController;
+
+        this.miniTheatre.init(this.elements.miniTheatre);
+
+    }
+
+    /*==============================================
+    Navigate Movie
+==============================================*/
+
+    navigateMovie(movie) {
+
+        if (!movie) {
+
+            return;
+
+        }
+
+        this.state.activeMovie = movie;
+
+        this.hero.update(movie);
+
+    }
 
 
 
@@ -337,21 +390,36 @@ class AppController {
 
     restoreActiveMovie() {
 
-        if (!this.state.activeMovie) {
+            if (!this.state.activeMovie) {
+
+                return;
+
+            }
+
+            this.hero.update(
+
+                this.state.activeMovie
+
+            );
+
+        }
+        /*==============================================
+            Play Movie
+        ==============================================*/
+
+    playMovie(movie) {
+
+        if (!this.miniTheatre) {
+
+            console.error("Mini Theatre is not initialized.");
 
             return;
 
         }
 
-        this.hero.update(
-
-            this.state.activeMovie
-
-        );
+        this.miniTheatre.open(movie);
 
     }
-
-
 
 }
 

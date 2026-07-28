@@ -7,14 +7,32 @@
     src/app.js
 
     Responsibility:
-    Starts the application.
+    Application bootstrap layer.
+
+    Starts core application systems.
 
 ==================================================*/
 
+
 import { appController } from "./controllers/appController.js";
 
-export function startApp() {
-    console.log("✅ startApp");
-    appController.init();
 
-}
+
+const App = {
+
+
+    init() {
+
+        console.log("✅ StreamFlix App Initialized");
+
+
+        appController.init();
+
+    }
+
+
+};
+
+
+
+export default App;

@@ -1,30 +1,43 @@
 "use strict";
 
-/*==================================================
-    StreamFlix
 
-    File:
-    src/main.js
+//==============================================
+// Application
+//==============================================
 
-    Responsibility:
-    Application entry point.
+import App from "./app.js";
 
-==================================================*/
 
-import { startApp } from "./app.js";
+//==============================================
+// Plugin System
+//==============================================
 
-function bootstrap() {
+import PluginManager from "./core/mediaRail/pluginManager.js";
 
-    startApp();
+import SubtitlePlugin from "./core/pluginCore/subtitlePlugin/subtitlePlugin.js";
 
-}
 
-if (document.readyState === "loading") {
 
-    document.addEventListener("DOMContentLoaded", bootstrap);
+//==============================================
+// Register Plugins
+//==============================================
 
-} else {
+PluginManager.install(
+    SubtitlePlugin
+);
 
-    bootstrap();
 
-}
+
+//==============================================
+// Start Application
+//==============================================
+
+App.init();
+
+
+
+//==============================================
+// Initialize Plugins
+//==============================================
+
+PluginManager.initialize(App);
