@@ -2,3 +2,18 @@ node_modules
 dist
 .vscode
 .DS_Store
+
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.vite/
+
+# Videos
+assets/videos/
+src/data/hero/movies/
+
+# Logs
+*.log

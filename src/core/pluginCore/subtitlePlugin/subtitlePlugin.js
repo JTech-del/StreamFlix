@@ -1,38 +1,41 @@
 "use strict";
 
-const SubtitlePlugin = {
+import {
+
+    subtitleController
+
+} from "./subtitleController.js";
+
+const SubtitlePlugin = Object.freeze({
 
     name: "Subtitle Plugin",
 
     version: "1.0.0",
 
-    app: null,
-    /*
-        init(app) {
+    init(app) {
 
-            this.app = app;
+        console.log(
 
-            console.log(
+            `${this.name} initialized`
 
-                `${this.name} initialized`
+        );
 
-            );
+        subtitleController.init(app);
 
-        },
+    },
 
-        destroy() {
+    destroy() {
 
-            this.app = null;
+        subtitleController.destroy();
 
-            console.log(
+        console.log(
 
-                `${this.name} destroyed`
+            `${this.name} destroyed`
 
-            );
+        );
 
-        }
-            */
+    }
 
-};
+});
 
-export default Object.freeze(SubtitlePlugin);
+export default SubtitlePlugin;

@@ -1,11 +1,7 @@
 "use strict";
 
 
-import {
-    registerPlugin,
-    getPlugins
-
-} from "./pluginRegistry.js";
+import { registerPlugin, getPlugins } from "./pluginRegistry.js";
 
 
 

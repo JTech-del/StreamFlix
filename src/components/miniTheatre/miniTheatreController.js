@@ -1,5 +1,25 @@
-/*
 "use strict";
+
+/*==================================================
+    StreamFlix
+
+    Mini Theatre Controller
+
+    Responsibility:
+
+    ✓ Initialize Mini Theatre
+    ✓ Open Movie
+    ✓ Close Theatre
+    ✓ Load Playlist
+    ✓ Update Preview
+    ✓ Coordinate Plugins
+
+==================================================*/
+
+import { miniTheatreView } from "./miniTheatreView.js";
+import { pluginHost } from "../../core/mediaRail/pluginHost.js";
+
+
 
 class MiniTheatreController {
 
@@ -7,13 +27,27 @@ class MiniTheatreController {
 
         this.movie = null;
 
+        this.playlist = [];
+
+        this.isOpen = false;
+
     }
+
+    /*==============================================
+        Initialize
+    ==============================================*/
 
     init(container) {
 
-        this.container = container;
+        miniTheatreView.init(container);
+
+        miniTheatreView.render();
 
     }
+
+    /*==============================================
+        Open
+    ==============================================*/
 
     open(movie) {
 
@@ -24,6 +58,10 @@ class MiniTheatreController {
         }
 
         this.movie = movie;
+
+        this.isOpen = true;
+
+        this.selectMovie(movie);
 
         console.log(
 
@@ -35,59 +73,107 @@ class MiniTheatreController {
 
     }
 
-}
+    /*==============================================
+        Close
+    ==============================================*/
 
-export const miniTheatreController =
-    new MiniTheatreController();
-
-    */
-"use strict";
-
-import {
-
-    miniTheatreView
-
-}
-
-from "./miniTheatreView.js";
-
-class MiniTheatreController {
-
-    constructor() {
+    close() {
 
         this.movie = null;
 
-    }
+        this.isOpen = false;
 
-    init(container) {
-
-        miniTheatreView.init(container);
-
-        miniTheatreView.render();
+        miniTheatreView.clearPreview();
 
     }
 
-    open(movie) {
+    /*==============================================
+        Playlist
+    ==============================================*/
 
-        if (!movie) {
+    loadPlaylist(movies = []) {
+
+        this.playlist = movies;
+
+    }
+
+    getPlaylist() {
+
+        return this.playlist;
+
+    }
+
+    /*==============================================
+        Current Movie
+    ==============================================*/
+
+    getCurrentMovie() {
+
+        return this.movie;
+
+    }
+
+    /*==============================================
+        Is Open
+    ==============================================*/
+
+    isOpened() {
+
+        return this.isOpen;
+
+    }
+
+    /*==============================================
+        Refresh Preview
+    ==============================================*/
+
+    refresh() {
+
+        if (!this.movie) {
 
             return;
 
         }
 
-        this.movie = movie;
+        miniTheatreView.showPreview(
 
-        console.log(
-
-            "🎬 Mini Theatre",
-
-            movie.title
+            this.movie
 
         );
 
     }
 
+    /*==============================================
+        Plugins
+    ==============================================*/
+
+    initializePlugins() {
+
+        pluginHost.mount(
+
+            miniTheatreView.elements.plugins
+
+        );
+
+    }
+
+    /*==============================================
+        Destroy
+    ==============================================*/
+
+    destroy() {
+
+        this.close();
+
+        this.playlist = [];
+
+        miniTheatreView.destroy();
+
+    }
+
 }
 
-export const miniTheatreController =
-    new MiniTheatreController();
+
+
+
+export const miniTheatreController = new MiniTheatreController();
