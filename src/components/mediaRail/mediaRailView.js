@@ -64,7 +64,7 @@ class MediaRailView {
 
             this.afterInject();
 
-            this.cacheItems();
+
 
             this.afterRender();
 
@@ -268,16 +268,23 @@ class MediaRailView {
 
     }
 
-
     /*==============================================
-    Set Active Item
-==============================================*/
+        Set Active Item
+    ==============================================*/
 
-    setActive(index) {
+    setActiveItem(activeSelector) {
+
+        if (!this.container) {
+
+            console.error("MediaRailView has not been initialized.");
+
+            return;
+
+        }
 
         this.clearActive();
 
-        const item = this.items[index];
+        const item = this.container.querySelector(activeSelector);
 
         if (!item) {
 
@@ -285,11 +292,7 @@ class MediaRailView {
 
         }
 
-        item.classList.add(
-
-            "is-active"
-
-        );
+        item.classList.add("is-active");
 
         this.activeItem = item;
 
@@ -342,17 +345,12 @@ class MediaRailView {
         /*==============================================
     Set Active Item
 ==============================================*/
-    setActiveItem(
-            itemSelector,
-            activeSelector
-        ) {
+    setActiveItem(itemSelector, activeSelector) {
 
             this.clearActive();
 
 
-            const item = this.container.querySelector(
-                activeSelector
-            );
+            const item = this.container.querySelector(activeSelector);
 
 
             if (!item) {
@@ -362,9 +360,7 @@ class MediaRailView {
             }
 
 
-            item.classList.add(
-                "is-active"
-            );
+            item.classList.add("is-active");
 
 
             this.activeItem = item;

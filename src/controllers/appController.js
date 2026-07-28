@@ -133,8 +133,12 @@ class AppController {
         ==============================================*/
 
     cacheSearchMount() {
-        console.log(this.elements.search);
         this.elements.search = document.getElementById("navbar-search");
+
+        console.log(
+            "Search mount:",
+            this.elements.search
+        );
 
     }
 
@@ -170,72 +174,51 @@ class AppController {
 
     initializeSearch() {
 
-            if (!this.elements.search) {
+        if (!this.elements.search) {
 
-                console.error("Search mount point not found.");
-
-                return;
-
-            }
-
-            this.search = searchController;
-
-            this.search.init(this.elements.search);
-
-            /*
-            this.search.setMovieHoverHandler(
-
-                this.handleMovieHover.bind(this)
-
-            );
-            */
-
-            this.search.setMovieHoverHandler(
-
-                this.previewMovie.bind(this)
-
-            );
-
-            this.search.setMovieLeaveHandler(
-
-                this.restoreActiveMovie.bind(this)
-
-            );
-
-            this.search.setMovieSelectHandler(
-
-                this.setActiveMovie.bind(this)
-
-            );
-
-
-            this.navbar.setSearchToggleHandler(
-
-                () => this.search.toggle()
-
-            );
-        }
-        /*==============================================
-    Handle Movie Hover
-==============================================*
-
-    handleMovieHover(movie) {
-
-        if (!this.hero) {
+            console.error("Search mount point not found.");
 
             return;
 
         }
-        this.hero.update(movie);
 
-        this.thumbnail.setActiveMovie(
+        this.search = searchController;
 
-            movie.slug
+        this.search.init(this.elements.search);
+
+        /*
+        this.search.setMovieHoverHandler(
+
+            this.handleMovieHover.bind(this)
+
+        );
+        */
+
+        this.search.setMovieHoverHandler(
+
+            this.previewMovie.bind(this)
 
         );
 
+        this.search.setMovieLeaveHandler(
+
+            this.restoreActiveMovie.bind(this)
+
+        );
+
+        this.search.setMovieSelectHandler(
+
+            this.setActiveMovie.bind(this)
+
+        );
+
+
+        this.navbar.setSearchToggleHandler(
+
+            () => this.search.toggle()
+
+        );
     }
-*/
 
     /*==============================================
         Hero

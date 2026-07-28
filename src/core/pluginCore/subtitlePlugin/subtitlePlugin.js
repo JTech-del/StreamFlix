@@ -7,30 +7,31 @@ const SubtitlePlugin = {
     version: "1.0.0",
 
     app: null,
+    /*
+        init(app) {
 
-    init(app) {
+            this.app = app;
 
-        this.app = app;
+            console.log(
 
-        console.log(
+                `${this.name} initialized`
 
-            `${this.name} initialized`
+            );
 
-        );
+        },
 
-    },
+        destroy() {
 
-    destroy() {
+            this.app = null;
 
-        this.app = null;
+            console.log(
 
-        console.log(
+                `${this.name} destroyed`
 
-            `${this.name} destroyed`
+            );
 
-        );
-
-    }
+        }
+            */
 
 };
 

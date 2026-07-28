@@ -52,6 +52,8 @@ class ThumbnailView {
 
         this.cacheElements();
 
+        mediaRailView.init(this.elements.track);
+
     }
 
     /*==============================================
@@ -186,38 +188,6 @@ class ThumbnailView {
 
     }
 
-
-
-
-
-    /*==============================================
-    Set Active Movie (Center Active Movie)
-==============================================*
-
-    setActiveMovie(slug) {
-
-        const cards = this.container.querySelectorAll(
-
-            ".thumbnail__card"
-
-        );
-
-        cards.forEach(card => {
-
-            card.classList.toggle(
-
-                "is-active",
-
-                card.dataset.slug === slug
-
-            );
-
-        });
-
-        this.scrollToMovie(slug);
-
-    }
-        */
     /*==============================================
         Set Active Movie
     ==============================================*/
@@ -235,7 +205,32 @@ class ThumbnailView {
 
     }
 
+    /*==============================================
+            Set Active Items
+        ==============================================*/
+    setActiveItem(itemSelector, activeSelector) {
 
+        if (!this.container) {
+
+            return;
+
+        }
+
+        this.clearActive();
+
+        const item = this.container.querySelector(activeSelector);
+
+        if (!item) {
+
+            return;
+
+        }
+
+        item.classList.add("is-active");
+
+        this.activeItem = item;
+
+    }
 
     /*==============================================
         Scroll To Movie
@@ -252,7 +247,7 @@ class ThumbnailView {
     }
 
 
-    /*
+    /** */
 
     scrollToMovie(slug) {
 
@@ -279,7 +274,7 @@ class ThumbnailView {
         });
 
     }
-*/
+
 
     /*==============================================
         Focus Movie
