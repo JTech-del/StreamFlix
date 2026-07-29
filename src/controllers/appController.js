@@ -122,7 +122,7 @@ class AppController {
 
                     document.getElementById("mini-theatre"),
 
-            }
+            };
 
 
 
@@ -289,7 +289,7 @@ class AppController {
 
     /*==============================================
     InitializeMinTheartre
-==============================================*/
+==============================================*
 
     initializeMiniTheatre() {
 
@@ -302,6 +302,18 @@ class AppController {
         this.miniTheatre = miniTheatreController;
 
         this.miniTheatre.init(this.elements.miniTheatre);
+
+    }
+
+    */
+
+    initializeMiniTheatre() {
+
+        miniTheatreController.init(
+
+            this.elements.miniTheatre
+
+        );
 
     }
 

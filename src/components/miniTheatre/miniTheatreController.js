@@ -18,8 +18,8 @@
 
 import { miniTheatreView } from "./miniTheatreView.js";
 import { pluginHost } from "../../core/mediaRail/pluginHost.js";
-
-
+import { playlistController } from "./playlist/playlistController.js";
+import { HERO_DATA } from "../../data/hero/heroData.js";
 
 class MiniTheatreController {
 
@@ -30,6 +30,9 @@ class MiniTheatreController {
         this.playlist = [];
 
         this.isOpen = false;
+
+
+        this.playlist = playlistController;
 
     }
 
@@ -42,6 +45,8 @@ class MiniTheatreController {
         miniTheatreView.init(container);
 
         miniTheatreView.render();
+
+        this.initializePlaylist();
 
     }
 
@@ -59,9 +64,13 @@ class MiniTheatreController {
 
         this.movie = movie;
 
+        miniTheatreView.renderPreview(movie);
+
         this.isOpen = true;
 
         this.selectMovie(movie);
+
+        this.playlist.selectMovie(movie);
 
         console.log(
 
@@ -71,11 +80,79 @@ class MiniTheatreController {
 
         );
 
+
     }
 
     /*==============================================
-        Close
+        Initialize Playlist
     ==============================================*/
+    /*
+        initializePlaylist() {
+
+                const container =
+
+                    miniTheatreView.elements.playlist;
+
+                if (!container) {
+
+                    console.error(
+
+                        "Playlist container not found."
+
+                    );
+
+                    return;
+
+                }
+
+                this.playlist.init(
+
+                    container
+
+                );
+
+                this.playlist.setMovieSelectHandler(
+
+                    this.open.bind(this)
+
+                );
+
+            }
+                */
+    initializePlaylist() {
+
+            const container =
+
+                miniTheatreView.elements.playlist;
+
+            if (!container) {
+
+                return;
+
+            }
+
+            this.playlist.init(
+
+                container
+
+            );
+
+            this.playlist.loadMovies(
+
+                HERO_DATA
+
+            );
+
+            this.playlist.setMovieSelectHandler(
+
+                this.open.bind(this)
+
+            );
+
+        }
+        /*==============================================
+            Close
+        ==============================================*/
 
     close() {
 
@@ -143,9 +220,37 @@ class MiniTheatreController {
 
     }
 
-    /*==============================================
-        Plugins
-    ==============================================*/
+    /** */
+    bindEvents() {
+
+            const {
+
+                playButton
+
+            } = miniTheatreView.elements;
+
+            if (!playButton) {
+
+                return;
+
+            }
+
+            playButton.addEventListener(
+
+                "click",
+
+                () => {
+
+                    miniTheatreView.showHighlight();
+
+                }
+
+            );
+
+        }
+        /*==============================================
+            Plugins
+        ==============================================*/
 
     initializePlugins() {
 

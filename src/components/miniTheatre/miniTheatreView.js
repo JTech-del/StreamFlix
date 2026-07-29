@@ -56,6 +56,7 @@ class MiniTheatreView {
 
         this.cacheElements();
 
+
     }
 
     /*==============================================
@@ -258,31 +259,125 @@ class MiniTheatreView {
 
     setActiveMovie(slug) {
 
-        if (!this.elements.playlistTrack) {
+            if (!this.elements.playlistTrack) {
+
+                return;
+
+            }
+
+            const items =
+
+                this.elements.playlistTrack.querySelectorAll(
+
+                    ".miniTheatre__playlist-item"
+
+                );
+
+            items.forEach(item => {
+
+                item.classList.toggle(
+
+                    "is-active",
+
+                    item.dataset.slug === slug
+
+                );
+
+            });
+
+        }
+        /*==============================================
+            Render Preview
+        ==============================================*/
+
+    renderPreview(movie) {
+
+            if (!movie) {
+
+                return;
+
+            }
+
+            const {
+
+                poster,
+
+                highlight
+
+            } = this.elements;
+
+            if (poster) {
+
+                poster.src = movie.poster;
+
+                poster.alt = movie.title;
+
+            }
+
+            if (highlight) {
+
+                highlight.src = movie.trailer;
+
+            }
+
+            highlight.load();
+
+            this.showPoster();
+
+        }
+        /*==============================================
+            Show Highlight
+        ==============================================*/
+
+    showHighlight() {
+
+        const media =
+
+            this.container.querySelector(
+
+                ".mini-theatre__media"
+
+            );
+
+        if (!media) {
 
             return;
 
         }
 
-        const items =
+        media.classList.add(
 
-            this.elements.playlistTrack.querySelectorAll(
+            "is-playing"
 
-                ".miniTheatre__playlist-item"
+        );
+
+    }
+
+    /*==============================================
+        Show Poster
+    ==============================================*/
+
+    showPoster() {
+
+        const media =
+
+            this.container.querySelector(
+
+                ".mini-theatre__media"
 
             );
 
-        items.forEach(item => {
+        if (!media) {
 
-            item.classList.toggle(
+            return;
 
-                "is-active",
+        }
 
-                item.dataset.slug === slug
+        media.classList.remove(
 
-            );
+            "is-playing"
 
-        });
+        );
 
     }
 
