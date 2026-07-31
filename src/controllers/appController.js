@@ -170,7 +170,7 @@ class AppController {
 
     /*==============================================
         Search
-    ==============================================*/
+    ==============================================*
 
     initializeSearch() {
 
@@ -186,13 +186,13 @@ class AppController {
 
         this.search.init(this.elements.search);
 
-        /*
+/*
         this.search.setMovieHoverHandler(
 
             this.handleMovieHover.bind(this)
 
         );
-        */
+*
 
         this.search.setMovieHoverHandler(
 
@@ -218,6 +218,46 @@ class AppController {
             () => this.search.toggle()
 
         );
+    }
+*/
+    initializeSearch() {
+
+        if (!this.elements.search) {
+
+            console.error("Search mount point not found.");
+
+            return;
+
+        }
+
+        this.search = searchController;
+
+        this.search.init(this.elements.search);
+
+        this.search.setMovieHoverHandler(
+
+            this.handleMoviePreview.bind(this)
+
+        );
+
+        this.search.setMovieLeaveHandler(
+
+            this.restoreActiveMovie.bind(this)
+
+        );
+
+        this.search.setMovieSelectHandler(
+
+            this.setActiveMovie.bind(this)
+
+        );
+
+        this.navbar.setSearchToggleHandler(
+
+            () => this.search.toggle()
+
+        );
+
     }
 
     /*==============================================
@@ -289,8 +329,7 @@ class AppController {
 
     /*==============================================
     InitializeMinTheartre
-==============================================*
-
+==============================================*/
     initializeMiniTheatre() {
 
         if (!this.elements.miniTheatre) {
@@ -301,15 +340,7 @@ class AppController {
 
         this.miniTheatre = miniTheatreController;
 
-        this.miniTheatre.init(this.elements.miniTheatre);
-
-    }
-
-    */
-
-    initializeMiniTheatre() {
-
-        miniTheatreController.init(
+        this.miniTheatre.init(
 
             this.elements.miniTheatre
 
@@ -361,25 +392,49 @@ class AppController {
 
         }
         /*==============================================
-            Preview Movie
-        ==============================================*/
+    Handle Movie Preview
+==============================================*/
 
-    previewMovie(movie) {
+    handleMoviePreview(movie) {
 
-        if (!movie) {
+            if (!movie) {
 
-            return;
+                return;
+
+            }
+
+            this.state.previewMovie = movie;
+
+            this.hero.update(movie);
 
         }
+        /*==============================================
+            Preview Movie
+        ==============================================*/
+        /*==============================================
+            Play Movie
+        ==============================================*/
 
-        this.state.previewMovie = movie;
+    playMovie(movie) {
 
-        this.hero.update(movie);
+            if (!movie) {
 
-    }
+                return;
 
+            }
 
-    /*==============================================
+            if (!this.miniTheatre) {
+
+                console.error("Mini Theatre is not initialized.");
+
+                return;
+
+            }
+
+            this.miniTheatre.play(movie);
+
+        }
+        /*==============================================
     Restore Active Movie
 ==============================================*/
 
@@ -400,7 +455,7 @@ class AppController {
         }
         /*==============================================
             Play Movie
-        ==============================================*/
+        ==============================================*
 
     playMovie(movie) {
 
@@ -413,6 +468,23 @@ class AppController {
         }
 
         this.miniTheatre.open(movie);
+
+    }
+        */
+
+    /*==============================================
+    Play Movie
+==============================================*/
+
+    playMovie(movie) {
+
+        if (!movie || !this.miniTheatre) {
+
+            return;
+
+        }
+
+        this.miniTheatre.play(movie);
 
     }
 

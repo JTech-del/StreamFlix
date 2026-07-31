@@ -1,0 +1,72 @@
+/*==================================================
+    StreamFlix
+
+    Mini Theatre Animations
+
+==================================================*/
+
+.mini-theatre {
+    animation: theatreFade .45s ease;
+}
+
+.mini-theatre__screen {
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.mini-theatre__screen:hover {
+    transform: scale(1.01);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+}
+
+.mini-theatre__poster,
+.mini-theatre__video {
+    animation: mediaFade .35s ease;
+}
+
+.playlist-card {
+    animation: playlistFade .35s ease;
+}
+
+.playlist-card.is-active {
+    animation: activePulse .4s ease;
+}
+
+@keyframes theatreFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes mediaFade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes playlistFade {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes activePulse {
+    0% {
+        transform: scale(.97);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

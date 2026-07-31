@@ -1,0 +1,136 @@
+/*==================================================
+    StreamFlix
+
+    Mini Theatre Controls
+
+==================================================*/
+
+
+/*==============================================
+    Controls Container
+==============================================*/
+
+.mini-theatre__controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.75rem;
+    flex-wrap: wrap;
+}
+
+
+/*==============================================
+    Base Button
+==============================================*/
+
+.mini-theatre__controls button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    min-width: 140px;
+    padding: .9rem 1.6rem;
+    border: none;
+    border-radius: .9rem;
+    cursor: pointer;
+    font-size: .95rem;
+    font-weight: 600;
+    transition: transform .25s ease, background .25s ease, color .25s ease, box-shadow .25s ease;
+}
+
+
+/*==============================================
+    Hover Animation
+==============================================*/
+
+.mini-theatre__controls button:hover {
+    transform: translateY(-2px);
+}
+
+.mini-theatre__controls button:active {
+    transform: scale(.96);
+}
+
+
+/*==============================================
+    Play Button
+==============================================*/
+
+.mini-theatre__play {
+    background: linear-gradient( 135deg, #2563eb, #3b82f6);
+    color: #ffffff;
+    box-shadow: 0 10px 28px rgba(37, 99, 235, .35);
+}
+
+.mini-theatre__play:hover {
+    box-shadow: 0 14px 34px rgba(37, 99, 235, .45);
+}
+
+
+/*==============================================
+    Resume Button
+==============================================*/
+
+.mini-theatre__resume {
+    background: rgba(255, 255, 255, .08);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.mini-theatre__resume:hover {
+    background: rgba(255, 255, 255, .14);
+}
+
+
+/*==============================================
+    Remove Button
+==============================================*/
+
+.mini-theatre__remove {
+    background: rgba(220, 38, 38, .15);
+    color: #ffb4b4;
+    border: 1px solid rgba(220, 38, 38, .25);
+}
+
+.mini-theatre__remove:hover {
+    background: rgba(220, 38, 38, .28);
+    color: #ffffff;
+}
+
+
+/*==============================================
+    Focus Accessibility
+==============================================*/
+
+.mini-theatre__controls button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 3px;
+}
+
+
+/*==============================================
+    Disabled
+==============================================*/
+
+.mini-theatre__controls button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/*==============================================
+    Mobile
+==============================================*/
+
+@media (max-width:768px) {
+    .mini-theatre__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .mini-theatre__controls button {
+        width: 100%;
+        min-width: unset;
+    }
+}

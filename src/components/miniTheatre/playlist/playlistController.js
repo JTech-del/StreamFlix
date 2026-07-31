@@ -5,30 +5,21 @@
 
     Playlist Controller
 
-    File:
-    src/components/miniTheatre/playlist/playlistController.js
+    Responsibility
 
-    Responsibility:
-
-    ✓ Initialize playlist
-    ✓ Load movies
-    ✓ Handle selection
-    ✓ Handle playlist events
-    ✓ Notify Mini Theatre
+    ✓ Coordinate playlist service
+    ✓ Expose playlist API
+    ✓ No UI rendering
 
 ==================================================*/
 
-import { playlistView } from "./playlistView.js";
+import { playlistService } from "./playlistService.js";
 
 class PlaylistController {
 
     constructor() {
 
-        this.movies = [];
-
-        this.currentMovie = null;
-
-        this.onMovieSelect = null;
+        this.initialized = false;
 
     }
 
@@ -36,167 +27,91 @@ class PlaylistController {
         Initialize
     ==============================================*/
 
-    init(container) {
+    init() {
 
-        playlistView.init(container);
-
-        playlistView.render();
-
-    }
-
-    /*==============================================
-        Load Movies
-    ==============================================*/
-
-    loadMovies(movies = []) {
-
-        this.movies = movies;
-
-        playlistView.renderMovies(
-
-            this.movies
-
-        );
-
-    }
-
-    /*==============================================
-        Select Movie
-    ==============================================*/
-
-    selectMovie(movie) {
-
-        if (!movie) {
+        if (this.initialized) {
 
             return;
 
         }
 
-        this.currentMovie = movie;
-
-        playlistView.setActiveMovie(
-
-            movie.slug
-
-        );
-
-        if (this.onMovieSelect) {
-
-            this.onMovieSelect(movie);
-
-        }
+        this.initialized = true;
 
     }
 
     /*==============================================
-        Get Current Movie
+        Public API
     ==============================================*/
 
-    getCurrentMovie() {
+    add(movie) {
 
-        return this.currentMovie;
+        playlistService.add(movie);
 
     }
 
-    /*==============================================
-        Get Movies
-    ==============================================*/
+    remove(movieId) {
 
-    getMovies() {
-
-        return this.movies;
+        playlistService.remove(movieId);
 
     }
-
-    /*==============================================
-        Add Movie
-    ==============================================*/
-
-    addMovie(movie) {
-
-        if (!movie) {
-
-            return;
-
-        }
-
-        this.movies.push(movie);
-
-        playlistView.renderMovies(
-
-            this.movies
-
-        );
-
-    }
-
-    /*==============================================
-        Remove Movie
-    ==============================================*/
-
-    removeMovie(slug) {
-
-        this.movies = this.movies.filter(
-
-            movie => movie.slug !== slug
-
-        );
-
-        playlistView.renderMovies(
-
-            this.movies
-
-        );
-
-    }
-
-    /*==============================================
-        Clear Playlist
-    ==============================================*/
 
     clear() {
 
-        this.movies = [];
-
-        playlistView.clear();
-
-    }
-
-    /*==============================================
-        Select Callback
-    ==============================================*/
-
-    setMovieSelectHandler(callback) {
-
-        if (typeof callback !== "function") {
-
-            console.error(
-
-                "Movie select handler must be a function."
-
-            );
-
-            return;
-
-        }
-
-        this.onMovieSelect = callback;
-
-    }
-
-    /*==============================================
-        Destroy
-    ==============================================*/
-
-    /*==============================================
-    Destroy
-==============================================*/
-
-    destroy() {
-
         playlistService.clear();
 
-        playlistView.destroy();
+    }
+
+    setCurrent(index) {
+
+        playlistService.setCurrent(index);
+
+    }
+
+    next() {
+
+        return playlistService.next();
+
+    }
+
+    previous() {
+
+        return playlistService.previous();
+
+    }
+
+    get(index) {
+
+        return playlistService.get(index);
+
+    }
+
+    getCurrent() {
+
+        return playlistService.getCurrent();
+
+    }
+
+    getAll() {
+
+        return playlistService.getAll();
+
+    }
+
+    count() {
+
+        return playlistService.count();
+
+    }
+
+    indexOf(slug) {
+
+        return playlistService
+            .getAll()
+            .findIndex(
+
+                movie => movie.slug === slug
+
+            );
 
     }
 

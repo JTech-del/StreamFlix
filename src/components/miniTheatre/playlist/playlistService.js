@@ -5,104 +5,57 @@
 
     Playlist Service
 
-    File:
-    src/components/miniTheatre/playlist/playlistService.js
-
-    Responsibility:
+    Responsibility
 
     ✓ Store playlist
     ✓ Manage current movie
-    ✓ Provide playlist operations
+    ✓ Playlist navigation
+    ✓ Emit playlist events
 
 ==================================================*/
-import { playlistView } from "./playlistView.js";
-import { playlistService } from "./playlistService.js";
+
+import { playlistEvents } from "./playlistEvents.js";
+import { PlaylistEventTypes } from "./playlistEventTypes.js";
 
 class PlaylistService {
 
     constructor() {
-        this.onMovieSelect = null;
-    }
 
-    /*==============================================
-        Load Movies
-    ==============================================*/
+        this.movies = [];
 
-    loadMovies(movies = []) {
-
-        playlistService.loadMovies(
-
-            movies
-
-        );
-
-        playlistView.renderMovies(
-
-            playlistService.getMovies()
-
-        );
+        this.currentIndex = -1;
 
     }
 
     /*==============================================
-        Selecte Movies
+        Initialize
     ==============================================*/
-    selectMovie(movie) {
 
-            if (!movie) {
+    init(movies = []) {
 
-                return;
+        this.movies = [...movies];
+
+        this.currentIndex =
+
+            this.movies.length ? 0 : -1;
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.INITIALIZED,
+
+            {
+
+                movies: this.getAll(),
+
+                current: this.getCurrent(),
+
+                index: this.currentIndex,
+
+                total: this.count()
 
             }
 
-            playlistService.setCurrentMovie(
-
-                movie
-
-            );
-
-            playlistView.setActiveMovie(
-
-                movie.slug
-
-            );
-
-            if (this.onMovieSelect) {
-
-                this.onMovieSelect(movie);
-
-            }
-
-        }
-        /*==============================================
-            Get Movies
-        ==============================================*/
-
-    getMovies() {
-
-        return playlistService.getMovies();
-
-    }
-
-    /*==============================================
-    Get Movie
-==============================================*/
-
-    getMovie(slug) {
-
-        const movie = this.movies.find(
-
-            movie => movie.slug === slug
-
         );
-
-        if (!movie) {
-
-            return null;
-
-        }
-
-        return movie;
 
     }
 
@@ -110,23 +63,43 @@ class PlaylistService {
         Add Movie
     ==============================================*/
 
-    addMovie(movie) {
+    add(movie) {
 
-        if (!movie) {
+        if (!movie || this.has(movie.slug)) {
 
             return;
 
         }
 
-        playlistService.addMovie(
+        this.movies.push(movie);
 
-            movie
+        playlistEvents.emit(
+
+            PlaylistEventTypes.MOVIE_ADDED,
+
+            {
+
+                movie,
+
+                movies: this.getAll(),
+
+                total: this.count()
+
+            }
 
         );
 
-        playlistView.renderMovies(
+        playlistEvents.emit(
 
-            playlistService.getMovies()
+            PlaylistEventTypes.UPDATED,
+
+            {
+
+                movies: this.getAll(),
+
+                total: this.count()
+
+            }
 
         );
 
@@ -135,75 +108,273 @@ class PlaylistService {
     /*==============================================
         Remove Movie
     ==============================================*/
-    removeMovie(slug) {
 
-            playlistService.removeMovie(
+    remove(slug) {
 
-                slug
+        const index =
 
-            );
+            this.indexOf(slug);
 
-            playlistView.renderMovies(
+        if (index === -1) {
 
-                playlistService.getMovies()
-
-            );
+            return;
 
         }
-        /*==============================================
-            Clear Playlist
-        ==============================================*/
+
+        const movie = this.movies[index];
+
+        this.movies.splice(index, 1);
+
+        if (
+
+            this.currentIndex >= this.movies.length
+
+        ) {
+
+            this.currentIndex =
+
+                this.movies.length - 1;
+
+        }
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.MOVIE_REMOVED,
+
+            {
+
+                movie,
+
+                movies: this.getAll(),
+
+                total: this.count()
+
+            }
+
+        );
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.UPDATED,
+
+            {
+
+                movies: this.getAll(),
+
+                total: this.count()
+
+            }
+
+        );
+
+    }
+
+    /*==============================================
+        Clear
+    ==============================================*/
 
     clear() {
 
-        playlistService.clear();
+        this.movies = [];
 
-        playlistView.clear();
+        this.currentIndex = -1;
 
-    }
+        playlistEvents.emit(
 
-    /*==============================================
-        Set Current Movie
-    ==============================================*/
+            PlaylistEventTypes.CLEARED
 
-    setCurrentMovie(movie) {
+        );
 
-        this.currentMovie = movie;
+        playlistEvents.emit(
 
-    }
+            PlaylistEventTypes.UPDATED,
 
-    /*==============================================
-        Get Current Movie
-    ==============================================*/
+            {
 
-    getCurrentMovie() {
+                movies: [],
 
-        return playlistService.getCurrentMovie();
+                total: 0
 
-    }
+            }
 
-    /*==============================================
-        Has Movies
-    ==============================================*/
-
-    hasMovies() {
-
-        return this.movies.length > 0;
+        );
 
     }
 
     /*==============================================
-        Get Playlist Size
+        Current Movie
     ==============================================*/
 
-    getCount() {
+    setCurrent(index) {
+
+        if (
+
+            index < 0 ||
+
+            index >= this.movies.length
+
+        ) {
+
+            return;
+
+        }
+
+        this.currentIndex = index;
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.CURRENT_CHANGED,
+
+            {
+
+                movie: this.getCurrent(),
+
+                index
+
+            }
+
+        );
+
+    }
+
+    /*==============================================
+        Navigation
+    ==============================================*/
+
+    next() {
+
+        if (!this.movies.length) {
+
+            return null;
+
+        }
+
+        const next =
+
+            (this.currentIndex + 1) %
+
+            this.movies.length;
+
+        this.setCurrent(next);
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.NEXT,
+
+            {
+
+                movie: this.getCurrent(),
+
+                index: next
+
+            }
+
+        );
+
+        return this.getCurrent();
+
+    }
+
+    previous() {
+
+        if (!this.movies.length) {
+
+            return null;
+
+        }
+
+        const previous =
+
+            (this.currentIndex - 1 + this.movies.length)
+
+        %
+        this.movies.length;
+
+        this.setCurrent(previous);
+
+        playlistEvents.emit(
+
+            PlaylistEventTypes.PREVIOUS,
+
+            {
+
+                movie: this.getCurrent(),
+
+                index: previous
+
+            }
+
+        );
+
+        return this.getCurrent();
+
+    }
+
+    /*==============================================
+        Helpers
+    ==============================================*/
+
+    has(slug) {
+
+        return this.movies.some(
+
+            movie => movie.slug === slug
+
+        );
+
+    }
+
+    indexOf(slug) {
+
+        return this.movies.findIndex(
+
+            movie => movie.slug === slug
+
+        );
+
+    }
+
+    get(index) {
+
+        if (
+
+            index < 0 ||
+
+            index >= this.movies.length
+
+        ) {
+
+            return null;
+
+        }
+
+        return this.movies[index];
+
+    }
+
+    getCurrent() {
+
+        return this.get(
+
+            this.currentIndex
+
+        );
+
+    }
+
+    getAll() {
+
+        return [...this.movies];
+
+    }
+
+    count() {
 
         return this.movies.length;
 
     }
 
-
-
 }
 
-export const playlistService = new PlaylistService();
+export const playlistService =
+    new PlaylistService();

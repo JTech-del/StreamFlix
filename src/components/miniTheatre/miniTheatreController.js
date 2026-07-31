@@ -5,280 +5,390 @@
 
     Mini Theatre Controller
 
-    Responsibility:
+    Responsibility
 
     ✓ Initialize Mini Theatre
-    ✓ Open Movie
-    ✓ Close Theatre
-    ✓ Load Playlist
-    ✓ Update Preview
-    ✓ Coordinate Plugins
+    ✓ Listen for MediaRail events
+    ✓ Listen for Playlist events
+    ✓ Coordinate View
+    ✓ Keep current movie state
 
 ==================================================*/
 
-import { miniTheatreView } from "./miniTheatreView.js";
-import { pluginHost } from "../../core/mediaRail/pluginHost.js";
+import { mediaRailEvents } from "../mediaRail/mediaRailEvents.js";
+import { MediaRailEventTypes } from "../mediaRail/mediaRailEventTypes.js";
+
+import { playlistEvents } from "./playlist/playlistEvents.js";
+import { PlaylistEventTypes } from "./playlist/playlistEventTypes.js";
+
 import { playlistController } from "./playlist/playlistController.js";
-import { HERO_DATA } from "../../data/hero/heroData.js";
+
+import { miniTheatreView } from "./miniTheatreView.js";
 
 class MiniTheatreController {
 
     constructor() {
 
-        this.movie = null;
+        this.currentMovie = null;
 
-        this.playlist = [];
+        this.currentIndex = -1;
 
-        this.isOpen = false;
-
-
-        this.playlist = playlistController;
+        this.isPlaying = false;
 
     }
 
     /*==============================================
-        Initialize
-    ==============================================*/
+    Initialize
+==============================================*/
 
     init(container) {
 
-        miniTheatreView.init(container);
-
-        miniTheatreView.render();
-
-        this.initializePlaylist();
-
-    }
-
-    /*==============================================
-        Open
-    ==============================================*/
-
-    open(movie) {
-
-        if (!movie) {
-
-            return;
-
-        }
-
-        this.movie = movie;
-
-        miniTheatreView.renderPreview(movie);
-
-        this.isOpen = true;
-
-        this.selectMovie(movie);
-
-        this.playlist.selectMovie(movie);
-
-        console.log(
-
-            "🎬 Mini Theatre:",
-
-            movie.title
-
-        );
-
-
-    }
-
-    /*==============================================
-        Initialize Playlist
-    ==============================================*/
-    /*
-        initializePlaylist() {
-
-                const container =
-
-                    miniTheatreView.elements.playlist;
-
-                if (!container) {
-
-                    console.error(
-
-                        "Playlist container not found."
-
-                    );
-
-                    return;
-
-                }
-
-                this.playlist.init(
-
-                    container
-
-                );
-
-                this.playlist.setMovieSelectHandler(
-
-                    this.open.bind(this)
-
-                );
-
-            }
-                */
-    initializePlaylist() {
-
-            const container =
-
-                miniTheatreView.elements.playlist;
-
-            if (!container) {
-
-                return;
-
-            }
-
-            this.playlist.init(
+            miniTheatreView.init(
 
                 container
 
             );
 
-            this.playlist.loadMovies(
+            playlistController.init();
 
-                HERO_DATA
+            miniTheatreView.bindPlaylistClick(
+
+                this.handlePlaylistClick.bind(this)
 
             );
 
-            this.playlist.setMovieSelectHandler(
+            this.bindEvents();
 
-                this.open.bind(this)
+        }
+        /*==============================================
+            Handle Playlist Click
+        ==============================================*/
+
+    handlePlaylistClick(index) {
+
+            playlistController.setCurrent(
+
+                index
 
             );
 
         }
         /*==============================================
-            Close
+            Bind Events
         ==============================================*/
 
-    close() {
+    bindEvents() {
 
-        this.movie = null;
+        /*------------------------------------------
+            MediaRail → Playlist
+        ------------------------------------------*/
 
-        this.isOpen = false;
+        mediaRailEvents.on(
 
-        miniTheatreView.clearPreview();
+            MediaRailEventTypes.MOVIE_SELECTED,
 
-    }
+            ({ movie }) => {
 
-    /*==============================================
-        Playlist
-    ==============================================*/
+                this.play(movie);
 
-    loadPlaylist(movies = []) {
-
-        this.playlist = movies;
-
-    }
-
-    getPlaylist() {
-
-        return this.playlist;
-
-    }
-
-    /*==============================================
-        Current Movie
-    ==============================================*/
-
-    getCurrentMovie() {
-
-        return this.movie;
-
-    }
-
-    /*==============================================
-        Is Open
-    ==============================================*/
-
-    isOpened() {
-
-        return this.isOpen;
-
-    }
-
-    /*==============================================
-        Refresh Preview
-    ==============================================*/
-
-    refresh() {
-
-        if (!this.movie) {
-
-            return;
-
-        }
-
-        miniTheatreView.showPreview(
-
-            this.movie
+            }
 
         );
 
+        /*------------------------------------------
+            Playlist → Mini Theatre
+        ------------------------------------------*/
+
+        playlistEvents.on(
+
+            PlaylistEventTypes.CURRENT_CHANGED,
+
+            ({ movie, index }) => {
+
+                this.currentMovie = movie;
+
+                this.currentIndex = index;
+
+                this.updateTheatre();
+
+            }
+
+        );
+
+        /*------------------------------------------
+            Playlist Updated
+        ------------------------------------------*/
+
+        playlistEvents.on(
+
+            PlaylistEventTypes.UPDATED,
+
+            ({ movies }) => {
+
+                miniTheatreView.renderPlaylist(
+
+                    movies
+
+                );
+
+            }
+
+        );
+
+        /*------------------------------------------
+    Mini Theatre Controls
+------------------------------------------*/
+        /** *
+
+                miniTheatreView.bindPlay(
+
+                    () => this.startPlayback()
+
+                );
+
+                miniTheatreView.bindResume(
+
+                    () => this.resumePlayback()
+
+                );
+
+                miniTheatreView.bindRemove(
+
+                    () => this.removeCurrentMovie()
+
+                );
+                */
+
     }
 
-    /** */
-    bindEvents() {
 
-            const {
+    /*==============================================
+        Play Movie
+    ==============================================*/
 
-                playButton
+    play(movie) {
 
-            } = miniTheatreView.elements;
+            /*Tempora */
+            console.log(
+                movie.title,
+                movie.video
+            );
 
-            if (!playButton) {
+            if (!movie) {
 
                 return;
 
             }
 
-            playButton.addEventListener(
+            playlistController.add(movie);
 
-                "click",
+            const index =
 
-                () => {
+                playlistController.indexOf(
 
-                    miniTheatreView.showHighlight();
+                    movie.slug
 
-                }
+                );
 
-            );
+            playlistController.setCurrent(index);
+            /*
+                        this.startPlayback();
+                        */
 
         }
         /*==============================================
-            Plugins
+            Start Playback
         ==============================================*/
 
-    initializePlugins() {
+    async startPlayback() {
+            /* tempory*/
+            console.log("▶ startPlayback()");
 
-        pluginHost.mount(
 
-            miniTheatreView.elements.plugins
 
-        );
+            if (!this.currentMovie) {
+
+                return;
+
+            }
+            /*
+                        miniTheatreView.showVideo();
+            */
+            console.log("Calling showVideo...");
+            console.log(miniTheatreView);
+
+            miniTheatreView.showVideo();
+
+            console.log("Returned from showVideo");
+
+
+            await miniTheatreView.playVideo();
+
+            this.isPlaying = true;
+
+        }
+        /*==============================================
+    Pause Playback
+==============================================*/
+
+    pausePlayback() {
+
+            miniTheatreView.pauseVideo();
+
+            this.isPlaying = false;
+
+        }
+        /*==============================================
+    Resume Playback
+==============================================*/
+
+    async resumePlayback() {
+
+            if (!this.currentMovie) {
+
+                return;
+
+            }
+
+            await miniTheatreView.playVideo();
+
+            this.isPlaying = true;
+
+        }
+        /*==============================================
+    Stop Playback
+==============================================*/
+
+    stopPlayback() {
+
+        miniTheatreView.resetVideo();
+
+        miniTheatreView.showPoster();
+
+        this.isPlaying = false;
 
     }
 
     /*==============================================
-        Destroy
+    Remove Current Movie
+==============================================*/
+
+    removeCurrentMovie() {
+
+        if (!this.currentMovie) {
+
+            return;
+
+        }
+
+        playlistController.remove(
+
+            this.currentMovie.id
+
+        );
+
+        this.stopPlayback();
+
+        this.currentMovie = null;
+
+        this.currentIndex = -1;
+
+        miniTheatreView.clear();
+
+    }
+
+
+    /*==============================================
+    Update Theatre
+==============================================*/
+
+    updateTheatre() {
+
+            if (!this.currentMovie) {
+
+                return;
+
+            }
+
+            miniTheatreView.renderMovie(this.currentMovie);
+
+            /*
+            Rebind controls because renderMovie()
+            creates brand-new DOM elements.
+            */
+
+            miniTheatreView.bindPlay(
+                () => this.startPlayback()
+            );
+
+            miniTheatreView.bindResume(
+                () => this.resumePlayback()
+            );
+
+            miniTheatreView.bindRemove(
+                () => this.removeCurrentMovie()
+            );
+
+            miniTheatreView.setActive(
+                this.currentIndex
+            );
+
+            miniTheatreView.scrollToActive(
+                this.currentIndex
+            );
+
+            /*
+            Always reset playback when
+            switching to a new movie.
+            */
+
+            this.stopPlayback();
+
+        }
+        /*==============================================
+            Update Theatre
+        ==============================================*
+    updateTheatre() {
+
+        if (!this.currentMovie) {
+
+            return;
+
+        }
+
+        miniTheatreView.renderMovie( this.currentMovie );
+
+        miniTheatreView.setActive(this.currentIndex );
+
+        miniTheatreView.scrollToActive(this.currentIndex);
+
+        /*
+        Always reset playback when
+        switching to a new movie.
+        *
+
+        this.stopPlayback();
+
+    }
+*/
+
+    /*==============================================
+        Public API
     ==============================================*/
 
-    destroy() {
+    clear() {
 
-        this.close();
+        playlistController.clear();
 
-        this.playlist = [];
+        this.currentMovie = null;
 
-        miniTheatreView.destroy();
+        this.currentIndex = -1;
+
+        miniTheatreView.clear();
 
     }
 
 }
 
-
-
-
-export const miniTheatreController = new MiniTheatreController();
+export const miniTheatreController =
+    new MiniTheatreController();

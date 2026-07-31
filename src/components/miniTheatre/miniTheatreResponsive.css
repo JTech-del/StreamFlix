@@ -1,0 +1,109 @@
+/*==================================================
+    StreamFlix
+
+    Mini Theatre Responsive
+
+==================================================*/
+
+
+/*==============================================
+    Large Desktop
+==============================================*/
+
+@media (min-width:1600px) {
+    .mini-theatre {
+        grid-template-columns: minmax(0, 2.2fr) 420px;
+    }
+}
+
+
+/*==============================================
+    Laptop
+==============================================*/
+
+@media (max-width:1280px) {
+    .mini-theatre {
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 1.25rem;
+    }
+}
+
+
+/*==============================================
+    Tablet
+==============================================*/
+
+@media (max-width:1024px) {
+    .mini-theatre {
+        grid-template-columns: 1fr;
+    }
+    .mini-theatre__playlist {
+        max-height: 420px;
+    }
+}
+
+
+/*==============================================
+    Mobile
+==============================================*/
+
+@media (max-width:768px) {
+    .mini-theatre {
+        margin: 2rem auto;
+        padding: 1rem;
+        gap: 1rem;
+        border-radius: 1rem;
+    }
+    .mini-theatre__screen {
+        aspect-ratio: 16/10;
+    }
+    .mini-theatre__overlay {
+        padding: 1rem;
+    }
+    .mini-theatre__metadata {
+        gap: .5rem;
+    }
+    .mini-theatre__title {
+        font-size: 1.5rem;
+    }
+    .mini-theatre__details {
+        font-size: .8rem;
+        gap: .5rem;
+    }
+    .mini-theatre__description {
+        font-size: .9rem;
+        line-height: 1.5;
+    }
+}
+
+
+/*==============================================
+    Small Mobile
+==============================================*/
+
+@media (max-width:480px) {
+    .mini-theatre {
+        padding: .75rem;
+    }
+    .mini-theatre__screen {
+        aspect-ratio: 4/3;
+        border-radius: .8rem;
+    }
+    .mini-theatre__title {
+        font-size: 1.3rem;
+    }
+    .mini-theatre__description {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .playlist-card {
+        padding: .55rem;
+        gap: .6rem;
+    }
+    .playlist-card__poster {
+        width: 54px;
+        height: 74px;
+    }
+}

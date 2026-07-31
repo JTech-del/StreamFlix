@@ -5,57 +5,84 @@
 
     Mini Theatre View
 
-    Responsibility:
+    Responsibility
 
-    ✓ Render Mini Theatre
-    ✓ Cache DOM Elements
+    ✓ Render Layout
+    ✓ Cache DOM
+    ✓ Render Theatre
     ✓ Render Playlist
-    ✓ Update Preview
-    ✓ Manage Active Playlist Item
-    ✓ Reset UI
+    ✓ Update UI
 
 ==================================================*/
 
+import { miniTheatreTemplates } from "./miniTheatreTemplates.js";
 import { miniTheatreLayout } from "./miniTheatreLayout.js";
 
 class MiniTheatreView {
+    /*==============================================
+        Constructor
+    ==============================================*/
 
     constructor() {
 
-        this.container = null;
+        this.elements = {
 
-        this.elements = {};
+            root: null,
+
+            screen: null,
+
+            playlist: null,
+
+            poster: null,
+
+            video: null,
+
+            playButton: null,
+
+            resumeButton: null,
+
+            removeButton: null,
+
+            title: null,
+
+            metadata: null
+
+        };
 
     }
 
     /*==============================================
         Initialize
     ==============================================*/
-
     init(container) {
 
-        this.container = container;
+        if (!container) {
 
-    }
-
-    /*==============================================
-        Render
-    ==============================================*/
-
-    render() {
-
-        if (!this.container) {
-
-            console.error("Mini Theatre container not found.");
+            console.error(
+                "Mini Theatre container not found."
+            );
 
             return;
 
         }
 
-        this.container.innerHTML = miniTheatreLayout();
+        this.elements.root = container;
 
-        this.cacheElements();
+        this.renderLayout();
 
+    }
+
+    /*==============================================
+        Render Layout
+    ==============================================*/
+
+    renderLayout() {
+
+        this.elements.root.innerHTML =
+
+            miniTheatreTemplates.layout();
+
+        this.cache();
 
     }
 
@@ -63,85 +90,114 @@ class MiniTheatreView {
         Cache Elements
     ==============================================*/
 
-    cacheElements() {
+    cache() {
 
-        this.elements = {
+            this.elements.screen =
 
-            section:
+                this.elements.root.querySelector(
+                    ".mini-theatre__screen"
+                );
 
-                this.container.querySelector(".miniTheatre"),
+            this.elements.playlist =
 
-            playlist:
+                this.elements.root.querySelector(
+                    ".playlist__track"
+                );
 
-                this.container.querySelector(".miniTheatre__playlist"),
+            this.elements.counter =
 
-            playlistTrack:
+                this.elements.root.querySelector(
+                    ".playlist__counter"
+                );
 
-                this.container.querySelector(".miniTheatre__playlist-track"),
+        }
+        /*==============================================
+               Cache Media
+           ==============================================*/
 
-            preview:
+    cacheMedia() {
 
-                this.container.querySelector(".miniTheatre__preview"),
+            this.elements.poster =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__poster"
+                );
 
-            previewMedia:
+            this.elements.video =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__video"
+                );
 
-                this.container.querySelector(".miniTheatre__preview-media"),
+            this.elements.playButton =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__play"
+                );
 
-            poster:
+            this.elements.resumeButton =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__resume"
+                );
 
-                this.container.querySelector(".miniTheatre__poster"),
+            this.elements.removeButton =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__remove"
+                );
 
-            video:
+            this.elements.title =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__title"
+                );
 
-                this.container.querySelector(".miniTheatre__video"),
+            this.elements.metadata =
+                this.elements.screen.querySelector(
+                    ".mini-theatre__metadata"
+                );
 
-            content:
+        }
+        /*==============================================
+            Render Movie
+        ==============================================*/
 
-                this.container.querySelector(".miniTheatre__content"),
+    renderMovie(movie) {
 
-            movieTitle:
-
-                this.container.querySelector(".miniTheatre__movie-title"),
-
-            movieMeta:
-
-                this.container.querySelector(".miniTheatre__movie-meta"),
-
-            controls:
-
-                this.container.querySelector(".miniTheatre__controls"),
-
-            plugins:
-
-                this.container.querySelector(".miniTheatre__plugins")
-
-        };
-
-    }
-
-    /*==============================================
-        Render Playlist
-    ==============================================*/
-
-    renderPlaylist(markup = "") {
-
-        if (!this.elements.playlistTrack) {
+        if (!movie) {
 
             return;
 
         }
 
-        this.elements.playlistTrack.innerHTML = markup;
+        /*
+        First movie.
+        */
+
+        if (!this.elements.poster) {
+
+            this.elements.screen.innerHTML =
+
+                miniTheatreTemplates.theatre(movie);
+
+            this.cacheMedia();
+
+            return;
+
+        }
+
+        /*
+        Existing theatre.
+        */
+
+        this.updatePoster(movie);
+
+        this.updateVideo(movie);
 
     }
 
     /*==============================================
-        Show Poster
-    ==============================================*/
+    Update Poster
+==============================================*/
 
-    showPoster(movie) {
+    updatePoster(movie) {
 
-        if (!movie || !this.elements.poster) {
+        if (!this.elements.poster) {
 
             return;
 
@@ -151,298 +207,506 @@ class MiniTheatreView {
 
         this.elements.poster.alt = movie.title;
 
-        this.elements.poster.hidden = false;
+    }
 
-        if (this.elements.video) {
+    /*==============================================
+        Update Video
+    ==============================================*/
 
-            this.elements.video.pause();
+    updateVideo(movie) {
 
-            this.elements.video.removeAttribute("src");
+        if (!this.elements.video) {
+
+            return;
+
+        }
+
+        this.elements.video.pause();
+
+        const source =
+
+            this.elements.video.querySelector(
+                "source"
+            );
+
+        if (!source) {
+
+            return;
+
+        }
+
+        source.src = movie.video;
+
+        this.elements.video.load();
+
+        this.showPoster();
+
+    }
+
+
+    /*==============================================
+        Load Video
+    ==============================================*/
+
+    loadVideo() {
+
+            if (!this.elements.video) {
+
+                return;
+
+            }
 
             this.elements.video.load();
 
-            this.elements.video.hidden = true;
-
-        }
-
-    }
-
-    /*==============================================
-        Show Highlight
-    ==============================================*/
-
-    showHighlight(movie) {
-
-        if (
-
-            !movie ||
-
-            !movie.highlight ||
-
-            !this.elements.video
-
-        ) {
-
-            return;
-
-        }
-
-        this.elements.video.src = movie.highlight;
-
-        this.elements.video.hidden = false;
-
-        if (this.elements.poster) {
-
-            this.elements.poster.hidden = true;
-
-        }
-
-    }
-
-    /*==============================================
-        Update Information
-    ==============================================*/
-
-    updateInformation(movie) {
-
-        if (!movie) {
-
-            return;
-
-        }
-
-        this.elements.movieTitle.textContent =
-
-            movie.title;
-
-        this.elements.movieMeta.textContent =
-
-            [
-
-                movie.year,
-
-                movie.runtime,
-
-                movie.rating
-
-            ]
-
-        .filter(Boolean)
-
-        .join(" • ");
-
-    }
-
-    /*==============================================
-        Show Preview
-    ==============================================*/
-
-    showPreview(movie) {
-
-        if (!movie) {
-
-            this.clearPreview();
-
-            return;
-
-        }
-
-        this.showPoster(movie);
-
-        this.updateInformation(movie);
-
-    }
-
-    /*==============================================
-        Set Active Movie
-    ==============================================*/
-
-    setActiveMovie(slug) {
-
-            if (!this.elements.playlistTrack) {
-
-                return;
-
-            }
-
-            const items =
-
-                this.elements.playlistTrack.querySelectorAll(
-
-                    ".miniTheatre__playlist-item"
-
-                );
-
-            items.forEach(item => {
-
-                item.classList.toggle(
-
-                    "is-active",
-
-                    item.dataset.slug === slug
-
-                );
-
-            });
-
         }
         /*==============================================
-            Render Preview
-        ==============================================*/
+            Play Video
+        =================================================*/
 
-    renderPreview(movie) {
+    async playVideo() {
+        console.log(
+            this.elements.video
+        );
+        if (!this.elements.video) {
 
-            if (!movie) {
-
-                return;
-
-            }
-
-            const {
-
-                poster,
-
-                highlight
-
-            } = this.elements;
-
-            if (poster) {
-
-                poster.src = movie.poster;
-
-                poster.alt = movie.title;
-
-            }
-
-            if (highlight) {
-
-                highlight.src = movie.trailer;
-
-            }
-
-            highlight.load();
-
-            this.showPoster();
+            return;
 
         }
-        /*==============================================
-            Show Highlight
-        ==============================================*/
 
-    showHighlight() {
 
-        const media =
+        try {
 
-            this.container.querySelector(
+            await this.elements.video.play();
 
-                ".mini-theatre__media"
+        } catch (error) {
+
+            console.error(
+
+                "Video playback failed:",
+
+                error
 
             );
 
-        if (!media) {
-
-            return;
-
         }
-
-        media.classList.add(
-
-            "is-playing"
-
-        );
 
     }
 
     /*==============================================
-        Show Poster
+        Pause Video
     ==============================================*/
+
+    pauseVideo() {
+
+            if (!this.elements.video) {
+
+                return;
+
+            }
+
+            this.elements.video.pause();
+
+        }
+        /*==============================================
+            Reset Video
+        ==============================================*/
+
+    resetVideo() {
+
+            if (!this.elements.video) {
+
+                return;
+
+            }
+
+            this.elements.video.pause();
+
+            this.elements.video.currentTime = 0;
+
+        }
+        /*==============================================
+    Show Poster
+==============================================*
 
     showPoster() {
 
-        const media =
+        if (this.elements.poster) {
 
-            this.container.querySelector(
+            this.elements.poster.hidden = false;
 
-                ".mini-theatre__media"
+        }
 
-            );
+        if (this.elements.video) {
 
-        if (!media) {
+            this.elements.video.hidden = true;
+
+        }
+
+    }
+*/
+        /*==============================================
+            Show Poster
+        ==============================================*/
+
+    showPoster() {
+
+        if (!this.elements.poster || !this.elements.video) {
 
             return;
 
         }
 
-        media.classList.remove(
+        this.elements.poster.style.display = "block";
 
-            "is-playing"
+        this.elements.video.style.display = "none";
+
+    }
+
+    /*==============================================
+        Show Video
+    ==============================================*/
+
+    showVideo() {
+
+        if (!this.elements.poster || !this.elements.video) {
+
+            return;
+
+        }
+
+        this.elements.poster.style.display = "none";
+
+        this.elements.video.style.display = "block";
+
+    }
+
+    /*==============================================
+        Show Video next
+    ==============================================*
+
+    showVideo() {
+
+            if (this.elements.poster) {
+
+                this.elements.poster.hidden = true;
+
+            }
+
+            if (this.elements.video) {
+
+                this.elements.video.hidden = false;
+
+            }
+
+        }
+            *
+
+    showVideo() {
+
+            if (!this.elements.poster || !this.elements.video) {
+
+                return;
+
+            }
+
+            this.elements.poster.hidden = true;
+
+            this.elements.video.hidden = false;
+
+            console.log("Poster hidden:", this.elements.poster.hidden);
+            console.log("Video hidden:", this.elements.video.hidden);
+            console.log("Video display:", getComputedStyle(this.elements.video).display);
+            console.log("Poster display:", getComputedStyle(this.elements.poster).display);
+            console.log("Video visibility:", getComputedStyle(this.elements.video).visibility);
+            console.log("Video opacity:", getComputedStyle(this.elements.video).opacity);
+
+        }
+        /*==============================================
+    Bind Play
+==============================================*/
+
+    bindPlay(handler) {
+
+        if (!this.elements.playButton) {
+
+            return;
+
+        }
+
+        this.elements.playButton.onclick = handler;
+
+    }
+
+    /*==============================================
+        Bind Resume
+    ==============================================*/
+
+    bindResume(handler) {
+
+        if (!this.elements.resumeButton) {
+
+            return;
+
+        }
+
+        this.elements.resumeButton.onclick = handler;
+
+    }
+
+    /*==============================================
+        Bind Remove
+    ==============================================*/
+
+    bindRemove(handler) {
+
+        if (!this.elements.removeButton) {
+
+            return;
+
+        }
+
+        this.elements.removeButton.onclick = handler;
+
+    }
+
+    /*==============================================
+        Bind Playlist Click good
+    ==============================================*/
+
+    bindPlaylistClick(handler) {
+
+        if (!this.elements.playlist) {
+
+            return;
+
+        }
+
+        this.elements.playlist.onclick = event => {
+
+            const card = event.target.closest(".playlist-card");
+
+            if (!card) {
+
+                return;
+
+            }
+
+            handler(
+
+                Number(
+
+                    card.dataset.index
+
+                )
+
+            );
+
+        };
+
+    }
+
+    /*==============================================
+        Render Playlist good
+    ==============================================*/
+
+    renderPlaylist(movies = []) {
+
+        if (!this.elements.playlist) {
+
+            return;
+
+        }
+
+        this.elements.playlist.innerHTML =
+
+            movies.map(
+
+                (movie, index) =>
+
+                miniTheatreTemplates.playlistCard(
+
+                    movie,
+
+                    index
+
+                )
+
+            ).join("");
+
+        this.updateCounter(
+
+            movies.length
+
+        );
+
+    }
+
+
+
+    /*==============================================
+        Playlist Counter good
+    ==============================================*/
+
+    updateCounter(count) {
+
+        if (!this.elements.counter) {
+
+            return;
+
+        }
+
+        this.elements.counter.textContent = count;
+
+    }
+
+    /*==============================================
+       Set Active Playlist item good
+    ==============================================*/
+
+    setActive(index) {
+
+        if (!this.elements.playlist) {
+
+            return;
+
+        }
+
+        this.elements.playlist
+
+            .querySelectorAll(".playlist-card")
+
+        .forEach(card =>
+
+            card.classList.remove(
+
+                "is-active"
+
+            )
+
+        );
+
+        const active =
+
+            this.elements.playlist.querySelector(
+
+                `[data-index="${index}"]`
+
+            );
+
+        if (!active) {
+
+            return;
+
+        }
+
+        active.classList.add(
+
+            "is-active"
 
         );
 
     }
 
     /*==============================================
-        Clear Preview
+        Scroll Active 
     ==============================================*/
 
-    clearPreview() {
+    scrollToActive(index) {
 
-        if (this.elements.poster) {
 
-            this.elements.poster.hidden = true;
-
-            this.elements.poster.removeAttribute("src");
-
-        }
-
-        if (this.elements.video) {
-
-            this.elements.video.pause();
-
-            this.elements.video.removeAttribute("src");
-
-            this.elements.video.load();
-
-            this.elements.video.hidden = true;
-
-        }
-
-        if (this.elements.movieTitle) {
-
-            this.elements.movieTitle.textContent =
-
-                "Select a Movie";
-
-        }
-
-        if (this.elements.movieMeta) {
-
-            this.elements.movieMeta.textContent =
-
-                "Preview information will appear here.";
-
-        }
-
-    }
-
-    /*==============================================
-        Destroy
-    ==============================================*/
-
-    destroy() {
-
-        if (!this.container) {
+        if (!this.elements.playlist) {
 
             return;
 
         }
 
-        this.container.innerHTML = "";
+        const active =
 
-        this.elements = {};
+            this.elements.playlist.querySelector(
+
+                `[data-index="${index}"]`
+
+            );
+
+        if (!active) {
+
+            return;
+
+        }
+
+        active.scrollIntoView({
+
+            behavior: "smooth",
+
+            block: "nearest",
+
+            inline: "nearest"
+
+        });
+
+    }
+
+    /*==============================================
+        Poster
+    ==============================================*
+
+    showPoster() {
+
+        if (!this.elements.poster ||
+
+            !this.elements.video) {
+
+            return;
+
+        }
+
+        this.elements.poster.hidden = false;
+
+        this.elements.video.hidden = true;
+
+    }
+
+    /*==============================================
+        Video
+    ==============================================*
+
+    showVideo() {
+
+        if (!this.elements.poster ||
+
+            !this.elements.video) {
+
+            return;
+
+        }
+
+        this.elements.poster.hidden = true;
+
+        this.elements.video.hidden = false;
+
+    }
+
+    /*==============================================
+    Clear Theatre good
+==============================================*/
+
+    clear() {
+
+        if (this.elements.screen) {
+
+            this.elements.screen.innerHTML = "";
+
+        }
+
+        if (this.elements.playlist) {
+
+            this.elements.playlist.innerHTML = "";
+
+        }
 
     }
 
 }
 
-export const miniTheatreView = new MiniTheatreView();
+export const miniTheatreView =
+    new MiniTheatreView();

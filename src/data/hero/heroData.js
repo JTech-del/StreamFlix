@@ -27,9 +27,9 @@ const heroItems = [
 
         poster: "assets/images/posters/image-2.jpg",
 
-        trailer: "assets/videos/trailers/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
+        video: "assets/videos/movies/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
 
-        movie: "assets/videos/movies/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
+        trailer: "assets/videos/trailers/Blood_Sisters_S01E03_-_The_Hunt____NetNaija - Copy.mp4",
 
         year: 2022,
 
@@ -67,9 +67,9 @@ const heroItems = [
 
         poster: "assets/images/posters/image.jpg",
 
-        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+        video: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
 
-        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
 
         year: 2023,
 
@@ -113,9 +113,6 @@ const heroItems = [
 
         trailer: "assets/videos/trailers/Gotham.S05E02.(THENKIRI.COM).mkv",
 
-
-        movie: "assets/videos/movies/Gotham.S05E02.(THENKIRI.COM).mkv",
-
         year: 2025,
 
         duration: "43m",
@@ -158,9 +155,6 @@ const heroItems = [
 
         trailer: "assets/videos/trailers/Gotham.S05E02.(THENKIRI.COM).mkv",
 
-
-        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
-
         year: 2023,
 
         duration: "1h 33m",
@@ -197,9 +191,9 @@ const heroItems = [
 
         poster: "assets/images/posters/image1.jpg",
 
-        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+        video: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
 
-        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
 
         year: 2023,
 
@@ -238,9 +232,9 @@ const heroItems = [
 
         poster: "assets/images/posters/image2.jpg",
 
-        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
+        video: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
 
-        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+        trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
 
         year: 2023,
 
@@ -280,9 +274,11 @@ const heroItems = [
 
         poster: "assets/images/posters/image3.jpg",
 
+        video: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
         trailer: "assets/videos/trailers/No_One_Will_Save_You - Copy.mp4",
 
-        movie: "assets/videos/movies/No_One_Will_Save_You - Copy.mp4",
+
 
         year: 2026,
 
@@ -305,7 +301,14 @@ const heroItems = [
         featured: true
 
     }),
-    /**     NEW MOVIES */
+
+
+
+
+
+
+
+    /**     NEW MOVIES *
     Object.freeze({
 
         id: 8,
@@ -598,6 +601,7 @@ const heroItems = [
         featured: true
 
     }),
+    */
 
 ];
 
