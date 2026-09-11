@@ -1,0 +1,215 @@
+[{
+        "id": 1,
+        "title": "Blood Sisters",
+        "slug": "blood-sisters",
+        "backdrop": "image-2.jpg",
+        "poster": "image-2.jpg",
+        "background": "image-2.jpg",
+        "logo": "image-2.jpg",
+        "video": "movie-001.mp4",
+        "trailer": "trailer-001.mp4",
+        "year": 2022,
+        "rating": "18+",
+        "genres": [
+            "Crime",
+            "Drama",
+            "Thriller"
+        ],
+        "duration": "4 Episodes",
+        "description": "Bound by friendship and trapped by a dangerous secret, two best friends find themselves hunted after a powerful family becomes their greatest enemy.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    },
+
+    {
+        "id": 2,
+        "title": "No One Will Save You",
+        "slug": "no-one-will-save-you",
+        "backdrop": "image.jpg",
+        "poster": "image.jpg",
+        "background": "image.jpg",
+        "logo": "image.jpg",
+        "video": "movie-002.mp4",
+        "trailer": "trailer-002.mp4",
+        "year": 2023,
+        "rating": "PG-13",
+        "genres": [
+            "Sci-Fi",
+            "Horror",
+            "Mystery"
+        ],
+        "duration": "1h 33m",
+        "description": "A solitary woman living on the outskirts of town must survive a terrifying extraterrestrial invasion that forces her to confront her past.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    },
+
+    {
+        "id": 3,
+        "title": "Gotham Season 2",
+        "slug": "gotham-season-2",
+        "backdrop": "image-6.jpg",
+        "poster": "image-6.jpg",
+        "background": "image-6.jpg",
+        "logo": "image-6.jpg",
+        "video": "movie-002.mp4",
+        "trailer": "trailer-003.mkv",
+        "year": 2026,
+        "rating": "PG-18",
+        "genres": [
+            "Action",
+            "Drama",
+            "Thriller"
+        ],
+        "duration": "43m",
+        "description": "A young detective navigates the dangerous streets of Gotham as powerful criminals and corrupt forces begin to reshape the city.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": "October 24, 2026"
+    },
+
+    {
+        "id": 4,
+        "title": "Peaky Blinders",
+        "slug": "peaky-blinders",
+        "backdrop": "image-3.jpg",
+        "poster": "image-3.jpg",
+        "background": "image-3.jpg",
+        "logo": "image-3.jpg",
+        "video": null,
+        "trailer": "trailer-002.mp4",
+        "year": 2026,
+        "rating": "PG-13",
+        "genres": [
+            "Crime",
+            "Drama",
+            "Thriller"
+        ],
+        "duration": "1h 33m",
+        "description": "A powerful family builds its influence through ambition, loyalty, and dangerous criminal dealings.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": "October 02, 2026"
+    },
+
+    {
+        "id": 5,
+        "title": "The Sea",
+        "slug": "the-sea",
+        "backdrop": "Image1.jpg",
+        "poster": "Image1.jpg",
+        "background": "Image1.jpg",
+        "logo": "Image1.jpg",
+        "video": null,
+        "trailer": "trailer-003.mkv",
+        "year": 2023,
+        "rating": "PG-13",
+        "genres": [
+            "Drama",
+            "Mystery"
+        ],
+        "duration": "1h 48m",
+        "description": "A mysterious story unfolds around the sea as hidden secrets begin to surface.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    },
+
+    {
+        "id": 6,
+        "title": "A Man From Beyond",
+        "slug": "a-man-from-beyond",
+        "backdrop": "image2.jpg",
+        "poster": "image2.jpg",
+        "background": "image2.jpg",
+        "logo": "image2.jpg",
+        "video": null,
+        "trailer": "trailer-001.mp4",
+        "year": 2023,
+        "rating": "PG-13",
+        "genres": [
+            "Sci-Fi",
+            "Horror",
+            "Mystery"
+        ],
+        "duration": "1h 33m",
+        "description": "A mysterious stranger arrives from beyond the known world, bringing secrets that challenge everything people believe.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    },
+
+    {
+        "id": 7,
+        "title": "The Last Monarch",
+        "slug": "the-last-monarch",
+        "backdrop": "image3.jpg",
+        "poster": "image3.jpg",
+        "background": "image3.jpg",
+        "logo": "image3.jpg",
+        "video": null,
+        "trailer": "trailer-001.mp4",
+        "year": 2026,
+        "rating": "PG-13",
+        "genres": [
+            "Drama",
+            "Action",
+            "Adventure"
+        ],
+        "duration": "1h 33m",
+        "description": "A fallen monarch fights to reclaim a kingdom while confronting enemies within and beyond the throne.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": "September 15, 2026"
+    },
+
+    {
+        "id": 8,
+        "title": "Tokyo",
+        "slug": "tokyo",
+        "backdrop": "Tokyo.jpg",
+        "poster": "Tokyo.jpg",
+        "background": "Tokyo.jpg",
+        "logo": "Tokyo.jpg",
+        "video": null,
+        "trailer": "trailer-002.mp4",
+        "year": 2023,
+        "rating": "PG-13",
+        "genres": [
+            "Drama",
+            "Mystery",
+            "Thriller"
+        ],
+        "duration": "1h 33m",
+        "description": "A mysterious journey through Tokyo reveals unexpected connections, secrets, and dangers.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    },
+
+    {
+        "id": 9,
+        "title": "Amazing Spider-Man",
+        "slug": "amazing-spider-man",
+        "backdrop": "Amazing SpiderMan (1).jpg",
+        "poster": "Amazing SpiderMan (1).jpg",
+        "background": "Amazing SpiderMan (1).jpg",
+        "logo": "Amazing SpiderMan (1).jpg",
+        "video": null,
+        "trailer": "trailer-003.mkv",
+        "year": 2026,
+        "rating": "PG-13",
+        "genres": [
+            "Action",
+            "Adventure",
+            "Drama"
+        ],
+        "duration": "1h 33m",
+        "description": "A young hero discovers extraordinary abilities and must learn what it means to use them responsibly.",
+        "featured": true,
+        "upcoming": true,
+        "releaseDate": null
+    }
+]

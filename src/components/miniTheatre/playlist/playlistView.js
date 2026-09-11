@@ -7,15 +7,13 @@
 
     Status:
 
-    ⚠ Retired
+    Retired
 
-    Playlist rendering has been merged into
-
+    Playlist rendering is owned by
     MiniTheatreView.
 
-    This file is intentionally kept as a
-    compatibility stub during the refactor and
-    will be removed in a later cleanup phase.
+    This compatibility stub remains temporarily
+    so existing imports do not break.
 
 ==================================================*/
 

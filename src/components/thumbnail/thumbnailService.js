@@ -8,20 +8,32 @@
     Thumbnail component.
 
 ==================================================*/
-
+/*
 import { HERO_DATA } from "../../data/hero/heroData.js";
+*/
 
 class ThumbnailService {
 
     constructor() {
 
-        this.movies = HERO_DATA;
+        this.movies = [];
 
     }
 
     /*==============================================
-        Get All Movies
-    ==============================================*/
+    Set Movies
+==============================================*/
+
+    setMovies(movies = []) {
+
+            this.movies = Array.isArray(movies) ?
+                movies :
+                [];
+
+        }
+        /*==============================================
+            Get All Movies
+        ==============================================*/
     getMovies() {
 
         console.log(

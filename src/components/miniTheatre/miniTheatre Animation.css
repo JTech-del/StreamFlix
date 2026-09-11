@@ -13,10 +13,14 @@
     transition: transform .35s ease, box-shadow .35s ease;
 }
 
+
+/*
 .mini-theatre__screen:hover {
     transform: scale(1.01);
     box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
 }
+
+*/
 
 .mini-theatre__poster,
 .mini-theatre__video {

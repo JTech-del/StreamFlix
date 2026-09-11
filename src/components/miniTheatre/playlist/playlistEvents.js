@@ -8,11 +8,15 @@
     Responsibility
 
     ✓ Register listeners
+    ✓ Register one-time listeners
     ✓ Remove listeners
     ✓ Emit events
     ✓ Clear listeners
 
+    This module contains NO playlist business logic.
+
 ==================================================*/
+
 
 class PlaylistEvents {
 
@@ -22,21 +26,42 @@ class PlaylistEvents {
 
     }
 
+
     /*==============================================
         Subscribe
     ==============================================*/
 
     on(type, callback) {
 
-        if (!this.events.has(type)) {
+        if (
+            typeof type !== "string" ||
+            !type ||
+            typeof callback !== "function"
+        ) {
 
-            this.events.set(type, []);
+            return;
 
         }
 
-        this.events.get(type).push(callback);
+
+        if (!this.events.has(type)) {
+
+            this.events.set(type, new Set());
+
+        }
+
+
+        /*
+        Set automatically prevents the same
+        callback from being registered twice.
+        */
+
+        this.events
+            .get(type)
+            .add(callback);
 
     }
+
 
     /*==============================================
         Subscribe Once
@@ -44,17 +69,36 @@ class PlaylistEvents {
 
     once(type, callback) {
 
-        const wrapper = (payload) => {
+        if (
+            typeof type !== "string" ||
+            !type ||
+            typeof callback !== "function"
+        ) {
 
-            callback(payload);
+            return;
+
+        }
+
+
+        const wrapper = (payload) => {
 
             this.off(type, wrapper);
 
+            callback(payload);
+
         };
 
-        this.on(type, wrapper);
+
+        this.on(
+
+            type,
+
+            wrapper
+
+        );
 
     }
+
 
     /*==============================================
         Unsubscribe
@@ -62,27 +106,34 @@ class PlaylistEvents {
 
     off(type, callback) {
 
-        if (!this.events.has(type)) {
+        if (!this.events.has(type) ||
+            typeof callback !== "function"
+        ) {
 
             return;
 
         }
 
-        const listeners = this.events.get(type);
 
-        this.events.set(
+        const listeners =
+            this.events.get(type);
 
-            type,
 
-            listeners.filter(
+        listeners.delete(callback);
 
-                listener => listener !== callback
 
-            )
+        /*
+        Remove empty event collections.
+        */
 
-        );
+        if (!listeners.size) {
+
+            this.events.delete(type);
+
+        }
 
     }
+
 
     /*==============================================
         Emit
@@ -96,13 +147,49 @@ class PlaylistEvents {
 
         }
 
-        this.events.get(type).forEach(
 
-            listener => listener(payload)
+        /*
+        Create a snapshot before notifying
+        listeners.
+
+        This prevents problems when a listener
+        removes itself or another listener while
+        an event is being emitted.
+        */
+
+        const listeners = [
+
+            ...this.events.get(type)
+
+        ];
+
+
+        listeners.forEach(
+
+            listener => {
+
+                try {
+
+                    listener(payload);
+
+                } catch (error) {
+
+                    console.error(
+
+                        `Playlist event "${type}" listener failed:`,
+
+                        error
+
+                    );
+
+                }
+
+            }
 
         );
 
     }
+
 
     /*==============================================
         Remove All
@@ -114,7 +201,27 @@ class PlaylistEvents {
 
     }
 
+
+    /*==============================================
+        Remove All Listeners For Event
+    ==============================================*/
+
+    clearType(type) {
+
+        if (!this.events.has(type)) {
+
+            return;
+
+        }
+
+
+        this.events.delete(type);
+
+    }
+
 }
 
+
 export const playlistEvents =
+
     new PlaylistEvents();

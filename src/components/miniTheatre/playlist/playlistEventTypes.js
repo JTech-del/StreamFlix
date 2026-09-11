@@ -11,6 +11,8 @@
     ✓ Playlist mutations
     ✓ Current movie updates
     ✓ Playlist navigation
+    ✓ Playback state updates
+    ✓ Completion / Next Up state
 
 ==================================================*/
 
@@ -26,6 +28,7 @@ export const PlaylistEventTypes = Object.freeze({
 
     CLEARED: "playlist:cleared",
 
+
     /*----------------------------------------------
         Playlist
     ----------------------------------------------*/
@@ -34,11 +37,33 @@ export const PlaylistEventTypes = Object.freeze({
 
     MOVIE_REMOVED: "playlist:movie-removed",
 
+
     /*----------------------------------------------
         Current Movie
     ----------------------------------------------*/
 
     CURRENT_CHANGED: "playlist:current-changed",
+
+
+    /*----------------------------------------------
+        Playback State
+    ----------------------------------------------*/
+
+    STATE_CHANGED: "playlist:state-changed",
+
+    MOVIE_PLAYING: "playlist:movie-playing",
+
+    MOVIE_PAUSED: "playlist:movie-paused",
+
+    MOVIE_COMPLETED: "playlist:movie-completed",
+
+
+    /*----------------------------------------------
+        Next Up
+    ----------------------------------------------*/
+
+    NEXT_UP_CHANGED: "playlist:next-up-changed",
+
 
     /*----------------------------------------------
         Navigation

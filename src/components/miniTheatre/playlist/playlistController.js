@@ -7,53 +7,66 @@
 
     Responsibility
 
-    ✓ Coordinate playlist service
-    ✓ Expose playlist API
-    ✓ No UI rendering
+    ✓ Expose playlist actions
+    ✓ Coordinate PlaylistService
+    ✓ Forward playlist events
+    ✓ Manage completion state
+    ✓ Manage Next Up state
+
+    Business logic belongs to PlaylistService.
 
 ==================================================*/
 
-import { playlistService } from "./playlistService.js";
+import { playlistService }
+from "./playlistService.js";
+
+import { playlistEvents }
+from "./playlistEvents.js";
+
+import { PlaylistEventTypes }
+from "./playlistEventTypes.js";
+
 
 class PlaylistController {
-
-    constructor() {
-
-        this.initialized = false;
-
-    }
 
     /*==============================================
         Initialize
     ==============================================*/
 
-    init() {
+    init(movies = []) {
 
-        if (this.initialized) {
-
-            return;
-
-        }
-
-        this.initialized = true;
+        playlistService.init(movies);
 
     }
 
+
     /*==============================================
-        Public API
+        Add Movie
     ==============================================*/
 
     add(movie) {
 
-        playlistService.add(movie);
+        return playlistService.add(movie);
 
     }
 
-    remove(movieId) {
 
-        playlistService.remove(movieId);
+    /*==============================================
+        Remove Movie
+    ==============================================*/
+
+    remove(movieOrId) {
+
+        return playlistService.remove(
+            movieOrId
+        );
 
     }
+
+
+    /*==============================================
+        Clear Playlist
+    ==============================================*/
 
     clear() {
 
@@ -61,29 +74,23 @@ class PlaylistController {
 
     }
 
+
+    /*==============================================
+        Set Current Movie
+    ==============================================*/
+
     setCurrent(index) {
 
-        playlistService.setCurrent(index);
+        return playlistService.setCurrent(
+            index
+        );
 
     }
 
-    next() {
 
-        return playlistService.next();
-
-    }
-
-    previous() {
-
-        return playlistService.previous();
-
-    }
-
-    get(index) {
-
-        return playlistService.get(index);
-
-    }
+    /*==============================================
+        Get Current Movie
+    ==============================================*/
 
     getCurrent() {
 
@@ -91,11 +98,43 @@ class PlaylistController {
 
     }
 
+
+    /*==============================================
+        Get Current Index
+    ==============================================*/
+
+    getCurrentIndex() {
+
+        return playlistService.getCurrentIndex();
+
+    }
+
+
+    /*==============================================
+        Get All Movies
+    ==============================================*/
+
     getAll() {
 
         return playlistService.getAll();
 
     }
+
+
+    /*==============================================
+        Get Movie
+    ==============================================*/
+
+    get(index) {
+
+        return playlistService.get(index);
+
+    }
+
+
+    /*==============================================
+        Get Count
+    ==============================================*/
 
     count() {
 
@@ -103,19 +142,209 @@ class PlaylistController {
 
     }
 
-    indexOf(slug) {
 
-        return playlistService
-            .getAll()
-            .findIndex(
+    /*==============================================
+        Find Movie Index
+    ==============================================*/
 
-                movie => movie.slug === slug
+    indexOf(movieOrId) {
 
-            );
+        return playlistService.indexOf(
+            movieOrId
+        );
+
+    }
+
+
+    /*==============================================
+        Check Movie
+    ==============================================*/
+
+    has(movieOrId) {
+
+        return playlistService.has(
+            movieOrId
+        );
+
+    }
+
+
+    /*==============================================
+        Next
+    ==============================================*/
+
+    next() {
+
+        return playlistService.next();
+
+    }
+
+
+    /*==============================================
+        Previous
+    ==============================================*/
+
+    previous() {
+
+        return playlistService.previous();
+
+    }
+
+
+    /*==============================================
+        Mark Movie Completed
+    ==============================================*/
+
+    complete(index) {
+
+        return playlistService.complete(
+            index
+        );
+
+    }
+
+
+    /*==============================================
+        Mark Movie Incomplete
+    ==============================================*/
+
+    markIncomplete(index) {
+
+        return playlistService.markIncomplete(
+            index
+        );
+
+    }
+
+
+    /*==============================================
+        Check Completion
+    ==============================================*/
+
+    isCompleted(movieOrId) {
+
+        return playlistService.isCompleted(
+            movieOrId
+        );
+
+    }
+
+
+    /*==============================================
+        Get Completed Movies
+    ==============================================*/
+
+    getCompleted() {
+
+        return playlistService.getCompleted();
+
+    }
+
+
+    /*==============================================
+        Get Next Up
+    ==============================================*/
+
+    getNextUp() {
+
+        return playlistService.getNextUp();
+
+    }
+
+
+    /*==============================================
+        Get Next Up Index
+    ==============================================*/
+
+    getNextUpIndex() {
+
+        return playlistService.getNextUpIndex();
+
+    }
+
+
+    /*==============================================
+        Find Next Incomplete
+    ==============================================*/
+
+    findNextIncompleteIndex(index) {
+
+        return playlistService.findNextIncompleteIndex(
+            index
+        );
+
+    }
+
+
+    /*==============================================
+        Subscribe To Event
+    ==============================================*/
+
+    on(type, callback) {
+
+        playlistEvents.on(
+            type,
+            callback
+        );
+
+    }
+
+
+    /*==============================================
+        Subscribe Once
+    ==============================================*/
+
+    once(type, callback) {
+
+        playlistEvents.once(
+            type,
+            callback
+        );
+
+    }
+
+
+    /*==============================================
+        Unsubscribe
+    ==============================================*/
+
+    off(type, callback) {
+
+        playlistEvents.off(
+            type,
+            callback
+        );
+
+    }
+
+
+    /*==============================================
+        Emit Event
+    ==============================================*/
+
+    emit(type, payload = null) {
+
+        playlistEvents.emit(
+            type,
+            payload
+        );
+
+    }
+
+
+    /*==============================================
+        Event Types
+    ==============================================*/
+
+    get eventTypes() {
+
+        return PlaylistEventTypes;
 
     }
 
 }
 
+
 export const playlistController =
+
     new PlaylistController();

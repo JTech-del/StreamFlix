@@ -6,7 +6,7 @@
     Playlist Layout
 
     File:
-    src/components/miniTheatre/playList/playListLayout.js
+    src/components/miniTheatre/playlist/playlistLayout.js
 
     Responsibility:
 
@@ -15,63 +15,71 @@
 
 ==================================================*/
 
-export function playListLayout() {
+export function playlistLayout() {
 
     return `
 
-<section
-    class="playlist"
-    aria-label="Continue Watching">
+        <section
+            class="playlist"
+            aria-label="Continue Watching"
+        >
 
-    <header class="playlist__header">
+            <header class="playlist__header">
 
-        <div class="playlist__heading">
+                <div class="playlist__heading">
 
-            <h2 class="playlist__title">
+                    <h2 class="playlist__title">
 
-                Continue Watching
+                        Continue Watching
 
-            </h2>
+                    </h2>
 
-            <p class="playlist__subtitle">
+                    <p class="playlist__subtitle">
 
-                Resume your favourite movies
+                        Resume your favourite movies
 
-            </p>
+                    </p>
 
-        </div>
+                </div>
 
-        <button
-            class="playlist__clear"
-            type="button"
-            aria-label="Clear Playlist">
 
-            Clear
+                <button
+                    class="playlist__clear"
+                    type="button"
+                    data-action="clear"
+                    aria-label="Clear Playlist"
+                >
 
-        </button>
+                    Clear
 
-    </header>
+                </button>
 
-    <div class="playlist__viewport">
+            </header>
 
-        <div class="playlist__track">
 
-            <!-- Playlist Cards Render Here -->
+            <div class="playlist__viewport">
 
-        </div>
+                <div class="playlist__track">
 
-    </div>
+                    <!-- Playlist cards render here -->
 
-</section>
+                </div>
 
-`;
+            </div>
+
+        </section>
+
+    `;
 
 }
 
-function playlistLayout() {
 
-    return `...`;
+/*
+Compatibility alias.
 
-}
+Some older imports use playListLayout()
+with a capital L in "List".
+*/
 
-export { playlistLayout };
+export const playListLayout =
+    playlistLayout;

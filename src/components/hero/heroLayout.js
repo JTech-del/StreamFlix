@@ -7,6 +7,8 @@
     Returns the static HTML structure for the
     Featured Showcase.
 
+    Media source of truth:
+    Backend
 ==================================================*/
 
 export function heroLayout(hero) {
@@ -19,7 +21,7 @@ export function heroLayout(hero) {
 
         <img
             class="hero__background-image"
-            src="${hero.backdrop}"
+         src="${hero.backdropUrl || hero.posterUrl ||  ""}"
             alt="${hero.title}"
         >
 
@@ -39,22 +41,24 @@ export function heroLayout(hero) {
 
             </div>
 
-            <div class="hero__logo">
+         <div class="hero__logo">
 
-                ${
-                    hero.logo
-                        ? `
-                            <img
-                                src="${hero.logo}"
-                                alt="${hero.title} Logo"
-                            >
-                        `
-                        : `
-                            <h1 class="display-title">
-                                ${hero.title}
-                            </h1>
-                        `
-                }
+    ${
+        hero.logoUrl
+            ? `
+                <img
+                    src="${hero.logoUrl}"
+                    alt="${hero.title} Logo"
+                >
+            `
+            : `
+                <h1 class="display-title">
+                    ${hero.title}
+                </h1>
+            `
+    }
+
+</div>
 
             </div>
 
@@ -62,31 +66,31 @@ export function heroLayout(hero) {
 
                 <span class="hero__pill">
 
-                    ⭐ ${hero.imdb}
+                    ${hero.imdb ?? "N/A"}
 
                 </span>
 
                 <span class="hero__pill">
 
-                    ${hero.year}
+                    ${hero.year ?? ""}
 
                 </span>
 
                 <span class="hero__pill">
 
-                    ${hero.duration}
+                    ${hero.duration ?? ""}
 
                 </span>
 
                 <span class="hero__pill">
 
-                    ${hero.rating}
+                    ${hero.rating ?? ""}
 
                 </span>
 
                 <span class="hero__pill">
 
-                    ${hero.quality}
+                    ${hero.quality ?? ""}
 
                 </span>
 
@@ -94,16 +98,20 @@ export function heroLayout(hero) {
 
             <p class="hero__description">
 
-                ${hero.description}
+                ${hero.description ?? ""}
 
             </p>
 
             <div class="hero__genres">
 
-                ${hero.genres.map(genre => `
+                ${(hero.genres ?? []).map(genre => `
+
                     <span class="hero__genre">
+
                         ${genre}
+
                     </span>
+
                 `).join("")}
 
             </div>
@@ -142,13 +150,15 @@ export function heroLayout(hero) {
         </div>
 
     </div>
-<div class="hero__scroll">
 
-    <span>Explore</span>
+    <div class="hero__scroll">
 
-    <i data-lucide="chevrons-down"></i>
+        <span>Explore</span>
 
-</div>
+        <i data-lucide="chevrons-down"></i>
+
+    </div>
+
 </section>
 
 `;

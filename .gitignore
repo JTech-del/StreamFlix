@@ -17,3 +17,17 @@ src/data/hero/movies/
 
 # Logs
 *.log
+# Local StreamFlix media files
+assets/videos/
+
+# Backend local media
+backend/storage/videos/
+
+# Local development media
+backend/public/assets/videos/
+backend/storage/trailers/
+public/assets/videos/
+
+# Local RabbitMQ / Erlang tooling
+backend/erlang/
+backend/otp_win64_29.0.6.zip

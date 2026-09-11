@@ -53,7 +53,7 @@ class ThumbnailController {
         Initialize
     ==============================================*/
 
-    init(container) {
+    init(container, movies = []) {
 
         if (!container) {
 
@@ -67,7 +67,7 @@ class ThumbnailController {
 
         thumbnailView.render();
 
-        this.loadMovies();
+        this.loadMovies(movies);
 
         this.bindEvents();
 
@@ -82,9 +82,12 @@ class ThumbnailController {
         Load Movies
     ==============================================*/
 
-    loadMovies() {
+    loadMovies(movies = []) {
 
-        this.movies = thumbnailService.getMovies();
+        thumbnailService.setMovies(movies);
+
+        this.movies =
+            thumbnailService.getMovies();
 
         if (!this.movies.length) {
 
@@ -267,7 +270,7 @@ class ThumbnailController {
                 return;
 
             }
-
+            console.log("SELECTED THUMBNAIL MOVIE:", movie);
             this.currentMovie = movie;
 
             thumbnailView.setActiveMovie(

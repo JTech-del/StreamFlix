@@ -1,0 +1,407 @@
+/*==================================================
+    StreamFlix Footer
+
+    Responsibility:
+
+    ✓ Footer visual design
+    ✓ StreamFlix cinematic styling
+    ✓ Footer navigation
+    ✓ Social controls
+    ✓ Responsive layout
+
+==================================================*/
+
+
+/*==================================================
+    Footer
+==================================================*/
+
+.footer {
+    position: relative;
+    width: 100%;
+    margin-top: 4rem;
+    background: linear-gradient( 180deg, rgba(8, 8, 12, .92), rgba(3, 3, 6, 1));
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    overflow: hidden;
+}
+
+
+/*==================================================
+    Cinematic Glow
+==================================================*/
+
+.footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 70%;
+    height: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient( 90deg, transparent, rgba(229, 9, 20, .65), rgba(255, 106, 0, .5), transparent);
+    pointer-events: none;
+}
+
+
+/*==================================================
+    Main Container
+==================================================*/
+
+.footer__container {
+    position: relative;
+    width: min( calc(100% - 3rem), 1600px);
+    margin: 0 auto;
+    padding: 4rem 0 3.5rem;
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(450px, 1.5fr);
+    gap: 5rem;
+}
+
+
+/*==================================================
+    Brand
+==================================================*/
+
+.footer__brand {
+    max-width: 390px;
+}
+
+
+/*==================================================
+    Logo
+==================================================*/
+
+.footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.1rem;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+
+/*==================================================
+    Logo Mark
+==================================================*/
+
+.footer__logo-mark {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: linear-gradient( 135deg, #e50914, #ff6a00);
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    box-shadow: 0 8px 28px rgba(229, 9, 20, .28);
+}
+
+
+/*==================================================
+    Logo Text
+==================================================*/
+
+.footer__logo-text {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+
+/*==================================================
+    Description
+==================================================*/
+
+.footer__description {
+    max-width: 360px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: .85rem;
+    line-height: 1.7;
+}
+
+
+/*==================================================
+    Social Links
+==================================================*/
+
+.footer__socials {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin-top: 1.5rem;
+}
+
+
+/*==================================================
+    Social Button
+==================================================*/
+
+.footer__social {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .04);
+    color: rgba(255, 255, 255, .7);
+    text-decoration: none;
+    backdrop-filter: blur(var(--blur-sm));
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+
+/*==================================================
+    Social Icon
+==================================================*/
+
+.footer__social svg {
+    width: 17px;
+    height: 17px;
+    display: block;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+
+/*==================================================
+    Social Hover 
+==================================================*/
+
+.footer__social:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(229, 9, 20, .25);
+}
+
+
+/*==================================================
+    Footer Navigation
+==================================================*/
+
+.footer__navigation {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 2.5rem;
+}
+
+
+/*==================================================
+    Group
+==================================================*/
+
+.footer__group {
+    min-width: 0;
+}
+
+
+/*==================================================
+    Group Title
+==================================================*/
+
+.footer__group-title {
+    margin: 0 0 1.15rem;
+    color: var(--color-text);
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+
+/*==================================================
+    Link List
+==================================================*/
+
+.footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+
+/*==================================================
+    Link
+==================================================*/
+
+.footer__link {
+    display: inline-block;
+    color: var(--text-secondary);
+    font-size: .82rem;
+    text-decoration: none;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+
+/*==================================================
+    Link Hover
+==================================================*/
+
+.footer__link:hover {
+    color: var(--color-text);
+    transform: translateX(4px);
+}
+
+
+/*==================================================
+    Footer Bottom
+==================================================*/
+
+.footer__bottom {
+    position: relative;
+    border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+
+/*==================================================
+    Bottom Container
+==================================================*/
+
+.footer__bottom-container {
+    width: min( calc(100% - 3rem), 1600px);
+    min-height: 64px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+
+/*==================================================
+    Copyright
+==================================================*/
+
+.footer__copyright {
+    margin: 0;
+    color: rgba(255, 255, 255, .45);
+    font-size: .72rem;
+}
+
+
+/*==================================================
+    Tagline
+==================================================*/
+
+.footer__tagline {
+    margin: 0;
+    color: rgba(255, 255, 255, .35);
+    font-size: .72rem;
+}
+
+
+/*==================================================
+    Focus
+==================================================*/
+
+.footer__logo:focus-visible,
+.footer__link:focus-visible,
+.footer__social:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+}
+
+
+/*==================================================
+    Responsive — 1200px
+==================================================*/
+
+@media (max-width: 1200px) {
+    .footer__container {
+        grid-template-columns: 1fr 1.5fr;
+        gap: 3rem;
+    }
+}
+
+
+/*==================================================
+    Responsive — 992px
+==================================================*/
+
+@media (max-width: 992px) {
+    .footer__container {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+    .footer__brand {
+        max-width: 520px;
+    }
+}
+
+
+/*==================================================
+    Responsive — 768px
+==================================================*/
+
+@media (max-width: 768px) {
+    .footer {
+        margin-top: 3rem;
+    }
+    .footer__container {
+        width: calc(100% - 2rem);
+        padding: 3rem 0;
+        gap: 2.5rem;
+    }
+    .footer__navigation {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+    .footer__bottom-container {
+        width: calc(100% - 2rem);
+    }
+}
+
+
+/*==================================================
+    Responsive — 480px
+==================================================*/
+
+@media (max-width: 480px) {
+    .footer__container {
+        padding: 2.5rem 0;
+    }
+    .footer__navigation {
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 2rem;
+    }
+    .footer__logo-text {
+        font-size: 1.15rem;
+    }
+    .footer__description {
+        font-size: .8rem;
+    }
+    .footer__bottom-container {
+        min-height: 80px;
+        padding: 1rem 0;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: .35rem;
+    }
+}
+
+
+/*==================================================
+    Responsive — 360px
+==================================================*/
+
+@media (max-width: 360px) {
+    .footer__container {
+        width: calc(100% - 1.5rem);
+    }
+    .footer__navigation {
+        grid-template-columns: 1fr;
+    }
+    .footer__bottom-container {
+        width: calc(100% - 1.5rem);
+    }
+}

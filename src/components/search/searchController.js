@@ -4,7 +4,15 @@
     Search Controller
 
     Responsibility:
-    Controls the StreamFlix Search component.
+
+    ✓ Controls the Search component
+    ✓ Receives movies from backend
+    ✓ Passes movies to SearchService
+    ✓ Handles search input
+    ✓ Handles search result interaction
+    ✓ Handles movie hover
+    ✓ Handles movie selection
+    ✓ Controls search open / close state
 
 ==================================================*/
 
@@ -16,30 +24,43 @@ class SearchController {
 
     constructor() {
 
-            this.query = "";
+        this.query = "";
 
-            this.hoverTimer = null;
+        this.hoverTimer = null;
 
-            this.onMovieHover = null;
+        this.onMovieHover = null;
 
+        this.onMovieLeave = null;
 
-            this.onMovieLeave = null;
+        this.onMovieSelect = null;
 
-            this.onMovieSelect = null;
+        this.state = {
 
-            this.state = {
+            open: false
 
-                open: false
+        };
 
-            };
+    }
 
-        }
-        /*==============================================
-            Set Hover Callback
-        ==============================================*/
 
     /*==============================================
-        Hover Callback
+        Set Movies
+    ==============================================*/
+
+    setMovies(movies = []) {
+
+        searchService.setMovies(movies);
+
+        console.log(
+            "Search movies loaded:",
+            movies.length
+        );
+
+    }
+
+
+    /*==============================================
+        Set Hover Callback
     ==============================================*/
 
     setMovieHoverHandler(callback) {
@@ -47,9 +68,7 @@ class SearchController {
         if (typeof callback !== "function") {
 
             console.error(
-
                 "Movie hover handler must be a function."
-
             );
 
             return;
@@ -62,7 +81,7 @@ class SearchController {
 
 
     /*==============================================
-        Leave Callback
+        Set Leave Callback
     ==============================================*/
 
     setMovieLeaveHandler(callback) {
@@ -70,9 +89,7 @@ class SearchController {
         if (typeof callback !== "function") {
 
             console.error(
-
                 "Movie leave handler must be a function."
-
             );
 
             return;
@@ -85,47 +102,24 @@ class SearchController {
 
 
     /*==============================================
-        Select Callback
+        Set Select Callback
     ==============================================*/
 
     setMovieSelectHandler(callback) {
 
-            if (typeof callback !== "function") {
+        if (typeof callback !== "function") {
 
-                console.error(
+            console.error(
+                "Movie select handler must be a function."
+            );
 
-                    "Movie select handler must be a function."
-
-                );
-
-                return;
-
-            }
-
-            this.onMovieSelect = callback;
+            return;
 
         }
-        /*
-            setMovieHoverHandler(callback) {
 
-                if (typeof callback !== "function") {
+        this.onMovieSelect = callback;
 
-                    console.error(
-
-                        "Movie hover handler must be a function."
-
-                    );
-
-                    return;
-
-                }
-
-                this.onMovieHover = callback;
-
-            }
-
-
-        */
+    }
 
 
     /*==============================================
@@ -134,15 +128,22 @@ class SearchController {
 
     init(container) {
 
-        console.log("Search container:", container);
+        console.log(
+            "Search container:",
+            container
+        );
+
 
         if (!container) {
 
-            console.error("Search mount point not found.");
+            console.error(
+                "Search mount point not found."
+            );
 
             return;
 
         }
+
 
         searchView.init(container);
 
@@ -151,6 +152,7 @@ class SearchController {
         this.bindEvents();
 
     }
+
 
     /*==============================================
         Bind Events
@@ -161,10 +163,13 @@ class SearchController {
         const {
 
             input,
+
             clearButton,
+
             searchButton
 
         } = searchView.elements;
+
 
         /*------------------------------
             Search Input
@@ -182,6 +187,7 @@ class SearchController {
 
         }
 
+
         /*------------------------------
             Clear Search
         ------------------------------*/
@@ -195,8 +201,16 @@ class SearchController {
                 this.clearSearch.bind(this)
 
             );
-            this.bindResultEvents();
+
         }
+
+
+        /*------------------------------
+            Search Result Events
+        ------------------------------*/
+
+        this.bindResultEvents();
+
 
         /*------------------------------
             Search Icon
@@ -210,11 +224,14 @@ class SearchController {
 
                 this.focusInput.bind(this)
 
-
-
             );
 
         }
+
+
+        /*------------------------------
+            Outside Click
+        ------------------------------*/
 
         document.addEventListener(
 
@@ -224,7 +241,21 @@ class SearchController {
 
         );
 
+
+        /*------------------------------
+            Keyboard
+        ------------------------------*/
+
+        document.addEventListener(
+
+            "keydown",
+
+            this.handleKeyDown.bind(this)
+
+        );
+
     }
+
 
     /*==============================================
         Handle Input
@@ -232,7 +263,9 @@ class SearchController {
 
     handleInput(event) {
 
-        this.query = event.target.value.trim();
+        this.query =
+            event.target.value.trim();
+
 
         /*------------------------------
             Empty Search
@@ -246,24 +279,38 @@ class SearchController {
 
         }
 
+
+        /*------------------------------
+            Prepare Results
+        ------------------------------*/
+
         searchView.elements.results.classList.remove(
-
             "is-open"
-
         );
 
         searchView.clearResults();
 
+
         /*------------------------------
-            Search Movies
+            Search Backend Movies
         ------------------------------*/
 
-        const results = searchService.search(this.query);
+        const results =
+            searchService.search(
+                this.query
+            );
 
-        searchView.renderResults(results);
 
+        /*------------------------------
+            Render Results
+        ------------------------------*/
+
+        searchView.renderResults(
+            results
+        );
 
     }
+
 
     /*==============================================
         Focus Input
@@ -271,7 +318,10 @@ class SearchController {
 
     focusInput() {
 
-        const { input } = searchView.elements;
+        const {
+            input
+        } = searchView.elements;
+
 
         if (input) {
 
@@ -280,6 +330,7 @@ class SearchController {
         }
 
     }
+
 
     /*==============================================
         Clear Search
@@ -297,6 +348,7 @@ class SearchController {
 
     }
 
+
     /*==============================================
         Get Query
     ==============================================*/
@@ -307,18 +359,28 @@ class SearchController {
 
     }
 
+
     /*==============================================
-    Bind Result Events
-==============================================*/
+        Bind Result Events
+    ==============================================*/
+
     bindResultEvents() {
 
-        const { results } = searchView.elements;
+        const {
+            results
+        } = searchView.elements;
+
 
         if (!results) {
 
             return;
 
         }
+
+
+        /*------------------------------
+            Hover
+        ------------------------------*/
 
         results.addEventListener(
 
@@ -328,6 +390,11 @@ class SearchController {
 
         );
 
+
+        /*------------------------------
+            Click
+        ------------------------------*/
+
         results.addEventListener(
 
             "click",
@@ -335,6 +402,11 @@ class SearchController {
             this.handleResultClick.bind(this)
 
         );
+
+
+        /*------------------------------
+            Leave
+        ------------------------------*/
 
         results.addEventListener(
 
@@ -346,71 +418,18 @@ class SearchController {
 
     }
 
+
     /*==============================================
         Handle Result Hover
     ==============================================*/
 
     handleResultHover(event) {
 
-            const card = event.target.closest(
-
+        const card =
+            event.target.closest(
                 ".search__result"
-
             );
 
-            if (!card) {
-
-                return;
-
-            }
-
-            const movie = searchService.getMovie(
-
-                card.dataset.slug
-
-            );
-
-            if (!movie) {
-
-                return;
-
-            }
-
-            clearTimeout(this.hoverTimer);
-
-            this.hoverTimer = setTimeout(() => {
-
-                if (this.onMovieHover) {
-
-                    this.onMovieHover(movie);
-
-                }
-
-            }, 180);
-
-        }
-        /*==============================================
-            Handle Result Leave
-        ==============================================*/
-
-    handleResultLeave() {
-
-            clearTimeout(this.hoverTimer);
-
-            if (this.onMovieLeave) {
-
-                this.onMovieLeave();
-
-            }
-
-        }
-        /*==============================================
-    Handle Result Click
-==============================================*/
-
-    handleResultClick(event) {
-
-        const card = event.target.closest(".search__result");
 
         if (!card) {
 
@@ -418,17 +437,89 @@ class SearchController {
 
         }
 
-        const movie = searchService.getMovie(
 
-            card.dataset.slug
+        const movie =
+            searchService.getMovie(
+                card.dataset.slug
+            );
 
-        );
 
         if (!movie) {
 
             return;
 
         }
+
+
+        clearTimeout(
+            this.hoverTimer
+        );
+
+
+        this.hoverTimer = setTimeout(() => {
+
+            if (this.onMovieHover) {
+
+                this.onMovieHover(movie);
+
+            }
+
+        }, 180);
+
+    }
+
+
+    /*==============================================
+        Handle Result Leave
+    ==============================================*/
+
+    handleResultLeave() {
+
+        clearTimeout(
+            this.hoverTimer
+        );
+
+
+        if (this.onMovieLeave) {
+
+            this.onMovieLeave();
+
+        }
+
+    }
+
+
+    /*==============================================
+        Handle Result Click
+    ==============================================*/
+
+    handleResultClick(event) {
+
+        const card =
+            event.target.closest(
+                ".search__result"
+            );
+
+
+        if (!card) {
+
+            return;
+
+        }
+
+
+        const movie =
+            searchService.getMovie(
+                card.dataset.slug
+            );
+
+
+        if (!movie) {
+
+            return;
+
+        }
+
 
         if (this.onMovieSelect) {
 
@@ -438,13 +529,17 @@ class SearchController {
 
     }
 
+
     /*==============================================
-    Handle Outside Click
-==============================================*/
+        Handle Outside Click
+    ==============================================*/
 
     handleOutsideClick(event) {
 
-        const { section } = searchView.elements;
+        const {
+            section
+        } = searchView.elements;
+
 
         if (!section) {
 
@@ -452,19 +547,22 @@ class SearchController {
 
         }
 
+
         if (section.contains(event.target)) {
 
             return;
 
         }
 
+
         searchView.clearResults();
 
     }
 
+
     /*==============================================
-    Handle Keyboard
-==============================================*/
+        Handle Keyboard
+    ==============================================*/
 
     handleKeyDown(event) {
 
@@ -474,13 +572,15 @@ class SearchController {
 
         }
 
+
         this.clearSearch();
 
     }
 
+
     /*==============================================
-    Open Search (Public API)
-==============================================*/
+        Open Search
+    ==============================================*/
 
     open() {
 
@@ -519,15 +619,19 @@ class SearchController {
 
     }
 
+
     /*==============================================
         Set Active Movie
     ==============================================*/
 
     setActiveMovie(slug) {
 
-        searchView.setActiveMovie(slug);
+        searchView.setActiveMovie(
+            slug
+        );
 
     }
+
 
     /*==============================================
         Is Open
@@ -542,4 +646,5 @@ class SearchController {
 }
 
 
-export const searchController = new SearchController();
+export const searchController =
+    new SearchController();

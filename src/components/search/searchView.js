@@ -151,7 +151,7 @@ class SearchView {
 
                 class="search__poster"
 
-                src="${movie.poster}"
+                src="${movie.posterUrl || ""}"
 
                 alt="${movie.title}"
 

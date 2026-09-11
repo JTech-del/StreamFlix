@@ -1,37 +1,47 @@
 /*==================================================
-    StreamFlix
-
-    Mini Theatre Playlist
-
+  StreamFlix
+  Mini Theatre Playlist
 ==================================================*/
 
 
 /*==============================================
-    Playlist Container
+  Playlist Container
 ==============================================*/
 
 .mini-theatre__playlist {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    gap: 1rem;
+    height: 520px;
     min-height: 0;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, .03);
-    border: 1px solid rgba(255, 255, 255, .06);
-    overflow: hidden;
+    flex: 1;
+    border-radius: 0.65rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-x: auto;
+    padding-right: .5rem;
+}
+
+mni-theatre__playlist {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow-x: auto;
+    padding-right: .5rem;
 }
 
 
 /*==============================================
-    Playlist Header
+  Playlist Header
 ==============================================*/
 
-.playlist__header {
+.mini-theatre__header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 .playlist__title {
@@ -41,102 +51,308 @@
 }
 
 .playlist__counter {
-    font-size: .875rem;
-    color: rgba(255, 255, 255, .65);
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.65);
 }
 
 
 /*==============================================
-    Playlist Track
+  Playlist Track
 ==============================================*/
 
 .playlist__track {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
     display: flex;
-    overflow: hidden;
-    min-height: 0;
     flex-direction: column;
-    gap: .85rem;
+    gap: 0.85rem;
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 
 /*==============================================
-    Playlist Card
+  Playlist Card
 ==============================================*/
 
 .playlist-card {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
-    padding: .75rem;
-    border-radius: .85rem;
-    background: rgba(255, 255, 255, .03);
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all .25s ease;
-}
-
-.playlist-card:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, .06);
-    border-color: rgba(37, 99, 235, .35);
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 
 /*==============================================
-    Active Card
+  Playlist Card Hover
+==============================================*/
+
+.playlist-card:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(231, 13, 13, 0.705);
+}
+
+
+/*==============================================
+  Active Playlist Card
+
+  IMPORTANT:
+  JavaScript uses .is-active
 ==============================================*/
 
 .playlist-card.is-active {
-    background: rgba(37, 99, 235, .15);
-    border-color: #2563eb;
-    box-shadow: 0 0 0 1px rgba(37, 99, 235, .25), 0 8px 24px rgba(37, 99, 235, .18);
+    transform: translateX(6px);
+    background: rgba(221, 73, 36, 0.15);
+    border-color: red;
+    box-shadow: 0 0 0 1px rgba(235, 60, 37, 0.25), 0 8px 24px rgba(37, 99, 235, 0.18);
 }
 
 
 /*==============================================
-    Poster
+  Playlist Poster
 ==============================================*/
 
 .playlist-card__poster {
-    width: 72px;
-    height: 96px;
-    border-radius: .65rem;
-    object-fit: cover;
+    position: relative;
     flex-shrink: 0;
+    width: 72px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 0.65rem;
+}
+
+.playlist-card__poster img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.playlist-card:hover .playlist-card__poster img {
+    transform: scale(1.04);
 }
 
 
 /*==============================================
-    Content
+  Playlist Body
 ==============================================*/
 
-.playlist-card__content {
+.playlist-card__body {
     display: flex;
     flex-direction: column;
-    gap: .4rem;
+    gap: 0.55rem;
+    flex: 1;
     min-width: 0;
 }
 
+
+/*==============================================
+  Playlist Content
+==============================================*/
+
+.playlist-card__content {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.24rem;
+}
+
+
+/*==============================================
+  Playlist Title
+==============================================*/
+
 .playlist-card__title {
-    font-size: .95rem;
+    margin: 0;
+    font-size: 0.95rem;
     font-weight: 600;
+    line-height: 1.35;
     color: #ffffff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+
+/*==============================================
+  Playlist Meta
+==============================================*/
+
 .playlist-card__meta {
-    font-size: .82rem;
-    color: rgba(255, 255, 255, .65);
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.65);
 }
 
 
 /*==============================================
-    Scrollbar
+  Playlist Status
+==============================================*/
+
+.playlist-card__status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+
+/*==============================================
+  Progress Track
+==============================================*/
+
+.playlist-card__progress {
+    display: block;
+    width: 100%;
+    height: 6px;
+    margin: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+
+/*==============================================
+  Progress Fill
+
+  IMPORTANT:
+  JavaScript controls width dynamically.
+
+  Example:
+  width: 43.8%;
+==============================================*/
+
+.playlist-card__progress-fill {
+    display: block;
+    width: 0%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: inherit;
+    background-color: rgba(228, 224, 224, 0.726);
+    transition: width 0.2s linear;
+}
+
+
+/*==============================================
+  Playlist Actions
+==============================================*/
+
+.playlist-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    transition: width .25s ease;
+}
+
+
+/*==============================================
+  Playlist Buttons
+==============================================*/
+
+playlist-card__actions button {
+    flex-shrink: 0;
+}
+
+.playlist-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-height: 32px;
+    padding: .4rem .65rem;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: .45rem;
+    background: rgba(255, 255, 255, .06);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease, opacity .2s ease;
+}
+
+
+/*==================================================
+    PLAY
+==================================================*/
+
+.playlist-card__action--play {
+    background: rgba(255, 255, 255, .10);
+}
+
+
+/*==================================================
+    PAUSE
+==================================================*/
+
+.playlist-card__action--pause {
+    background: rgba(255, 255, 255, .10);
+}
+
+
+/*==================================================
+    RESUME
+==================================================*/
+
+.playlist-card__action--resume {
+    background: rgba(255, 255, 255, .10);
+}
+
+
+/*==================================================
+    REMOVE
+==================================================*/
+
+.playlist-card__action--remove {
+    background: rgba(255, 255, 255, .04);
+    color: rgba(255, 255, 255, .7);
+}
+
+
+/*==================================================
+    ACTION HOVER
+==================================================*/
+
+.playlist-card__action:hover {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .18);
+    transform: translateY(-1px);
+}
+
+
+/*==================================================
+    ACTION ACTIVE
+==================================================*/
+
+.playlist-card__action:active {
+    transform: translateY(0);
+}
+
+
+/*==================================================
+    ACTION FOCUS
+==================================================*/
+
+.playlist-card__action:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+
+/*==============================================
+  Scrollbar
 ==============================================*/
 
 .playlist__track::-webkit-scrollbar {
@@ -148,26 +364,15 @@
 }
 
 .playlist__track::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, .15);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 999px;
 }
 
 .playlist__track::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, .28);
+    background: rgba(255, 255, 255, 0.28);
 }
 
-
-/*==============================================
-    Responsive
-==============================================*/
-
-@media (max-width:768px) {
-    .playlist-card {
-        gap: .75rem;
-        padding: .65rem;
-    }
-    .playlist-card__poster {
-        width: 60px;
-        height: 82px;
-    }
+.playlist-card:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
 }

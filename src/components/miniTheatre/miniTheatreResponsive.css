@@ -107,3 +107,95 @@
         height: 74px;
     }
 }
+
+
+/*==============================================
+  Responsive
+==============================================*/
+
+@media (max-width: 1100px) {
+    .mini-theatre {
+        grid-template-columns: minmax(0, 1fr) 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mini-theatre {
+        grid-template-columns: 1fr;
+        margin: 2rem auto;
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+    .mini-theatre__playlist {
+        max-height: 500px;
+    }
+    .mini-theatre__screen {
+        min-height: 420px;
+    }
+    .mini-theatre__content {
+        left: 1.25rem;
+        right: 1.25rem;
+        bottom: 1.25rem;
+    }
+    .mini-theatre__sidebar {
+        height: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .mini-theatre {
+        margin: 1rem auto;
+        padding: .75rem;
+    }
+    .playlist-card {
+        gap: .75rem;
+        padding: .65rem;
+    }
+    .playlist-card__poster {
+        width: 60px;
+        height: 82px;
+    }
+}
+
+
+/*==============================================
+  Responsive
+==============================================*/
+
+@media (max-width: 768px) {
+    .playlist-card {
+        gap: 0.75rem;
+        padding: 0.65rem;
+    }
+    .playlist-card__poster {
+        width: 60px;
+        height: 82px;
+    }
+    .playlist-card__title {
+        font-size: 0.9rem;
+    }
+    .playlist-card__meta {
+        font-size: 0.78rem;
+    }
+    .playlist-card__progress {
+        height: 5px;
+    }
+}
+
+
+/*==============================================
+  Small Mobile
+==============================================*/
+
+@media (max-width: 480px) {
+    .playlist__track {
+        padding: 0.75rem;
+    }
+    .playlist-card {
+        gap: 0.6rem;
+    }
+    .playlist-card__poster {
+        width: 54px;
+        height: 76px;
+    }
+}

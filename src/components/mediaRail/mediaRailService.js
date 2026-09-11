@@ -3,13 +3,21 @@
 /*==================================================
     Media Rail Service
 
-    Responsibility
+    Responsibility:
 
     ✓ Item State
     ✓ Navigation
     ✓ Current Index
     ✓ Looping
+
+    Does NOT handle:
+
+    ✗ DOM
+    ✗ Events
+    ✗ UI
+    ✗ Playback
 ==================================================*/
+
 
 class MediaRailService {
 
@@ -23,9 +31,10 @@ class MediaRailService {
 
     }
 
+
     /*==============================================
-    Configure
-==============================================*/
+        Configure
+    ==============================================*/
 
     configure({
 
@@ -35,40 +44,93 @@ class MediaRailService {
 
     } = {}) {
 
-        this.items = items;
+        this.items =
+
+            Array.isArray(items)
+
+        ?
+        items
+
+            : [];
+
 
         this.currentIndex = 0;
 
-        this.loop = loop;
+        this.loop = Boolean(loop);
 
     }
+
+
+    /*==============================================
+        Get Items
+    ==============================================*/
 
     getItems() {
 
         return this.items;
 
     }
+
+
+    /*==============================================
+        Get Total Items
+    ==============================================*/
+
     getTotalItems() {
 
         return this.items.length;
 
     }
+
+
+    /*==============================================
+        Get Current Index
+    ==============================================*/
+
     getCurrentIndex() {
 
         return this.currentIndex;
 
     }
+
+
+    /*==============================================
+        Get Current Item
+    ==============================================*/
+
     getCurrentItem() {
 
-        return this.items[
+        if (!this.items.length) {
 
-            this.currentIndex
+            return null;
 
-        ];
+        }
+
+
+        return (
+
+            this.items[this.currentIndex]
+
+            ||
+            null
+
+        );
 
     }
 
+
+    /*==============================================
+        Set Current Index
+    ==============================================*/
+
     setCurrentIndex(index) {
+
+        if (!Number.isInteger(index)) {
+
+            return;
+
+        }
+
 
         if (
 
@@ -82,37 +144,42 @@ class MediaRailService {
 
         }
 
+
         this.currentIndex = index;
 
     }
 
 
     /*==============================================
-    Navigate
-==============================================*/
+        Navigate
+    ==============================================*/
 
     navigate(direction) {
 
-            switch (direction) {
+        switch (direction) {
 
-                case "next":
+            case "next":
 
-                    return this.next();
+                return this.next();
 
-                case "previous":
 
-                    return this.previous();
+            case "previous":
 
-                default:
+                return this.previous();
 
-                    return null;
 
-            }
+            default:
+
+                return null;
 
         }
-        /*==============================================
-            Next Item
-        ==============================================*/
+
+    }
+
+
+    /*==============================================
+        Next
+    ==============================================*/
 
     next() {
 
@@ -121,6 +188,7 @@ class MediaRailService {
             return null;
 
         }
+
 
         if (
 
@@ -136,94 +204,121 @@ class MediaRailService {
 
             }
 
+
             this.currentIndex = 0;
+
 
             return this.getCurrentItem();
 
         }
 
+
         this.currentIndex++;
+
 
         return this.getCurrentItem();
 
     }
 
+
     /*==============================================
-        Previous Item
+        Previous
     ==============================================*/
 
     previous() {
 
-            if (!this.items.length) {
+        if (!this.items.length) {
 
-                return null;
+            return null;
 
-            }
+        }
 
-            if (this.currentIndex <= 0) {
 
-                if (!this.loop) {
+        if (this.currentIndex <= 0) {
 
-                    return this.getCurrentItem();
-
-                }
-
-                this.currentIndex =
-
-                    this.items.length - 1;
+            if (!this.loop) {
 
                 return this.getCurrentItem();
 
             }
 
-            this.currentIndex--;
+
+            this.currentIndex =
+
+                this.items.length - 1;
+
 
             return this.getCurrentItem();
 
         }
-        /*==============================================
-            Go To Item
-        ==============================================*/
+
+
+        this.currentIndex--;
+
+
+        return this.getCurrentItem();
+
+    }
+
+
+    /*==============================================
+        Go To
+    ==============================================*/
 
     goTo(index) {
 
-            if (
+        if (!Number.isInteger(index)) {
 
-                index < 0 ||
-
-                index >= this.items.length
-
-            ) {
-
-                return null;
-
-            }
-
-            this.currentIndex = index;
-
-            return this.getCurrentItem();
+            return null;
 
         }
-        /*==============================================
-            First Item
-        ==============================================*/
+
+
+        if (
+
+            index < 0 ||
+
+            index >= this.items.length
+
+        ) {
+
+            return null;
+
+        }
+
+
+        this.currentIndex = index;
+
+
+        return this.getCurrentItem();
+
+    }
+
+
+    /*==============================================
+        First
+    ==============================================*/
 
     first() {
 
-            if (!this.items.length) {
+        if (!this.items.length) {
 
-                return null;
-
-            }
-
-            this.currentIndex = 0;
-
-            return this.getCurrentItem();
+            return null;
 
         }
-        /*==============================================
-    Last Item
-==============================================*/
+
+
+        this.currentIndex = 0;
+
+
+        return this.getCurrentItem();
+
+    }
+
+
+    /*==============================================
+        Last
+    ==============================================*/
 
     last() {
 
@@ -233,34 +328,39 @@ class MediaRailService {
 
         }
 
+
         this.currentIndex =
 
             this.items.length - 1;
+
 
         return this.getCurrentItem();
 
     }
 
+
     /*==============================================
-    Has Next
-==============================================*/
+        Has Next
+    ==============================================*/
 
     hasNext() {
 
-            return (
+        return (
 
-                this.loop ||
+            this.loop ||
 
-                this.currentIndex <
+            this.currentIndex <
 
-                this.items.length - 1
+            this.items.length - 1
 
-            );
+        );
 
-        }
-        /*==============================================
-            Has Previous
-        ==============================================*/
+    }
+
+
+    /*==============================================
+        Has Previous
+    ==============================================*/
 
     hasPrevious() {
 
@@ -276,5 +376,18 @@ class MediaRailService {
 
 }
 
+
+/*==================================================
+    Public Exports
+==================================================*/
+
+export {
+
+    MediaRailService
+
+};
+
+
 export const mediaRailService =
+
     new MediaRailService();

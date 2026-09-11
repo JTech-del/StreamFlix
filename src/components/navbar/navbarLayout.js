@@ -87,16 +87,16 @@ export function createNavbarLayout() {
         <div class="navbar__actions">
 
             ${actionsMarkup}
-
-            <button
-                class="navbar__action navbar__menu-toggle"
-                type="button"
-                aria-label="Open navigation"
-                data-action="menu"
-                aria-expanded="false"
-            >
-                <i data-lucide="menu"></i>
-            </button>
+<button
+    class="navbar__action navbar__menu-toggle"
+    type="button"
+    aria-label="Open navigation"
+    data-action="menu"
+    aria-expanded="false"
+>
+    <i data-lucide="menu"></i>
+</button>
+           
 
         </div>
 

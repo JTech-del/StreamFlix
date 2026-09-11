@@ -1,9 +1,8 @@
-/*==================================================
+/*=========================================
     StreamFlix Thumbnail
 
     Responsibility:
     Styles the Thumbnail component.
-
 ==================================================*/
 
 
@@ -14,6 +13,7 @@
 .thumbnail {
     width: 100%;
     padding: 2rem 0 3rem;
+    margin-top: 2rem;
 }
 
 
@@ -23,7 +23,7 @@
 
 .thumbnail__container {
     width: min(95%, 1600px);
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 
@@ -35,13 +35,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-5);
 }
 
 .thumbnail__heading {
-    font-size: 1.8rem;
-    font-weight: 700;
     color: var(--color-text);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.thumbnail__navigation {
+    display: flex;
+    gap: var(--space-3);
 }
 
 
@@ -87,11 +92,11 @@
 ==============================================*/
 
 .thumbnail__card {
-    flex: 0 0 220px;
-    cursor: pointer;
     position: relative;
-    border-radius: 18px;
+    flex: 0 0 230px;
+    cursor: pointer;
     overflow: hidden;
+    border-radius: var(--radius-md);
     background: rgba(255, 255, 255, .05);
     border: 1px solid rgba(255, 255, 255, .08);
     transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
@@ -122,11 +127,12 @@
 .thumbnail__card.is-active::before {
     content: "";
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient( 90deg, #e50914, #ff6a00);
+    background: linear-gradient(90deg, #e50914, #ff6a00);
+    z-index: 10;
 }
 
 .thumbnail__card.is-active .thumbnail__overlay {
@@ -136,7 +142,7 @@
 
 .thumbnail__card.is-active .thumbnail__play {
     background: rgba(229, 9, 20, .95);
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .thumbnail__card.is-active .thumbnail__title {
@@ -147,293 +153,56 @@
     color: rgba(255, 255, 255, .82);
 }
 
-.thumbnail__image {
-    transition: transform .35s ease;
-}
-
-.thumbnail__card:hover .thumbnail__image,
-.thumbnail__card.is-active .thumbnail__image {
-    transform: scale(1.06);
-}
-
-.thumbnail__title,
-.thumbnail__meta {
-    transition: color .35s ease;
-}
-
 
 /*==============================================
-    Poster
+    Poster / Image
 ==============================================*/
 
 .thumbnail__image-wrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 18px;
+    border-radius: var(--radius-md);
 }
 
 .thumbnail__image {
     width: 100%;
-    aspect-ratio: 2/3;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
     display: block;
+    transition: transform .45s ease;
 }
 
-
-/*Thumbanial Overlay*/
-
-.thumbnail__overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, .45);
-    opacity: 0;
-    transition: opacity .35s ease;
-}
-
-
-/* Play Button */
-
-.thumbnail__play {
-    width: 62px;
-    height: 62px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(12px);
-    transform: scale(.8);
-    transition: transform .35s ease, background .35s ease;
-}
-
-.thumbnail__play svg {
-    width: 28px;
-    height: 28px;
-    color: var(--color-text);
-}
-
-
-/* Hover Animation */
-
-.thumbnail__card:hover .thumbnail__overlay {
-    opacity: 1;
-}
-
-.thumbnail__card:hover .thumbnail__play {
-    transform: scale(1);
-}
-
-.thumbnail__card:hover .thumbnail__image {
+.thumbnail__card:hover .thumbnail__image,
+.thumbnail__card.is-active .thumbnail__image {
     transform: scale(1.08);
 }
 
 
-/* Image Transition */
-
-.thumbnail__image {
-    transition: transform .45s ease;
-}
-
-
-/* Primum Touch when hovering */
-
-.thumbnail__play:hover {
-    background: rgba(229, 9, 20, .9);
-}
-
-
 /*==============================================
-    Content
+    Overlay
 ==============================================*/
-
-.thumbnail__content {
-    padding: 1rem;
-}
-
-.thumbnail__title {
-    color: var(--color-text);
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: .6rem;
-    line-height: 1.3;
-}
-
-.thumbnail__meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: rgba(255, 255, 255, .65);
-    font-size: .85rem;
-}
-
-
-/*==============================================
-    Navigation Buttons
-==============================================*/
-
-.thumbnail__button {
-    position: absolute;
-    top: 40%;
-    width: 52px;
-    height: 52px;
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 5;
-    background: rgba(0, 0, 0, .55);
-    backdrop-filter: blur(12px);
-    color: #fff;
-    transition: .3s;
-}
-
-.thumbnail__button:hover {
-    background: var(--color-primary);
-}
-
-.thumbnail__button--prev {
-    left: -18px;
-}
-
-.thumbnail__button--next {
-    right: -18px;
-}
-
-
-/*==============================================
-    Responsive
-==============================================*/
-
-@media (max-width:1200px) {
-    .thumbnail__card {
-        flex: 0 0 200px;
-    }
-}
-
-@media (max-width:992px) {
-    .thumbnail__heading {
-        font-size: 1.6rem;
-    }
-    .thumbnail__card {
-        flex: 0 0 180px;
-    }
-}
-
-@media (max-width:768px) {
-    .thumbnail {
-        padding: 1.5rem 0;
-    }
-    .thumbnail__container {
-        width: 94%;
-    }
-    .thumbnail__card {
-        flex: 0 0 160px;
-    }
-    .thumbnail__button {
-        display: none;
-    }
-}
-
-@media (max-width:480px) {
-    .thumbnail__heading {
-        font-size: 1.3rem;
-    }
-    .thumbnail__card {
-        flex: 0 0 140px;
-    }
-    .thumbnail__content {
-        padding: .75rem;
-    }
-    .thumbnail__title {
-        font-size: .9rem;
-    }
-    .thumbnail__meta {
-        font-size: .75rem;
-    }
-}
-
-
-/* Premium header  AFTER ARRANGE THE CODE  IN ODER */
-
-.thumbnail__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-5);
-}
-
-.thumbnail__heading {
-    color: var(--color-text);
-    font-size: 1.35rem;
-    font-weight: 700;
-}
-
-.thumbnail__navigation {
-    display: flex;
-    gap: var(--space-3);
-}
-
-.thumbnail__button {
-    width: 46px;
-    height: 46px;
-    border: none;
-    border-radius: 50%;
-    background: var(--color-glass);
-    backdrop-filter: blur(var(--blur-md));
-    color: var(--color-text);
-    cursor: pointer;
-    transition: var(--transition-normal);
-    box-shadow: var(--shadow-sm);
-}
-
-.thumbnail__button:hover {
-    background: var(--color-primary);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
-}
-
-.thumbnail__button:active {
-    transform: scale(.96);
-}
-
-
-/*==============================================
-    Interaction Lock
-==============================================*/
-
-.thumbnail__track.is-disabled {
-    pointer-events: none;
-}
-
-
-/* New overlya effect */
-
-.thumbnail__card {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-}
 
 .thumbnail__overlay {
     position: absolute;
     inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--gradient-dark);
     opacity: 0;
     transition: opacity var(--transition-normal);
     pointer-events: none;
 }
 
+
+/*==============================================
+    Play Button
+==============================================*/
+
 .thumbnail__play {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(.85);
     width: 56px;
     height: 56px;
     display: flex;
@@ -446,6 +215,7 @@
     color: var(--color-text);
     cursor: pointer;
     opacity: 0;
+    transform: translate(-50%, -50%) scale(.85);
     transition: opacity var(--transition-normal), transform var(--transition-spring), background var(--transition-fast);
     z-index: 3;
 }
@@ -474,6 +244,282 @@
     opacity: 1;
 }
 
+
+/*==============================================
+    Content
+==============================================*/
+
+.thumbnail__content {
+    padding: 1rem;
+}
+
+
+/*==============================================
+    Title
+==============================================*/
+
+.thumbnail__title {
+    margin-bottom: .6rem;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    transition: color .35s ease;
+}
+
+
+/*==============================================
+    Metadata
+==============================================*/
+
+.thumbnail__meta {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .35rem;
+    color: var(--text-secondary);
+    font-size: .72rem;
+    line-height: 1;
+    white-space: nowrap;
+    transition: color .35s ease;
+}
+
+.thumbnail__meta span {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.thumbnail__meta span[aria-hidden="true"] {
+    opacity: .55;
+}
+
+
+/*==============================================
+    Rating
+==============================================*/
+
+.thumbnail__rating {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    z-index: 8;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .35rem .55rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(var(--blur-sm));
+    color: var(--color-text);
+    font-size: .75rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+
+.thumbnail__rating svg {
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+}
+
+
+/*==============================================
+    Actions
+==============================================*/
+
+.thumbnail__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .45rem;
+    width: 100%;
+    margin-top: .75rem;
+    flex-wrap: nowrap;
+}
+
+
+/*==============================================
+    Thumbnail Action
+==============================================*/
+
+.thumbnail__action {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(var(--blur-sm));
+    color: rgba(255, 255, 255, .82);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+
+/*==============================================
+    Action Icon
+==============================================*/
+
+.thumbnail__action svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke-width: 2.2;
+}
+
+
+/*==============================================
+    Hide Action Text
+==============================================*/
+
+.thumbnail__action span {
+    display: none;
+}
+
+
+/*==============================================
+    Action Hover
+==============================================*/
+
+.thumbnail__action:hover {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .3);
+    color: var(--color-text);
+    transform: translateY(-2px);
+}
+
+
+/*==============================================
+    Action Active
+==============================================*/
+
+.thumbnail__action:active {
+    transform: scale(.92);
+}
+
+
+/*==============================================
+    My List
+==============================================*/
+
+.thumbnail__action--my-list {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+}
+
+
+/*==============================================
+    Thumb Up
+==============================================*/
+
+.thumbnail__action--thumb-up {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+}
+
+
+/*==============================================
+    Thumb Down
+==============================================*/
+
+.thumbnail__action--thumb-down {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+}
+
+
+/*==============================================
+    Download
+==============================================*/
+
+.thumbnail__action--download {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex: 0 0 34px;
+}
+
+
+/*==============================================
+    Navigation Buttons
+==============================================*/
+
+.thumbnail__button {
+    position: absolute;
+    top: 50%;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 5;
+    background: var(--color-glass);
+    backdrop-filter: blur(var(--blur-md));
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-normal);
+}
+
+.thumbnail__button:hover {
+    background: var(--color-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+.thumbnail__button:active {
+    transform: scale(.96);
+}
+
+.thumbnail__button--prev {
+    left: -18px;
+}
+
+.thumbnail__button--next {
+    right: -18px;
+}
+
+
+/*==============================================
+    Interaction Lock
+==============================================*/
+
+.thumbnail__track.is-disabled {
+    pointer-events: none;
+}
+
+
+/*==============================================
+    Focus Ring
+==============================================*/
+
+.thumbnail__card:focus-visible {
+    outline: none;
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+    transform: translateY(-4px);
+}
+
+.thumbnail__card.is-active:focus-visible {
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+}
+
+
+/*==============================================
+    Touch Devices
+==============================================*/
+
 @media (hover: none) {
     .thumbnail__overlay {
         opacity: 1;
@@ -486,21 +532,128 @@
 }
 
 
-/* Thumbnail focus Ring */
+/*==============================================
+    Responsive — 1200px
+==============================================*/
 
-.thumbnail__card:focus-visible {
-    outline: none;
-    border-radius: var(--radius-md);
-    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+@media (max-width: 1200px) {
+    .thumbnail__card {
+        flex: 0 0 220px;
+    }
 }
 
 
-/* Focus Animation */
+/*==============================================
+    Responsive — 992px
+==============================================*/
 
-.thumbnail__card:focus-visible {
-    transform: translateY(-4px);
+@media (max-width: 992px) {
+    .thumbnail__heading {
+        font-size: 1.25rem;
+    }
+    .thumbnail__card {
+        flex: 0 0 220px;
+    }
 }
 
-.thumbnail__card.is-active:focus-visible {
-    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+
+/*==============================================
+    Responsive — 768px
+==============================================*/
+
+@media (max-width: 768px) {
+    .thumbnail {
+        padding: 1.5rem 0;
+    }
+    .thumbnail__container {
+        width: 94%;
+    }
+    .thumbnail__card {
+        flex: 0 0 200px;
+    }
+    .thumbnail__button {
+        display: none;
+    }
+    .thumbnail__content {
+        padding: .8rem;
+    }
+}
+
+
+/*==============================================
+    Responsive — 480px
+==============================================*/
+
+@media (max-width: 480px) {
+    .thumbnail__heading {
+        font-size: 1.1rem;
+    }
+    .thumbnail__card {
+        flex: 0 0 140px;
+    }
+    .thumbnail__content {
+        padding: .75rem;
+    }
+    .thumbnail__title {
+        font-size: .9rem;
+    }
+    .thumbnail__meta {
+        font-size: .75rem;
+    }
+    .thumbnail__actions {
+        gap: .3rem;
+        margin-top: .6rem;
+    }
+    .thumbnail__action,
+    .thumbnail__action--my-list,
+    .thumbnail__action--thumb-up,
+    .thumbnail__action--thumb-down,
+    .thumbnail__action--download {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        flex-basis: 30px;
+    }
+    .thumbnail__action svg {
+        width: 14px;
+        height: 14px;
+    }
+    .thumbnail__rating {
+        top: .55rem;
+        right: .55rem;
+        padding: .3rem .45rem;
+        font-size: .7rem;
+    }
+    .thumbnail__rating svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+
+/*==============================================
+    Very Small Screens — 360px
+==============================================*/
+
+@media (max-width: 360px) {
+    .thumbnail__card {
+        flex: 0 0 130px;
+    }
+    .thumbnail__actions {
+        gap: .2rem;
+    }
+    .thumbnail__action,
+    .thumbnail__action--my-list,
+    .thumbnail__action--thumb-up,
+    .thumbnail__action--thumb-down,
+    .thumbnail__action--download {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        flex-basis: 28px;
+    }
+    .thumbnail__action svg {
+        width: 13px;
+        height: 13px;
+    }
 }

@@ -1,0 +1,351 @@
+/*==================================================
+    StreamFlix
+
+    Upcoming Cinema — Trailer Rail
+
+    Responsibility:
+
+    ✓ Position Trailer Rail inside Cinema
+    ✓ Keep rail 3rem from bottom
+    ✓ Add cinematic black gradient above rail
+    ✓ Style trailer cards
+    ✓ Make trailer videos visible
+    ✓ Style navigation buttons
+    ✓ Preserve existing Cinema content
+
+    Does NOT control:
+
+    ✗ Movie data
+    ✗ Video playback logic
+    ✗ Mini Theatre
+    ✗ Application state
+==================================================*/
+
+
+/*==================================================
+    Trailer Rail
+==================================================*/
+
+.trailer-rail {
+    position: absolute;
+    left: 50%;
+    bottom: 0.45rem;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: min( calc(100% - 6rem), 1100px);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 5rem;
+}
+
+
+/*==================================================
+    Cinematic Gradient Above Rail
+==================================================*
+
+.trailer-rail::before {
+    content: "";
+    position: absolute;
+    left: -15%;
+    right: -15%;
+    bottom: -3rem;
+    height: 11rem;
+    background: linear-gradient( to top, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.82) 30%, rgba(0, 0, 0, 0.48) 58%, rgba(0, 0, 0, 0.18) 78%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+
+/*==================================================
+    Trailer Track
+==================================================*/
+
+.trailer-rail__track {
+    display: flex;
+    align-items: stretch;
+    gap: 0.85rem;
+    width: 100%;
+    overflow: hidden;
+    scroll-behavior: smooth;
+}
+
+
+/*==================================================
+    Trailer Card
+==================================================*/
+
+.trailer-rail__card {
+    position: relative;
+    flex: 0 0 210px;
+    min-width: 210px;
+    overflow: hidden;
+    border-radius: 0.65rem;
+    background: rgba(12, 12, 12, 0.92);
+    border: 1px solid rgba( 255, 255, 255, 0.10);
+    box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.45);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+
+/*==================================================
+    Active Card
+==================================================*/
+
+.trailer-rail__card.is-active {
+    border-color: rgba( 255, 255, 255, 0.45);
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.60);
+}
+
+
+/*==================================================
+    Card Hover
+==================================================*/
+
+.trailer-rail__card:hover {
+    transform: translateY(-4px);
+    border-color: rgba( 255, 255, 255, 0.30);
+}
+
+
+/*==================================================
+    Trailer Media
+==================================================*/
+
+.trailer-rail__media {
+    position: relative;
+    width: 100%;
+    height: 118px;
+    overflow: hidden;
+    background: #111;
+}
+
+
+/*==================================================
+    Trailer Video
+==================================================*/
+
+.trailer-rail__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #111;
+}
+
+
+/*==================================================
+    Media Overlay
+==================================================*/
+
+.trailer-rail__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient( to top, rgba(0, 0, 0, 0.72), transparent 65%);
+    pointer-events: none;
+}
+
+
+/*==================================================
+    Play Indicator
+==================================================*/
+
+.trailer-rail__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate( -50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba( 0, 0, 0, 0.68);
+    border: 1px solid rgba( 255, 255, 255, 0.30);
+    font-size: 0.85rem;
+    color: #fff;
+    pointer-events: none;
+}
+
+
+/*==================================================
+    Trailer Information
+==================================================*/
+
+.trailer-rail__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem;
+}
+
+
+/*==================================================
+    Trailer Title
+==================================================*/
+
+.trailer-rail__title {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.25;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/*==================================================
+    Release
+==================================================*/
+
+.trailer-rail__release {
+    font-size: 0.72rem;
+    color: rgba( 255, 255, 255, 0.62);
+}
+
+
+/*==================================================
+    Watch Trailer Button
+==================================================*/
+
+.trailer-rail__watch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    min-height: 2.2rem;
+    margin-top: 0.25rem;
+    padding: 0.45rem 0.7rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: rgba( 255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 180ms ease, transform 180ms ease;
+}
+
+.trailer-rail__watch:hover {
+    background: rgba( 255, 255, 255, 0.22);
+}
+
+.trailer-rail__watch:active {
+    transform: scale(0.97);
+}
+
+.trailer-rail__watch:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/*==================================================
+    Navigation Buttons
+==================================================*/
+
+.trailer-rail__button {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border: 1px solid rgba( 255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba( 0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background 180ms ease, transform 180ms ease, border-color 180ms ease;
+}
+
+.trailer-rail__button:hover {
+    background: rgba( 255, 255, 255, 0.16);
+    border-color: rgba( 255, 255, 255, 0.30);
+    transform: scale(1.05);
+}
+
+.trailer-rail__button:active {
+    transform: scale(0.95);
+}
+
+
+/*==================================================
+    Empty State
+==================================================*/
+
+.trailer-rail__empty {
+    width: 100%;
+    padding: 2rem;
+    text-align: center;
+    color: rgba( 255, 255, 255, 0.65);
+}
+
+
+/*==================================================
+    Responsive
+==================================================*/
+
+@media (max-width: 900px) {
+    .trailer-rail {
+        width: calc(100% - 3rem);
+        bottom: 3rem;
+    }
+    .trailer-rail__card {
+        flex-basis: 190px;
+        min-width: 190px;
+    }
+    .trailer-rail__media {
+        height: 105px;
+    }
+}
+
+@media (max-width: 600px) {
+    .trailer-rail {
+        width: calc(100% - 1.5rem);
+        bottom: 2rem;
+        gap: 0.5rem;
+        padding-top: 4rem;
+    }
+    .trailer-rail__card {
+        flex-basis: 165px;
+        min-width: 165px;
+    }
+    .trailer-rail__media {
+        height: 92px;
+    }
+    .trailer-rail__button {
+        width: 2.35rem;
+        height: 2.35rem;
+        font-size: 1.35rem;
+    }
+    .trailer-rail__info {
+        padding: 0.6rem;
+    }
+    .trailer-rail__title {
+        font-size: 0.8rem;
+    }
+}
+
+
+/*==================================================
+    Reduced Motion
+==================================================*/
+
+@media (prefers-reduced-motion: reduce) {
+    .trailer-rail__card,
+    .trailer-rail__button,
+    .trailer-rail__watch {
+        transition: none;
+    }
+    .trailer-rail__track {
+        scroll-behavior: auto;
+    }
+}

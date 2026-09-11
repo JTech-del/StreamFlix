@@ -1,24 +1,212 @@
 "use strict";
 
 /*==================================================
-    Media Rail Templates
+    StreamFlix Media Rail Templates
 
     Responsibility:
-    Generates HTML templates for MediaRail.
+
+    ✓ Generate Media Rail movie markup
+    ✓ Movie poster
+    ✓ Movie title
+    ✓ Rating
+    ✓ Theatre action
+    ✓ Thumb Up action
+    ✓ Thumb Down action
+    ✓ My List action
+    ✓ Download action
+    ✓ Accessibility hooks
+
+    Design Rule:
+
+    All StreamFlix Media Rails use the
+    SAME visual card structure.
+
+    Different rails should change:
+
+    ✓ Rail title
+    ✓ Movie data
+    ✓ Movie collection
+
+    They should NOT change:
+
+    ✗ Card structure
+    ✗ Card visual language
+    ✗ Action placement
+    ✗ Poster proportions
+    ✗ Rating position
+
+    Does NOT handle:
+
+    ✗ Theatre playback
+    ✗ Download logic
+    ✗ My List state
+    ✗ Application state
+    ✗ Business logic
 
 ==================================================*/
 
-import { mediaRailLayout }
 
-from "./mediaRailLayout.js";
+import {
+    mediaRailAttributes
+} from "./mediaRailLayout.js";
 
-const {
 
-    classes,
+const attributes =
+    mediaRailAttributes;
 
-    attributes
 
-} = mediaRailLayout;
+/*==================================================
+    Helpers
+==================================================*/
+
+function getMovieTitle(movie) {
+
+    if (
+        movie &&
+        movie.title
+    ) {
+
+        return movie.title;
+
+    }
+
+
+    return "Untitled";
+
+}
+
+
+function getMoviePoster(movie) {
+
+    if (
+        movie &&
+        movie.poster
+    ) {
+
+        return movie.poster;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getMovieId(movie) {
+
+    if (
+        movie &&
+        movie.id !== undefined &&
+        movie.id !== null
+    ) {
+
+        return movie.id;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getMovieSlug(movie) {
+
+    if (
+        movie &&
+        movie.slug
+    ) {
+
+        return movie.slug;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getMovieRating(movie) {
+
+    if (
+        movie &&
+        movie.rating !== undefined &&
+        movie.rating !== null &&
+        movie.rating !== ""
+    ) {
+
+        return movie.rating;
+
+    }
+
+
+    return "N/A";
+
+}
+
+
+function getMovieYear(movie) {
+
+    if (
+        movie &&
+        movie.year
+    ) {
+
+        return movie.year;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getMovieDuration(movie) {
+
+    if (
+        movie &&
+        movie.duration
+    ) {
+
+        return movie.duration;
+
+    }
+
+
+    if (
+        movie &&
+        movie.runtime
+    ) {
+
+        return movie.runtime;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getMovieQuality(movie) {
+
+    if (
+        movie &&
+        movie.quality
+    ) {
+
+        return movie.quality;
+
+    }
+
+
+    return "HD";
+
+}
+
 
 /*==================================================
     Templates
@@ -26,77 +214,445 @@ const {
 
 export const mediaRailTemplates = {
 
-    /*==============================================
-        Default Item
-    ==============================================*/
+
+    /*==================================================
+        Standard Media Rail Item
+
+        This is the PRIMARY StreamFlix card.
+
+        All recommendation-style rails should
+        use this template.
+
+        Examples:
+
+        Recommended
+        New Releases
+        Trending
+        Watchlist
+        Because You Watched
+        Popular Movies
+    ==================================================*/
 
     item(movie, index = 0) {
 
+        const title =
+            getMovieTitle(movie);
+
+
+        const poster =
+            getMoviePoster(movie);
+
+
+        const id =
+            getMovieId(movie);
+
+
+        const slug =
+            getMovieSlug(movie);
+
+
+        const rating =
+            getMovieRating(movie);
+
+
+        const year =
+            getMovieYear(movie);
+
+
+        const duration =
+            getMovieDuration(movie);
+
+
+        const quality =
+            getMovieQuality(movie);
+
+
         return `
 
-            <article
+        <article
 
-                class="mediaRail__item"
+            class="mediaRail__item"
 
-                ${attributes.slug}="${movie.slug}"
+            ${attributes.slug}="${slug}"
 
-                ${attributes.index}="${index}"
+            ${attributes.index}="${index}"
 
-                ${attributes.id}="${movie.id}"
+            ${attributes.id}="${id}"
 
-                tabindex="0"
+            tabindex="0"
 
-            >
+            role="article"
 
-                <div class="mediaRail__poster">
+            aria-selected="false"
 
-                    <img
+        >
 
-                        src="${movie.thumbnail}"
+            <!--==================================
+                Movie Poster
+            ==================================-->
 
-                        alt="${movie.title}"
+            <div class="mediaRail__poster">
 
-                        loading="lazy"
+                <img
 
-                    >
+                    src="${poster}"
+
+                    alt="${title}"
+
+                    loading="lazy"
+
+                >
+
+
+                <!--==================================
+                    Rating — TOP RIGHT
+                ==================================-->
+
+                <div
+
+                    class="mediaRail__rating"
+
+                    aria-label="Rating ${rating}"
+
+                >
+
+                    <i
+
+                        data-lucide="star"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+                    <span>
+
+                        ${rating}
+
+                    </span>
 
                 </div>
+
+
+                <!--==================================
+                    Cinematic Overlay
+                ==================================-->
 
                 <div class="mediaRail__overlay">
 
-                    <h3 class="mediaRail__title">
 
-                        ${movie.title}
+                    <!--==================================
+                        Theatre — CENTER
+                    ==================================-->
 
-                    </h3>
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--theatre"
+
+                        data-action="theatre"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Watch ${title} in Theatre"
+
+                        title="Watch in Theatre"
+
+                    >
+
+                        <i
+
+                            data-lucide="tv"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                        <span>
+
+                            Theatre
+
+                        </span>
+
+                    </button>
+
 
                 </div>
 
-            </article>
+            </div>
+
+
+            <!--==================================
+                Movie Content
+            ==================================-->
+
+            <div class="mediaRail__content">
+
+
+                <!--==================================
+                    Movie Title
+                ==================================-->
+
+                <h3 class="mediaRail__title">
+
+                    ${title}
+
+                </h3>
+
+
+                <!--==================================
+                    Movie Metadata
+                ==================================-->
+
+                <p class="mediaRail__meta">
+
+                    <span>
+
+                        ${year}
+
+                    </span>
+
+                    <span class="mediaRail__meta-separator">
+
+                        •
+
+                    </span>
+
+                    <span>
+
+                        ${duration}
+
+                    </span>
+
+                    <span class="mediaRail__meta-separator">
+
+                        •
+
+                    </span>
+
+                    <span>
+
+                        ${quality}
+
+                    </span>
+
+                </p>
+
+
+                <!--==================================
+                    Bottom Actions
+                ==================================-->
+
+                <div
+
+                    class="mediaRail__actions"
+
+                    aria-label="${title} actions"
+
+                >
+
+
+                    <!--==================================
+                        Thumb Up
+                    ==================================-->
+
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--thumb-up"
+
+                        data-action="thumb-up"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Like ${title}"
+
+                        title="Like"
+
+                    >
+
+                        <i
+
+                            data-lucide="thumbs-up"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                    </button>
+
+
+                    <!--==================================
+                        Thumb Down
+                    ==================================-->
+
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--thumb-down"
+
+                        data-action="thumb-down"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Dislike ${title}"
+
+                        title="Dislike"
+
+                    >
+
+                        <i
+
+                            data-lucide="thumbs-down"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                    </button>
+
+
+                    <!--==================================
+                        My List
+                    ==================================-->
+
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--my-list"
+
+                        data-action="my-list"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Add ${title} to My List"
+
+                        title="Add to My List"
+
+                    >
+
+                        <i
+
+                            data-lucide="plus"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                        <span>
+
+                            My List
+
+                        </span>
+
+                    </button>
+
+
+                    <!--==================================
+                        Download
+                    ==================================-->
+
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--download"
+
+                        data-action="download"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Download ${title}"
+
+                        title="Download"
+
+                    >
+
+                        <i
+
+                            data-lucide="download"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                    </button>
+
+
+                </div>
+
+            </div>
+
+        </article>
 
         `;
 
     },
 
-    /*==============================================
+
+    /*==================================================
         Playlist Item
-    ==============================================*/
+
+        Kept for existing playlist functionality.
+
+        This does NOT create a different visual
+        recommendation rail.
+
+        It remains available for playlist usage.
+    ==================================================*/
 
     playlist(movie, index = 0) {
+
+        const title =
+            getMovieTitle(movie);
+
+
+        const id =
+            getMovieId(movie);
+
+
+        const slug =
+            getMovieSlug(movie);
+
+
+        const thumbnail =
+            movie && movie.thumbnail ?
+            movie.thumbnail :
+            getMoviePoster(movie);
+
+
+        const genre =
+            movie && movie.genre ?
+            movie.genre :
+            "";
+
 
         return `
 
             <article
 
-                class="mediaRail__item mediaRail__item--playlist"
+                class="mediaRail__item
+                       mediaRail__item--playlist"
 
-                ${attributes.slug}="${movie.slug}"
+                ${attributes.slug}="${slug}"
 
                 ${attributes.index}="${index}"
 
-                ${attributes.id}="${movie.id}"
+                ${attributes.id}="${id}"
 
                 tabindex="0"
+
+                role="article"
+
+                aria-selected="false"
 
             >
 
@@ -104,9 +660,9 @@ export const mediaRailTemplates = {
 
                     <img
 
-                        src="${movie.thumbnail}"
+                        src="${thumbnail}"
 
-                        alt="${movie.title}"
+                        alt="${title}"
 
                         loading="lazy"
 
@@ -114,19 +670,117 @@ export const mediaRailTemplates = {
 
                 </div>
 
+
                 <div class="mediaRail__content">
 
-                    <h3>
+                    <h3 class="mediaRail__title">
 
-                        ${movie.title}
+                        ${title}
 
                     </h3>
 
-                    <p>
 
-                        ${movie.genre || ""}
+                    <p class="mediaRail__meta">
+
+                        ${genre}
 
                     </p>
+
+
+                    <div
+
+                        class="mediaRail__actions"
+
+                        aria-label="${title} actions"
+
+                    >
+
+
+                        <button
+
+                            type="button"
+
+                            class="mediaRail__action
+                                   mediaRail__action--theatre"
+
+                            data-action="theatre"
+
+                            data-movie-id="${id}"
+
+                            aria-label="Watch ${title} in Theatre"
+
+                            title="Watch in Theatre"
+
+                        >
+
+                            <i
+
+                                data-lucide="tv"
+
+                                aria-hidden="true"
+
+                            ></i>
+
+                        </button>
+
+
+                        <button
+
+                            type="button"
+
+                            class="mediaRail__action
+                                   mediaRail__action--download"
+
+                            data-action="download"
+
+                            data-movie-id="${id}"
+
+                            aria-label="Download ${title}"
+
+                            title="Download"
+
+                        >
+
+                            <i
+
+                                data-lucide="download"
+
+                                aria-hidden="true"
+
+                            ></i>
+
+                        </button>
+
+
+                        <button
+
+                            type="button"
+
+                            class="mediaRail__action
+                                   mediaRail__action--my-list"
+
+                            data-action="my-list"
+
+                            data-movie-id="${id}"
+
+                            aria-label="Add ${title} to My List"
+
+                            title="Add to My List"
+
+                        >
+
+                            <i
+
+                                data-lucide="plus"
+
+                                aria-hidden="true"
+
+                            ></i>
+
+                        </button>
+
+
+                    </div>
 
                 </div>
 
@@ -136,37 +790,190 @@ export const mediaRailTemplates = {
 
     },
 
-    /*==============================================
+
+    /*==================================================
         Poster Item
-    ==============================================*/
+
+        Preserved for compatibility with existing
+        StreamFlix components.
+
+        Recommendation rails should normally use
+        the standard "item" template so all rails
+        remain visually identical.
+    ==================================================*/
 
     poster(movie, index = 0) {
+
+        const title =
+            getMovieTitle(movie);
+
+
+        const poster =
+            getMoviePoster(movie);
+
+
+        const id =
+            getMovieId(movie);
+
+
+        const slug =
+            getMovieSlug(movie);
+
 
         return `
 
             <article
 
-                class="mediaRail__item mediaRail__item--poster"
+                class="mediaRail__item
+                       mediaRail__item--poster"
 
-                ${attributes.slug}="${movie.slug}"
+                ${attributes.slug}="${slug}"
 
                 ${attributes.index}="${index}"
 
-                ${attributes.id}="${movie.id}"
+                ${attributes.id}="${id}"
 
                 tabindex="0"
 
+                role="article"
+
+                aria-selected="false"
+
             >
 
-                <img
+                <div class="mediaRail__poster">
 
-                    src="${movie.poster}"
+                    <img
 
-                    alt="${movie.title}"
+                        src="${poster}"
 
-                    loading="lazy"
+                        alt="${title}"
 
-                >
+                        loading="lazy"
+
+                    >
+
+
+                    <!--==================================
+                        Theatre
+                    ==================================-->
+
+                    <button
+
+                        type="button"
+
+                        class="mediaRail__action
+                               mediaRail__action--theatre"
+
+                        data-action="theatre"
+
+                        data-movie-id="${id}"
+
+                        aria-label="Watch ${title} in Theatre"
+
+                        title="Watch in Theatre"
+
+                    >
+
+                        <i
+
+                            data-lucide="tv"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+                    </button>
+
+
+                    <!--==================================
+                        Overlay
+                    ==================================-->
+
+                    <div class="mediaRail__overlay">
+
+
+                        <h3 class="mediaRail__title">
+
+                            ${title}
+
+                        </h3>
+
+
+                        <div
+
+                            class="mediaRail__actions"
+
+                            aria-label="${title} actions"
+
+                        >
+
+                            <button
+
+                                type="button"
+
+                                class="mediaRail__action
+                                       mediaRail__action--download"
+
+                                data-action="download"
+
+                                data-movie-id="${id}"
+
+                                aria-label="Download ${title}"
+
+                                title="Download"
+
+                            >
+
+                                <i
+
+                                    data-lucide="download"
+
+                                    aria-hidden="true"
+
+                                ></i>
+
+                            </button>
+
+
+                            <button
+
+                                type="button"
+
+                                class="mediaRail__action
+                                       mediaRail__action--my-list"
+
+                                data-action="my-list"
+
+                                data-movie-id="${id}"
+
+                                aria-label="Add ${title} to My List"
+
+                                title="Add to My List"
+
+                            >
+
+                                <i
+
+                                    data-lucide="plus"
+
+                                    aria-hidden="true"
+
+                                ></i>
+
+                                <span>
+
+                                    My List
+
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </article>
 

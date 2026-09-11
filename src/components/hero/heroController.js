@@ -6,10 +6,12 @@
     Responsibility:
     Controls the Hero component.
 
+    Media source of truth:
+    Backend
 ==================================================*/
 
-import { HERO_DATA } from "../../data/hero/heroData.js";
 import { heroView } from "./heroView.js";
+
 
 export class HeroController {
 
@@ -21,102 +23,45 @@ export class HeroController {
 
     }
 
+
     /*==============================================
         Initialize
     ==============================================*/
 
-    init() {
+    init(movie = null) {
+
+        if (!this.rootElement) {
+
+            console.error(
+                "Hero root element not found."
+            );
+
+            return;
+
+        }
 
         heroView.init(this.rootElement);
 
-        this.loadFeaturedHero();
+        if (!movie) {
+
+            console.warn(
+                "Hero initialized without a movie."
+            );
+
+            return;
+
+        }
+
+        this.currentHero = movie;
+
+        heroView.render(
+            this.currentHero
+        );
 
         this.bindEvents();
 
     }
 
-    /*==============================================
-        Load Featured Hero
-    ==============================================*/
-    /*
-        loadFeaturedHero() {
-
-            this.currentHero =
-                HERO_DATA.find(movie => movie.featured);
-
-            if (!this.currentHero) {
-
-                console.warn("No featured movie found.");
-
-                return;
-
-            }
-
-            heroView.render(this.currentHero);
-
-        }
-            */
-    loadFeaturedHero() {
-
-            const featuredHero = HERO_DATA.find(movie => movie.featured);
-
-            if (!featuredHero) {
-
-                console.warn("No featured hero found.");
-
-                return;
-
-            }
-
-            this.currentHero = featuredHero;
-
-            heroView.render(this.currentHero);
-        }
-        /*==============================================
-            Events
-        ==============================================*/
-
-    bindEvents() {
-
-        const {
-
-            watchButton,
-            trailerButton,
-            listButton
-
-        } = heroView.elements;
-
-        if (watchButton) {
-
-            watchButton.addEventListener("click", () => {
-
-                console.log("Watch:", this.currentHero.title);
-
-            });
-
-        }
-
-        if (trailerButton) {
-
-            trailerButton.addEventListener("click", () => {
-
-                console.log("Trailer:", this.currentHero.title);
-
-            });
-
-        }
-
-        if (listButton) {
-
-            listButton.addEventListener("click", () => {
-
-                console.log("My List:", this.currentHero.title);
-
-            });
-
-        }
-
-    }
 
     /*==============================================
         Update Hero
@@ -126,15 +71,111 @@ export class HeroController {
 
         if (!movie) {
 
+            console.warn(
+                "Hero update received no movie."
+            );
+
             return;
 
         }
 
+        console.log(
+            "Hero updated with backend movie:",
+            movie
+        );
+
+        console.log(
+            "Hero poster URL:",
+            movie.posterUrl
+        );
+
+        console.log(
+            "Hero backdrop URL:",
+            movie.backdropUrl
+        );
+
         this.currentHero = movie;
 
-        heroView.render(this.currentHero);
+        heroView.render(
+            this.currentHero
+        );
 
         this.bindEvents();
+
+    }
+
+
+    /*==============================================
+        Events
+    ==============================================*/
+
+    bindEvents() {
+
+        const {
+            watchButton,
+            trailerButton,
+            listButton
+        } = heroView.elements;
+
+
+        if (watchButton) {
+
+            watchButton.onclick = () => {
+
+                if (!this.currentHero) {
+
+                    return;
+
+                }
+
+                console.log(
+                    "Watch:",
+                    this.currentHero.title
+                );
+
+            };
+
+        }
+
+
+        if (trailerButton) {
+
+            trailerButton.onclick = () => {
+
+                if (!this.currentHero) {
+
+                    return;
+
+                }
+
+                console.log(
+                    "Trailer:",
+                    this.currentHero.title
+                );
+
+            };
+
+        }
+
+
+        if (listButton) {
+
+            listButton.onclick = () => {
+
+                if (!this.currentHero) {
+
+                    return;
+
+                }
+
+                console.log(
+                    "My List:",
+                    this.currentHero.title
+                );
+
+            };
+
+        }
 
     }
 

@@ -1,15 +1,765 @@
+/*==================================================
+    StreamFlix Media Rail
+
+    Responsibility:
+    Styles the MediaRail component.
+
+    Design Rule:
+    Matches the StreamFlix Thumbnail rail exactly.
+
+    The Media Rail changes only:
+    - Rail data
+    - Rail title
+    - Movie collection
+
+    It does NOT change:
+    - Card structure
+    - Card proportions
+    - Action placement
+    - Rating placement
+    - Navigation appearance
+==================================================*/
+
+
+/*==============================================
+    Section
+==============================================*/
+
+.mediaRail {
+    width: 95%;
+    padding: 2rem 0 3rem;
+    margin: 10px auto;
+}
+
+
+/*==============================================
+    Container
+
+    Minimum 1.5rem breathing room
+    on both sides of the application.
+==============================================*/
+
+.mediaRail__container {
+    width: min( calc(100% - 3rem), 1600px);
+    margin: 0 auto;
+}
+
+
+/*==============================================
+    Header
+==============================================*/
+
+.mediaRail__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+}
+
+.mediaRail__heading {
+    color: var(--color-text);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.mediaRail__navigation {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+
+/*==============================================
+    Slider
+==============================================*/
+
+.mediaRail__slider {
+    position: relative;
+    width: 100%;
+}
+
+
+/*==============================================
+    Viewport
+==============================================*/
+
+.mediaRail__viewport {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+}
+
+.mediaRail__viewport::-webkit-scrollbar {
+    display: none;
+}
+
+
+/*==============================================
+    Track
+==============================================*/
+
+.mediaRail__track {
+    display: flex;
+    gap: 1.2rem;
+    padding-bottom: .5rem;
+}
+
+
+/*==============================================
+    Card
+==============================================*/
+
+.mediaRail__item {
+    position: relative;
+    flex: 0 0 230px;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .08);
+    transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+
+
+/*==============================================
+    Hover
+==============================================*/
+
+.mediaRail__item:hover {
+    transform: translateY(-8px);
+    border-color: rgba(229, 9, 20, .45);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .35), 0 0 20px rgba(229, 9, 20, .18);
+}
+
+
+/*==============================================
+    Active Card
+==============================================*/
+
 .mediaRail__item.is-active {
-    /* Playing */
+    transform: translateY(-10px);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(229, 9, 20, .35), 0 25px 50px rgba(0, 0, 0, .45), 0 0 35px rgba(229, 9, 20, .25);
 }
 
-.mediaRail__item.is-focused {
-    /* Keyboard Focus */
+.mediaRail__item.is-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient( 90deg, #e50914, #ff6a00);
+    z-index: 10;
 }
 
-.mediaRail__item.is-focused {
-    outline: 2px solid var(--primary);
+
+/*==============================================
+    Poster
+==============================================*/
+
+.mediaRail__poster {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
 }
 
-.mediaRail__item.is-animating {
-    animation: railFocus .3s ease;
+.mediaRail__poster img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    display: block;
+    transition: transform .45s ease;
+}
+
+.mediaRail__item:hover .mediaRail__poster img,
+.mediaRail__item.is-active .mediaRail__poster img {
+    transform: scale(1.08);
+}
+
+
+/*==============================================
+    Rating
+==============================================*/
+
+.mediaRail__rating {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    z-index: 8;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .35rem .55rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(var(--blur-sm));
+    color: var(--color-text);
+    font-size: .75rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+
+.mediaRail__rating svg {
+    display: block;
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+    stroke: currentColor;
+    flex-shrink: 0;
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/*==============================================
+    Overlay
+==============================================*/
+
+.mediaRail__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-dark);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.mediaRail__item:hover .mediaRail__overlay {
+    opacity: 1;
+}
+
+.mediaRail__item.is-active .mediaRail__overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, .32);
+}
+
+
+/*==============================================
+    Theatre Button
+==============================================*/
+
+.mediaRail__action--theatre {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(var(--blur-sm));
+    color: var(--color-text);
+    cursor: pointer;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.85);
+    transition: opacity var(--transition-normal), transform var(--transition-spring), background var(--transition-fast);
+    z-index: 5;
+    pointer-events: auto;
+}
+
+
+/*==============================================
+    Theatre Visibility
+==============================================*/
+
+.mediaRail__item:hover .mediaRail__action--theatre {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.mediaRail__item.is-active .mediaRail__action--theatre {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    background: rgba(229, 9, 20, .95);
+}
+
+
+/*==============================================
+    Theatre Hover
+==============================================*/
+
+.mediaRail__action--theatre:hover {
+    background: var(--color-primary);
+    transform: translate(-50%, -50%) scale(1.08);
+}
+
+
+/*==============================================
+    Theatre Lucide Icon
+
+    Explicitly force visibility.
+==============================================*/
+
+.mediaRail__action--theatre svg {
+    display: block !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px;
+    min-height: 24px;
+    color: currentColor !important;
+    stroke: currentColor !important;
+    stroke-width: 2.5;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0;
+}
+
+
+/*==============================================
+    Content
+==============================================*/
+
+.mediaRail__content {
+    padding: 1rem;
+}
+
+
+/*==============================================
+    Title
+==============================================*/
+
+.mediaRail__title {
+    margin-bottom: .6rem;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    transition: color .35s ease;
+}
+
+.mediaRail__item.is-active .mediaRail__title {
+    color: #fff;
+}
+
+
+/*==============================================
+    Metadata
+==============================================*/
+
+.mediaRail__meta {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .35rem;
+    color: var(--text-secondary);
+    font-size: .72rem;
+    line-height: 1;
+    white-space: nowrap;
+    transition: color .35s ease;
+}
+
+.mediaRail__meta span {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.mediaRail__meta-separator {
+    opacity: .55;
+}
+
+.mediaRail__item.is-active .mediaRail__meta {
+    color: rgba(255, 255, 255, .82);
+}
+
+
+/*==============================================
+    Actions
+==============================================*/
+
+.mediaRail__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .45rem;
+    width: 100%;
+    margin-top: .75rem;
+    flex-wrap: nowrap;
+}
+
+
+/*==============================================
+    Action Button
+==============================================*/
+
+.mediaRail__action {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(var(--blur-sm));
+    color: rgba(255, 255, 255, .82);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+
+/*==============================================
+    Action Icons
+
+    Force Lucide SVG visibility.
+==============================================*/
+
+.mediaRail__action svg {
+    display: block !important;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    min-height: 16px;
+    flex-shrink: 0;
+    color: currentColor !important;
+    stroke: currentColor !important;
+    stroke-width: 2.2;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+/*==============================================
+    Hide Action Text
+==============================================*/
+
+.mediaRail__action span {
+    display: none;
+}
+
+
+/*==============================================
+    Action Hover
+==============================================*/
+
+.mediaRail__action:hover {
+    background: rgba(255, 255, 255, .14);
+    border-color: rgba(255, 255, 255, .3);
+    color: var(--color-text);
+    transform: translateY(-2px);
+}
+
+
+/*==============================================
+    Action Active
+==============================================*/
+
+.mediaRail__action:active {
+    transform: scale(.92);
+}
+
+
+/*==============================================
+    Action Variants
+==============================================*/
+
+.mediaRail__action--my-list,
+.mediaRail__action--thumb-up,
+.mediaRail__action--thumb-down,
+.mediaRail__action--download {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex: 0 0 34px;
+}
+
+
+/*==============================================
+    Navigation Buttons
+
+    ALWAYS visible on desktop.
+==============================================*/
+
+.mediaRail__button {
+    position: absolute;
+    top: 50%;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 20;
+    background: var(--color-glass);
+    backdrop-filter: blur(var(--blur-md));
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-50%);
+    transition: background var(--transition-normal), transform var(--transition-normal), box-shadow var(--transition-normal);
+    opacity: 1;
+}
+
+
+/*==============================================
+    Navigation Icons
+
+    Force Lucide visibility.
+==============================================*/
+
+.mediaRail__button svg {
+    display: block !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px;
+    min-height: 24px;
+    color: currentColor !important;
+    stroke: currentColor !important;
+    stroke-width: 2.5;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0;
+}
+
+
+/*==============================================
+    Navigation Hover
+==============================================*/
+
+.mediaRail__button:hover {
+    background: var(--color-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-50%) scale(1.05);
+}
+
+
+/*==============================================
+    Navigation Active
+==============================================*/
+
+.mediaRail__button:active {
+    transform: translateY(-50%) scale(.94);
+}
+
+
+/*==============================================
+    Previous
+==============================================*/
+
+.mediaRail__button--prev {
+    left: -18px;
+}
+
+
+/*==============================================
+    Next
+==============================================*/
+
+.mediaRail__button--next {
+    right: -18px;
+}
+
+
+/*==============================================
+    Disabled Navigation
+
+    Keep visible but visually disabled.
+==============================================*/
+
+.mediaRail__button:disabled {
+    opacity: .35;
+    cursor: default;
+    pointer-events: none;
+}
+
+
+/*==============================================
+    Interaction Lock
+==============================================*/
+
+.mediaRail__track.is-disabled {
+    pointer-events: none;
+}
+
+
+/*==============================================
+    Focus Ring
+==============================================*/
+
+.mediaRail__item:focus-visible {
+    outline: none;
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+    transform: translateY(-4px);
+}
+
+.mediaRail__item.is-active:focus-visible {
+    box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-glow);
+}
+
+
+/*==============================================
+    Touch Devices
+==============================================*/
+
+@media (hover: none) {
+    .mediaRail__overlay {
+        opacity: 1;
+    }
+    .mediaRail__action--theatre {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+
+/*==============================================
+    Responsive — 1200px
+==============================================*/
+
+@media (max-width: 1200px) {
+    .mediaRail__item {
+        flex: 0 0 220px;
+    }
+}
+
+
+/*==============================================
+    Responsive — 992px
+==============================================*/
+
+@media (max-width: 992px) {
+    .mediaRail__heading {
+        font-size: 1.25rem;
+    }
+    .mediaRail__item {
+        flex: 0 0 220px;
+    }
+}
+
+
+/*==============================================
+    Responsive — 768px
+==============================================*/
+
+@media (max-width: 768px) {
+    .mediaRail {
+        padding: 1.5rem 0;
+    }
+    .mediaRail__container {
+        width: calc(100% - 2rem);
+    }
+    .mediaRail__item {
+        flex: 0 0 200px;
+    }
+    .mediaRail__button {
+        display: none !important;
+    }
+    .mediaRail__content {
+        padding: .8rem;
+    }
+}
+
+
+/*==============================================
+    Responsive — 480px
+==============================================*/
+
+@media (max-width: 480px) {
+    .mediaRail__heading {
+        font-size: 1.1rem;
+    }
+    .mediaRail__item {
+        flex: 0 0 140px;
+    }
+    .mediaRail__content {
+        padding: .75rem;
+    }
+    .mediaRail__title {
+        font-size: .9rem;
+    }
+    .mediaRail__meta {
+        font-size: .75rem;
+    }
+    .mediaRail__actions {
+        gap: .3rem;
+        margin-top: .6rem;
+    }
+    .mediaRail__action,
+    .mediaRail__action--my-list,
+    .mediaRail__action--thumb-up,
+    .mediaRail__action--thumb-down,
+    .mediaRail__action--download {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        flex-basis: 30px;
+    }
+    .mediaRail__action svg {
+        width: 14px !important;
+        height: 14px !important;
+        min-width: 14px;
+        min-height: 14px;
+    }
+    .mediaRail__rating {
+        top: .55rem;
+        right: .55rem;
+        padding: .3rem .45rem;
+        font-size: .7rem;
+    }
+    .mediaRail__rating svg {
+        width: 12px !important;
+        height: 12px !important;
+        min-width: 12px;
+        min-height: 12px;
+    }
+    .mediaRail__action--theatre {
+        width: 48px;
+        height: 48px;
+    }
+    .mediaRail__action--theatre svg {
+        width: 22px !important;
+        height: 22px !important;
+        min-width: 22px;
+        min-height: 22px;
+    }
+}
+
+
+/*==============================================
+    Very Small Screens — 360px
+==============================================*/
+
+@media (max-width: 360px) {
+    .mediaRail__item {
+        flex: 0 0 130px;
+    }
+    .mediaRail__actions {
+        gap: .2rem;
+    }
+    .mediaRail__action,
+    .mediaRail__action--my-list,
+    .mediaRail__action--thumb-up,
+    .mediaRail__action--thumb-down,
+    .mediaRail__action--download {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        flex-basis: 28px;
+    }
+    .mediaRail__action svg {
+        width: 13px !important;
+        height: 13px !important;
+        min-width: 13px;
+        min-height: 13px;
+    }
 }
