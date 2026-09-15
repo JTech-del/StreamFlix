@@ -31,3 +31,8 @@ public/assets/videos/
 # Local RabbitMQ / Erlang tooling
 backend/erlang/
 backend/otp_win64_29.0.6.zip
+
+# Environment variables
+.env
+.env.*
+!.env.example
