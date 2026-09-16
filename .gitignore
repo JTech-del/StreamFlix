@@ -36,3 +36,5 @@ backend/otp_win64_29.0.6.zip
 .env
 .env.*
 !.env.example
+
+database-backup/
