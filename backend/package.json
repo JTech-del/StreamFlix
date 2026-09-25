@@ -14,10 +14,14 @@
   "type": "module",
   "dependencies": {
     "amqplib": "^2.0.1",
+    "argon2": "^0.45.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.9.4"
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "resend": "^6.29.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

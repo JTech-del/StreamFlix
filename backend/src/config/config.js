@@ -1,14 +1,5 @@
-/*==================================================
-    StreamFlix
+"use strict";
 
-    Application Configuration
-
-    Responsibility
-
-    ✓ Centralize environment configuration
-    ✓ Expose database configuration
-    ✓ Keep secrets outside source code
-==================================================*/
 import "dotenv/config";
 
 const config = {
@@ -16,6 +7,18 @@ const config = {
 
     database: {
         mongoUri: process.env.MONGODB_URI
+    },
+
+    jwt: {
+        accessSecret: process.env.JWT_ACCESS_SECRET,
+        refreshSecret: process.env.JWT_REFRESH_SECRET,
+        accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
+        refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d"
+    },
+
+    email: {
+        resendApiKey: process.env.RESEND_API_KEY,
+        from: process.env.EMAIL_FROM
     },
 
     tmdb: {

@@ -12,6 +12,8 @@ import videoRoutes from "./routes/videoRoutes.js";
 import imageRoutes from "./routes/imageRoutes.js";
 import trailerRoutes from "./routes/trailerRoutes.js";
 import tmdbRoutes from "./routes/tmdbRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import sessionRoutes from "./routes/sessionRoutes.js";
 
 /*==================================================
     StreamFlix Backend Server
@@ -111,10 +113,14 @@ app.get("/api/health", (req, res) => {
     Movie Routes
 ==================================================*/
 
+app.use("/api/auth", authRoutes);
+
 app.use(
-    "/api",
-    movieRoutes
+    "/api/sessions",
+    sessionRoutes
 );
+
+app.use("/api", movieRoutes);
 
 /*==================================================*/
 app.use(
@@ -205,3 +211,6 @@ async function startServer() {
 
 
 startServer();
+
+
+
