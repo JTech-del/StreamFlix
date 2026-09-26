@@ -489,3 +489,88 @@ test(
         );
     }
 );
+
+test(
+    "POST /api/auth/logout revokes the authenticated refresh session",
+    async () => {
+        const email = "logout-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } =
+            await import("../../src/services/authService.js");
+
+        const passwordHash =
+            await hashPassword(password);
+
+        const user = await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse =
+            await request(app)
+                .post("/api/auth/login")
+                .send({
+                    email,
+                    password
+                });
+
+        assert.equal(loginResponse.status, 200);
+        assert.equal(loginResponse.body.success, true);
+
+        const refreshToken =
+            loginResponse.body.data.refreshToken;
+
+        const sessionId =
+            loginResponse.body.data.sessionId;
+
+        const logoutResponse =
+            await request(app)
+                .post("/api/auth/logout")
+                .send({
+                    refreshToken
+                });
+
+        assert.equal(logoutResponse.status, 200);
+        assert.equal(logoutResponse.body.success, true);
+
+        const session =
+            await Session.findOne({
+                sessionId
+            });
+
+        assert.ok(session);
+
+        assert.equal(
+            session.userId.toString(),
+            user._id.toString()
+        );
+
+        assert.ok(session.revokedAt);
+
+        assert.equal(
+            session.revocationReason,
+            "logout"
+        );
+
+        const refreshAfterLogout =
+            await request(app)
+                .post("/api/auth/refresh")
+                .send({
+                    refreshToken
+                });
+
+        assert.equal(
+            refreshAfterLogout.status,
+            401
+        );
+
+        assert.equal(
+            refreshAfterLogout.body.success,
+            false
+        );
+    }
+);
