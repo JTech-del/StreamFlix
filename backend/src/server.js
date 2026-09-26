@@ -210,7 +210,8 @@ async function startServer() {
 }
 
 
-startServer();
+export { app, startServer };
 
-
-
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    startServer();
+}

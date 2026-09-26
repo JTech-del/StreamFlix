@@ -237,7 +237,8 @@ export function createRefreshToken(user, sessionId) {
         {
             sub: user._id.toString(),
             sid: sessionId,
-            type: "refresh"
+            type: "refresh",
+            jti: crypto.randomUUID()
         },
         config.jwt.refreshSecret,
         {
@@ -292,5 +293,3 @@ export function verifyRefreshToken(token) {
 
     return payload;
 }
-
-
