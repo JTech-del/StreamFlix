@@ -3,11 +3,15 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { Resend } from "resend";
 import request from "supertest";
 
-const mongoServer = await MongoMemoryServer.create();
+const mongoServer = await MongoMemoryReplSet.create({
+    replSet: {
+        count: 1
+    }
+});
 
 process.env.MONGODB_URI = mongoServer.getUri("streamflix_test");
 
@@ -570,6 +574,150 @@ test(
 
         assert.equal(
             refreshAfterLogout.body.success,
+            false
+        );
+    }
+);
+
+
+
+test(
+    "POST /api/auth/reset-password resets the password and revokes existing sessions",
+    async () => {
+        const email = "reset-password-integration@example.com";
+        const oldPassword = "StrongPassword123!";
+        const newPassword = "NewStrongPassword456!";
+
+        const {
+            hashPassword,
+            verifyPassword
+        } = await import(
+            "../../src/services/authService.js"
+        );
+
+        const {
+            createVerificationToken
+        } = await import(
+            "../../src/services/verificationTokenService.js"
+        );
+
+        const passwordHash =
+            await hashPassword(oldPassword);
+
+        const user = await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse =
+            await request(app)
+                .post("/api/auth/login")
+                .send({
+                    email,
+                    password: oldPassword
+                });
+
+        assert.equal(
+            loginResponse.status,
+            200
+        );
+
+        assert.equal(
+            loginResponse.body.success,
+            true
+        );
+
+        const refreshToken =
+            loginResponse.body.data.refreshToken;
+
+        const sessionId =
+            loginResponse.body.data.sessionId;
+
+        const {
+            token: resetToken
+        } = await createVerificationToken(
+            user._id,
+            "password_reset"
+        );
+
+        const resetResponse =
+            await request(app)
+                .post("/api/auth/reset-password")
+                .send({
+                    token: resetToken,
+                    newPassword
+                });
+
+        assert.equal(
+            resetResponse.status,
+            200
+        );
+
+        assert.equal(
+            resetResponse.body.success,
+            true
+        );
+
+        assert.equal(
+            resetResponse.body.message,
+            "Password reset successfully."
+        );
+
+        const updatedUser =
+            await User.findById(user._id)
+                .select("+passwordHash");
+
+        assert.ok(updatedUser);
+
+        assert.equal(
+            await verifyPassword(
+                newPassword,
+                updatedUser.passwordHash
+            ),
+            true
+        );
+
+        assert.equal(
+            await verifyPassword(
+                oldPassword,
+                updatedUser.passwordHash
+            ),
+            false
+        );
+
+        const session =
+            await Session.findOne({
+                sessionId
+            });
+
+        assert.ok(session);
+
+        assert.ok(
+            session.revokedAt
+        );
+
+        assert.equal(
+            session.revocationReason,
+            "password_reset"
+        );
+
+        const refreshAfterReset =
+            await request(app)
+                .post("/api/auth/refresh")
+                .send({
+                    refreshToken
+                });
+
+        assert.equal(
+            refreshAfterReset.status,
+            401
+        );
+
+        assert.equal(
+            refreshAfterReset.body.success,
             false
         );
     }
