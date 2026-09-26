@@ -385,3 +385,107 @@ test(
         assert.ok(loggedInUser.lastLoginAt);
     }
 );
+
+test(
+    "POST /api/auth/refresh rotates the refresh token and invalidates the previous token",
+    async () => {
+        const email = "refresh-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } =
+            await import("../../src/services/authService.js");
+
+        const passwordHash =
+            await hashPassword(password);
+
+        const user = await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse =
+            await request(app)
+                .post("/api/auth/login")
+                .send({
+                    email,
+                    password
+                });
+
+        assert.equal(loginResponse.status, 200);
+        assert.equal(loginResponse.body.success, true);
+
+        const oldRefreshToken =
+            loginResponse.body.data.refreshToken;
+
+        const sessionId =
+            loginResponse.body.data.sessionId;
+
+        const refreshResponse =
+            await request(app)
+                .post("/api/auth/refresh")
+                .send({
+                    refreshToken: oldRefreshToken
+                });
+
+        assert.equal(refreshResponse.status, 200);
+        assert.equal(refreshResponse.body.success, true);
+
+        assert.equal(
+            typeof refreshResponse.body.data.accessToken,
+            "string"
+        );
+
+        assert.equal(
+            typeof refreshResponse.body.data.refreshToken,
+            "string"
+        );
+
+        assert.equal(
+            refreshResponse.body.data.sessionId,
+            sessionId
+        );
+
+        const newRefreshToken =
+            refreshResponse.body.data.refreshToken;
+
+        assert.notEqual(
+            newRefreshToken,
+            oldRefreshToken
+        );
+
+        const session =
+            await Session.findOne({
+                sessionId
+            }).select("+refreshTokenHash");
+
+        assert.ok(session);
+        assert.equal(
+            session.userId.toString(),
+            user._id.toString()
+        );
+        assert.equal(
+            session.revokedAt,
+            null
+        );
+
+        const oldTokenResponse =
+            await request(app)
+                .post("/api/auth/refresh")
+                .send({
+                    refreshToken: oldRefreshToken
+                });
+
+        assert.equal(
+            oldTokenResponse.status,
+            401
+        );
+
+        assert.equal(
+            oldTokenResponse.body.success,
+            false
+        );
+    }
+);
