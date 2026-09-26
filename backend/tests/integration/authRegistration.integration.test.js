@@ -207,3 +207,181 @@ test(
         );
     }
 );
+
+const { createVerificationToken } =
+    await import("../../src/services/verificationTokenService.js");
+
+test(
+    "GET /api/auth/verify-email verifies the user and consumes the verification token",
+    async () => {
+        const email = "verify-integration@example.com";
+
+        const user = await User.create({
+            email,
+            passwordHash: "integration-test-password-hash",
+            role: "user",
+            status: "active",
+            emailVerified: false
+        });
+
+        const { token } =
+            await createVerificationToken(
+                user._id,
+                "email_verification"
+            );
+
+        const response =
+            await request(app)
+                .get("/api/auth/verify-email")
+                .query({ token });
+
+        assert.equal(response.status, 200);
+
+        assert.equal(
+            response.body.success,
+            true
+        );
+
+        assert.equal(
+            response.body.message,
+            "Email verified successfully."
+        );
+
+        const verifiedUser =
+            await User.findById(user._id);
+
+        assert.ok(verifiedUser);
+        assert.equal(
+            verifiedUser.emailVerified,
+            true
+        );
+
+        const consumedToken =
+            await VerificationToken.findOne({
+                userId: user._id,
+                purpose: "email_verification"
+            });
+
+        assert.ok(consumedToken);
+        assert.ok(consumedToken.usedAt);
+        assert.equal(
+            consumedToken.revokedAt,
+            null
+        );
+    }
+);
+
+const Session =
+    (await import("../../src/models/Session.js")).default;
+
+test(
+    "POST /api/auth/login authenticates a verified user and creates a session",
+    async () => {
+        const email = "login-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } =
+            await import("../../src/services/authService.js");
+
+        const passwordHash =
+            await hashPassword(password);
+
+        const user = await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const response =
+            await request(app)
+                .post("/api/auth/login")
+                .send({
+                    email,
+                    password
+                });
+
+        assert.equal(response.status, 200);
+        assert.equal(response.body.success, true);
+
+        assert.equal(
+            typeof response.body.data.accessToken,
+            "string"
+        );
+
+        assert.equal(
+            typeof response.body.data.refreshToken,
+            "string"
+        );
+
+        assert.equal(
+            typeof response.body.data.sessionId,
+            "string"
+        );
+
+        assert.equal(
+            response.body.data.user.email,
+            email
+        );
+
+        assert.equal(
+            response.body.data.user.role,
+            "user"
+        );
+
+        assert.equal(
+            response.body.data.user.status,
+            "active"
+        );
+
+        assert.equal(
+            response.body.data.user.emailVerified,
+            true
+        );
+
+        assert.equal(
+            response.body.data.user.passwordHash,
+            undefined
+        );
+
+        assert.equal(
+            response.body.data.sessionId.length > 0,
+            true
+        );
+
+        const session =
+            await Session.findOne({
+                sessionId:
+                    response.body.data.sessionId
+            }).select("+refreshTokenHash");
+
+        assert.ok(session);
+
+        assert.equal(
+            session.userId.toString(),
+            user._id.toString()
+        );
+
+        assert.ok(session.refreshTokenHash);
+
+        assert.notEqual(
+            session.refreshTokenHash,
+            response.body.data.refreshToken
+        );
+
+        assert.equal(
+            session.revokedAt,
+            null
+        );
+
+        assert.ok(session.expiresAt);
+        assert.ok(session.lastUsedAt);
+
+        const loggedInUser =
+            await User.findById(user._id);
+
+        assert.ok(loggedInUser);
+        assert.ok(loggedInUser.lastLoginAt);
+    }
+);
