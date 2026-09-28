@@ -47,6 +47,10 @@ import {
     updateMovieMetadataController
 } from "../controllers/movieMetadataController.js";
 
+import {
+    updateMovieMediaController
+} from "../controllers/movieMediaController.js";
+
 const router = express.Router();
 
 router.get(
@@ -116,6 +120,13 @@ router.patch(
 );
 
 router.patch(
+    "/movies/:movieId/media",
+    requireAuthentication,
+    requireRole("admin"),
+    updateMovieMediaController
+);
+
+router.patch(
     "/movies/:movieId/publish",
     requireAuthentication,
     requireRole("admin"),
@@ -151,3 +162,4 @@ router.patch(
 );
 
 export default router;
+
