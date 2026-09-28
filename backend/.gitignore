@@ -1,2 +1,7 @@
-
 .env
+
+# Temporary catalog/import files
+scripts/tmdbMovieIds.tmp
+
+# Local recovery backup
+tests/integration/authRegistration.integration.test.corrupted-backup.js

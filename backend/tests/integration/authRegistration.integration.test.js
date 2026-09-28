@@ -722,3 +722,278 @@ test(
         );
     }
 );
+
+test(
+    "GET /api/sessions returns the authenticated user's active sessions",
+    async () => {
+        const email = "sessions-list-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } = await import("../../src/services/authService.js");
+        const passwordHash = await hashPassword(password);
+
+        await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse = await request(app)
+            .post("/api/auth/login")
+            .send({ email, password });
+
+        assert.equal(loginResponse.status, 200);
+
+        const accessToken = loginResponse.body.data.accessToken;
+        const sessionId = loginResponse.body.data.sessionId;
+
+        const response = await request(app)
+            .get("/api/sessions/")
+            .set("Authorization", `Bearer ${accessToken}`);
+
+        assert.equal(response.status, 200);
+        assert.equal(response.body.success, true);
+        assert.equal(response.body.data.sessions.length, 1);
+
+        const session = response.body.data.sessions[0];
+
+        assert.equal(session.sessionId, sessionId);
+        assert.equal(session.isCurrent, true);
+        assert.equal(session.device, null);
+        assert.equal(session.ipAddress, "::ffff:127.0.0.1");
+        assert.equal(session.userAgent, null);
+
+        assert.ok(session.createdAt);
+        assert.ok(session.lastUsedAt);
+        assert.ok(session.expiresAt);
+
+        assert.equal("refreshTokenHash" in session, false);
+        assert.equal("passwordHash" in session, false);
+    }
+);
+
+test(
+    "POST /api/sessions/logout-others revokes all other active sessions",
+    async () => {
+        const email = "logout-others-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } = await import("../../src/services/authService.js");
+        const passwordHash = await hashPassword(password);
+
+        await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const firstLogin = await request(app)
+            .post("/api/auth/login")
+            .send({ email, password });
+
+        assert.equal(firstLogin.status, 200);
+
+        const firstAccessToken = firstLogin.body.data.accessToken;
+        const firstSessionId = firstLogin.body.data.sessionId;
+
+        const secondLogin = await request(app)
+            .post("/api/auth/login")
+            .send({ email, password });
+
+        assert.equal(secondLogin.status, 200);
+
+        const secondRefreshToken = secondLogin.body.data.refreshToken;
+        const secondSessionId = secondLogin.body.data.sessionId;
+
+        assert.notEqual(firstSessionId, secondSessionId);
+
+        const logoutOthersResponse = await request(app)
+            .post("/api/sessions/logout-others")
+            .set("Authorization", `Bearer ${firstAccessToken}`);
+
+        assert.equal(logoutOthersResponse.status, 200);
+        assert.equal(logoutOthersResponse.body.success, true);
+        assert.equal(logoutOthersResponse.body.data.revokedCount, 1);
+
+        const firstSession = await Session.findOne({ sessionId: firstSessionId });
+        const secondSession = await Session.findOne({ sessionId: secondSessionId });
+
+        assert.equal(firstSession.revokedAt, null);
+        assert.equal(secondSession.revocationReason, "logout_others");
+        assert.ok(secondSession.revokedAt);
+
+        const refreshResponse = await request(app)
+            .post("/api/auth/refresh")
+            .send({ refreshToken: secondRefreshToken });
+
+        assert.equal(refreshResponse.status, 401);
+        assert.equal(refreshResponse.body.success, false);
+    }
+);
+
+test(
+    "DELETE /api/sessions/:sessionId revokes the authenticated user's own session",
+    async () => {
+        const email = "session-revoke-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } = await import("../../src/services/authService.js");
+        const passwordHash = await hashPassword(password);
+
+        await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse = await request(app)
+            .post("/api/auth/login")
+            .send({ email, password });
+
+        assert.equal(loginResponse.status, 200);
+
+        const accessToken = loginResponse.body.data.accessToken;
+        const refreshToken = loginResponse.body.data.refreshToken;
+        const sessionId = loginResponse.body.data.sessionId;
+
+        const revokeResponse = await request(app)
+            .delete(`/api/sessions/${sessionId}`)
+            .set("Authorization", `Bearer ${accessToken}`);
+
+        assert.equal(revokeResponse.status, 200);
+        assert.equal(revokeResponse.body.success, true);
+        assert.equal(
+            revokeResponse.body.message,
+            "Session revoked successfully."
+        );
+
+        const session = await Session.findOne({ sessionId });
+
+        assert.ok(session);
+        assert.ok(session.revokedAt);
+        assert.equal(session.revocationReason, "user_revoked");
+
+        const refreshResponse = await request(app)
+            .post("/api/auth/refresh")
+            .send({ refreshToken });
+
+        assert.equal(refreshResponse.status, 401);
+        assert.equal(refreshResponse.body.success, false);
+    }
+);
+
+test(
+    "DELETE /api/sessions/:sessionId cannot revoke another user's session",
+    async () => {
+        const password = "StrongPassword123!";
+
+        const { hashPassword } = await import("../../src/services/authService.js");
+        const passwordHash = await hashPassword(password);
+
+        const userA = await User.create({
+            email: "session-isolation-a@example.com",
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const userB = await User.create({
+            email: "session-isolation-b@example.com",
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginA = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: userA.email,
+                password
+            });
+
+        assert.equal(loginA.status, 200);
+
+        const accessTokenA = loginA.body.data.accessToken;
+
+        const loginB = await request(app)
+            .post("/api/auth/login")
+            .send({
+                email: userB.email,
+                password
+            });
+
+        assert.equal(loginB.status, 200);
+
+        const sessionIdB = loginB.body.data.sessionId;
+        const refreshTokenB = loginB.body.data.refreshToken;
+
+        const revokeResponse = await request(app)
+            .delete(`/api/sessions/${sessionIdB}`)
+            .set("Authorization", `Bearer ${accessTokenA}`);
+
+        assert.equal(revokeResponse.status, 404);
+        assert.equal(revokeResponse.body.success, false);
+        assert.equal(revokeResponse.body.message, "Session not found.");
+
+        const sessionB = await Session.findOne({
+            sessionId: sessionIdB
+        });
+
+        assert.ok(sessionB);
+        assert.equal(sessionB.revokedAt, null);
+        assert.equal(sessionB.revocationReason, null);
+
+        const refreshResponse = await request(app)
+            .post("/api/auth/refresh")
+            .send({
+                refreshToken: refreshTokenB
+            });
+
+        assert.equal(refreshResponse.status, 200);
+        assert.equal(refreshResponse.body.success, true);
+    }
+);
+
+test(
+    "POST /api/admin/movies/import-tmdb rejects an authenticated non-admin user",
+    async () => {
+        const email = "rbac-user-integration@example.com";
+        const password = "StrongPassword123!";
+
+        const { hashPassword } = await import("../../src/services/authService.js");
+        const passwordHash = await hashPassword(password);
+
+        await User.create({
+            email,
+            passwordHash,
+            role: "user",
+            status: "active",
+            emailVerified: true
+        });
+
+        const loginResponse = await request(app)
+            .post("/api/auth/login")
+            .send({ email, password });
+
+        assert.equal(loginResponse.status, 200);
+
+        const accessToken = loginResponse.body.data.accessToken;
+
+        const response = await request(app)
+            .post("/api/admin/movies/import-tmdb")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({ tmdbId: 550 });
+
+        assert.equal(response.status, 403);
+        assert.equal(response.body.success, false);
+        assert.equal(response.body.message, "Insufficient permissions.");
+    }
+);
