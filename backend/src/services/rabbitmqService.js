@@ -1,5 +1,6 @@
 import amqp from "amqplib";
 import rabbitmqConfig from "../config/rabbitmq.js";
+import rabbitmqTopology from "../config/rabbitmqTopology.js";
 
 let connection = null;
 let channel = null;
@@ -24,6 +25,43 @@ export function getRabbitMQChannel() {
 
     return channel;
 }
+
+export async function assertRabbitMQTopology() {
+    const rabbitmqChannel = getRabbitMQChannel();
+
+    const exchange =
+        rabbitmqTopology.exchanges.videoProcessing;
+
+    const queue =
+        rabbitmqTopology.queues.videoProcessing;
+
+    const routingKey =
+        rabbitmqTopology.routingKeys.videoProcessing;
+
+    await rabbitmqChannel.assertExchange(
+        exchange.name,
+        exchange.type,
+        exchange.options
+    );
+
+    await rabbitmqChannel.assertQueue(
+        queue.name,
+        queue.options
+    );
+
+    await rabbitmqChannel.bindQueue(
+        queue.name,
+        exchange.name,
+        routingKey
+    );
+
+    return {
+        exchange: exchange.name,
+        queue: queue.name,
+        routingKey
+    };
+}
+
 
 export async function closeRabbitMQ() {
     if (channel) {

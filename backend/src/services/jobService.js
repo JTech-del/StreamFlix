@@ -23,19 +23,21 @@ export function validateJobTransition(currentStatus, nextStatus) {
     }
     return true;
 }
-    export async function createJob({
+
+export async function createJob({
     type,
     entityType,
     entityId = null,
     maxAttempts = 3,
     correlationId = null,
     metadata = {},
+    session = null,
 }) {
     if (!type) {
         throw new Error("Job type is required.");
     }
 
-    const job = await Job.create({
+    const job = new Job({
         type,
         entityType,
         entityId,
@@ -45,6 +47,12 @@ export function validateJobTransition(currentStatus, nextStatus) {
         correlationId,
         metadata,
     });
+
+    if (session) {
+        await job.save({ session });
+    } else {
+        await job.save();
+    }
 
     return job;
 }
