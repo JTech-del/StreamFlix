@@ -8,6 +8,14 @@ const rabbitmqTopology = {
             options: {
                 durable: true
             }
+        },
+
+        videoRetry: {
+            name: "streamflix.video.retry",
+            type: "direct",
+            options: {
+                durable: true
+            }
         }
     },
 
@@ -17,11 +25,26 @@ const rabbitmqTopology = {
             options: {
                 durable: true
             }
+        },
+
+        videoRetry: {
+            name: "streamflix.video.retry",
+            options: {
+                durable: true,
+                arguments: {
+                    "x-dead-letter-exchange":
+                        "streamflix.video",
+                    "x-dead-letter-routing-key":
+                        "video.processing"
+                }
+            }
         }
     },
 
     routingKeys: {
-        videoProcessing: "video.processing"
+        videoProcessing: "video.processing",
+
+        videoRetry: "video.retry"
     }
 };
 

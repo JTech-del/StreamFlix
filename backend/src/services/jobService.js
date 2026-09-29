@@ -4,7 +4,7 @@ const JOB_TRANSITIONS = {
     queued: ["processing"],
     processing: ["completed", "failed"],
     failed: ["retrying", "dead-lettered"],
-    retrying: ["processing"],
+    retrying: ["queued"],
     completed: [],
     "dead-lettered": [],
 };
@@ -80,11 +80,67 @@ export async function startJob(jobId, worker) {
         worker,
     });
 }
-export async function completeJob(jobId) {
-    return transitionJob(jobId, "completed", {
-        completedAt: new Date(),
-    });
+
+export async function completeJob(
+    jobId,
+    updates = {}
+) {
+    return transitionJob(
+        jobId,
+        "completed",
+        {
+            completedAt: new Date(),
+            nextAttemptAt: null,
+            ...updates
+        }
+    );
 }
+
+export async function claimJob(
+    jobId,
+    worker
+) {
+    if (!jobId) {
+        throw new Error(
+            "Job ID is required."
+        );
+    }
+
+    if (!worker) {
+        throw new Error(
+            "Worker information is required."
+        );
+    }
+
+    const job =
+        await Job.findOneAndUpdate(
+            {
+                jobId,
+                status: "queued"
+            },
+            {
+                $set: {
+                    status: "processing",
+                    startedAt: new Date(),
+                    worker
+                }
+            },
+
+{
+    returnDocument: "after"
+}
+
+        );
+
+    if (!job) {
+        return null;
+    }
+
+    return job;
+}
+
+
+
 export async function failJob(jobId, error) {
     return transitionJob(jobId, "failed", {
         failedAt: new Date(),
