@@ -12,6 +12,15 @@ import {
     resetPassword
 } from "../controllers/authController.js";
 
+import {
+    registerRateLimiter,
+    loginRateLimiter,
+    refreshRateLimiter,
+    verifyEmailRateLimiter,
+    forgotPasswordRateLimiter,
+    resetPasswordRateLimiter
+} from "../middleware/authRateLimiters.js";
+
 const router = express.Router();
 
 
@@ -21,6 +30,7 @@ const router = express.Router();
 
 router.post(
     "/register",
+    registerRateLimiter,
     register
 );
 
@@ -31,6 +41,7 @@ router.post(
 
 router.get(
     "/verify-email",
+    verifyEmailRateLimiter,
     verifyEmail
 );
 
@@ -40,6 +51,7 @@ router.get(
 
 router.post(
     "/forgot-password",
+    forgotPasswordRateLimiter,
     forgotPassword
 );
 
@@ -50,6 +62,7 @@ router.post(
 
 router.post(
     "/reset-password",
+    resetPasswordRateLimiter,
     resetPassword
 );
 
@@ -60,6 +73,7 @@ router.post(
 
 router.post(
     "/login",
+    loginRateLimiter,
     login
 );
 
@@ -70,6 +84,7 @@ router.post(
 
 router.post(
     "/refresh",
+    refreshRateLimiter,
     refreshToken
 );
 

@@ -242,69 +242,90 @@ export async function verifyEmail(
     } = validation.data;
 
 
+    const session =
+        await mongoose.startSession();
+
+
     try {
 
-        /*------------------------------------------
-            Atomically Consume Verification Token
-        ------------------------------------------*/
-
-        const verificationToken =
-            await consumeVerificationToken(
-                token,
-                "email_verification"
-            );
+        let verifiedUser;
 
 
-        if (!verificationToken) {
+        await session.withTransaction(
+            async () => {
 
-            return res.status(400).json({
+                /*------------------------------------------
+                    Atomically Consume Verification Token
+                ------------------------------------------*/
 
-                success: false,
-
-                message:
-                    "Invalid or expired verification token."
-
-            });
-
-        }
-
-
-        /*------------------------------------------
-            Find User
-        ------------------------------------------*/
-
-        const user =
-            await User.findById(
-                verificationToken.userId
-            );
+                const verificationToken =
+                    await consumeVerificationToken(
+                        token,
+                        "email_verification",
+                        session
+                    );
 
 
-        if (!user) {
+                if (!verificationToken) {
 
-            return res.status(400).json({
+                    const error =
+                        new Error(
+                            "INVALID_OR_EXPIRED_VERIFICATION_TOKEN"
+                        );
 
-                success: false,
+                    error.code =
+                        "INVALID_OR_EXPIRED_VERIFICATION_TOKEN";
 
-                message:
-                    "Invalid or expired verification token."
+                    throw error;
 
-            });
-
-        }
+                }
 
 
-        /*------------------------------------------
-            Mark Email As Verified
-        ------------------------------------------*/
+                /*------------------------------------------
+                    Find User
+                ------------------------------------------*/
 
-        if (!user.emailVerified) {
+                const user =
+                    await User.findById(
+                        verificationToken.userId
+                    ).session(session);
 
-            user.emailVerified =
-                true;
 
-            await user.save();
+                if (!user) {
 
-        }
+                    const error =
+                        new Error(
+                            "INVALID_OR_EXPIRED_VERIFICATION_TOKEN"
+                        );
+
+                    error.code =
+                        "INVALID_OR_EXPIRED_VERIFICATION_TOKEN";
+
+                    throw error;
+
+                }
+
+
+                /*------------------------------------------
+                    Mark Email As Verified
+                ------------------------------------------*/
+
+                if (!user.emailVerified) {
+
+                    user.emailVerified =
+                        true;
+
+                    await user.save({
+                        session
+                    });
+
+                }
+
+
+                verifiedUser = user;
+
+            }
+        );
 
 
         /*------------------------------------------
@@ -320,18 +341,35 @@ export async function verifyEmail(
 
             data: {
 
-                id: user._id,
+                id: verifiedUser._id,
 
-                email: user.email,
+                email: verifiedUser.email,
 
                 emailVerified:
-                    user.emailVerified
+                    verifiedUser.emailVerified
 
             }
 
         });
 
     } catch (error) {
+
+        if (
+            error?.code ===
+            "INVALID_OR_EXPIRED_VERIFICATION_TOKEN"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Invalid or expired verification token."
+
+            });
+
+        }
+
 
         console.error(
             "Email verification failed:",
@@ -348,10 +386,13 @@ export async function verifyEmail(
 
         });
 
+    } finally {
+
+        await session.endSession();
+
     }
 
 }
-
 /*==================================================
     Forgot Password
 ==================================================*/
@@ -651,18 +692,32 @@ export async function login(
             );
 
 
-        /*------------------------------------------
-            Calculate Session Expiry
-        ------------------------------------------*/
+/*------------------------------------------
+    Calculate Session Expiry
+------------------------------------------*/
 
-        const expiresAt =
-            new Date(
-                Date.now() +
-                durationToMilliseconds(
-                    config.jwt.refreshExpiresIn
-                )
-            );
+const now = Date.now();
 
+const absoluteExpiresAt =
+    new Date(
+        now +
+        durationToMilliseconds(
+            config.session.maxLifetime
+        )
+    );
+
+const refreshExpiresAt =
+    new Date(
+        now +
+        durationToMilliseconds(
+            config.jwt.refreshExpiresIn
+        )
+    );
+
+const expiresAt =
+    refreshExpiresAt < absoluteExpiresAt
+        ? refreshExpiresAt
+        : absoluteExpiresAt;
 
         /*------------------------------------------
             Persist Session
@@ -689,6 +744,8 @@ const session =
                 null,
 
             expiresAt,
+
+            absoluteExpiresAt,
 
             lastUsedAt: new Date()
 
@@ -1059,10 +1116,11 @@ export async function refreshToken(
             Session Revocation Check
         ------------------------------------------*/
 
-        if (
-            session.revokedAt ||
-            session.expiresAt <= new Date()
-        ) {
+if (
+    session.revokedAt ||
+    session.expiresAt <= new Date() ||
+    session.absoluteExpiresAt <= new Date()
+) {
 
             return res.status(401).json({
 
@@ -1185,15 +1243,33 @@ export async function refreshToken(
                 newRefreshToken
             );
 
+const now = new Date();
 
-        const newExpiresAt =
-            new Date(
-                Date.now() +
-                durationToMilliseconds(
-                    config.jwt.refreshExpiresIn
-                )
-            );
+const refreshExpiresAt =
+    new Date(
+        now.getTime() +
+        durationToMilliseconds(
+            config.jwt.refreshExpiresIn
+        )
+    );
 
+const newExpiresAt =
+    refreshExpiresAt < session.absoluteExpiresAt
+        ? refreshExpiresAt
+        : session.absoluteExpiresAt;
+
+if (newExpiresAt <= now) {
+
+    return res.status(401).json({
+
+        success: false,
+
+        message:
+            "Invalid or expired refresh token."
+
+    });
+
+}
 
         /*------------------------------------------
             Atomic Refresh Token Rotation
@@ -1211,8 +1287,12 @@ export async function refreshToken(
                     revokedAt: null,
 
                     expiresAt: {
-                        $gt: new Date()
-                    }
+                        $gt: now
+                    },
+
+                    absoluteExpiresAt: {
+                        $gt: now
+                     }
                 },
                 {
                     $set: {

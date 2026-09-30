@@ -30,6 +30,27 @@ function createResponseMock() {
     };
 }
 
+function createAccessTestToken({
+    sub,
+    sid,
+    expiresIn = "5m"
+}) {
+    return jwt.sign(
+        {
+            sub,
+            sid,
+            type: "access"
+        },
+        config.jwt.accessSecret,
+        {
+            algorithm: config.jwt.algorithm,
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience,
+            expiresIn
+        }
+    );
+}
+
 
 /*==================================================
     1. Missing Authorization Header
@@ -194,17 +215,10 @@ test(
 test(
     "requireAuthentication rejects an access token when its session no longer exists",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "user-123",
-                sid: "missing-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "user-123",
+            sid: "missing-session-456"
+        });
 
         mock.method(
             Session,
@@ -275,17 +289,10 @@ test(
 test(
     "requireAuthentication rejects a session owned by a different user",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "user-123",
-                sid: "owned-by-other-session",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "user-123",
+            sid: "owned-by-other-session"
+        });
 
         mock.method(
             Session,
@@ -366,17 +373,10 @@ test(
 test(
     "requireAuthentication rejects a revoked session",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "user-123",
-                sid: "revoked-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "user-123",
+            sid: "revoked-session-456"
+        });
 
         mock.method(
             Session,
@@ -458,17 +458,10 @@ test(
 test(
     "requireAuthentication rejects an expired session",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "user-123",
-                sid: "expired-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "user-123",
+            sid: "expired-session-456"
+        });
 
         mock.method(
             Session,
@@ -549,17 +542,10 @@ test(
 test(
     "requireAuthentication rejects an access token when the user no longer exists",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "missing-user-123",
-                sid: "valid-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "missing-user-123",
+            sid: "valid-session-456"
+        });
 
         mock.method(
             Session,
@@ -653,17 +639,10 @@ test(
 test(
     "requireAuthentication rejects a suspended account",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "suspended-user-123",
-                sid: "suspended-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "suspended-user-123",
+            sid: "suspended-session-456"
+        });
 
         mock.method(
             Session,
@@ -762,17 +741,10 @@ test(
 test(
     "requireAuthentication rejects a disabled account",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "disabled-user-123",
-                sid: "disabled-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "disabled-user-123",
+            sid: "disabled-session-456"
+        });
 
         mock.method(
             Session,
@@ -871,17 +843,10 @@ test(
 test(
     "requireAuthentication accepts a valid active session",
     async () => {
-        const accessToken = jwt.sign(
-            {
-                sub: "active-user-123",
-                sid: "active-session-456",
-                type: "access"
-            },
-            config.jwt.accessSecret,
-            {
-                expiresIn: "5m"
-            }
-        );
+        const accessToken = createAccessTestToken({
+            sub: "active-user-123",
+            sid: "active-session-456"
+        });
 
         const session = {
             userId: {

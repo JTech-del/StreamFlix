@@ -140,12 +140,15 @@ const sessionSchema = new mongoose.Schema(
             Refresh sessions are finite-lived and
             must expire.
         ------------------------------------------*/
+        expiresAt: {
+            type: Date,
+            required: true
+        },
 
-   expiresAt: {
-    type: Date,
-    required: true
-},
-
+        absoluteExpiresAt: {
+            type: Date,
+            required: true
+        },
 
         /*------------------------------------------
             Last Used

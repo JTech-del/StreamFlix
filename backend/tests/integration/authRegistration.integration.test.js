@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { Resend } from "resend";
 import request from "supertest";
+import { loginRateLimiter } from "../../src/middleware/authRateLimiters.js";
+
 
 const mongoServer = await MongoMemoryReplSet.create({
     replSet: {
@@ -47,6 +49,10 @@ test.after(async () => {
     await disconnectDatabase();
 
     await mongoServer.stop();
+});
+
+test.afterEach(async () => {
+    await loginRateLimiter.resetKey("127.0.0.1");
 });
 
 test("POST /api/auth/register creates a user and sends verification email", async () => {
@@ -215,14 +221,17 @@ test(
 const { createVerificationToken } =
     await import("../../src/services/verificationTokenService.js");
 
+
 test(
     "GET /api/auth/verify-email verifies the user and consumes the verification token",
     async () => {
-        const email = "verify-integration@example.com";
+        const email =
+            "verify-integration@example.com";
 
         const user = await User.create({
             email,
-            passwordHash: "integration-test-password-hash",
+            passwordHash:
+                "integration-test-password-hash",
             role: "user",
             status: "active",
             emailVerified: false
@@ -239,7 +248,10 @@ test(
                 .get("/api/auth/verify-email")
                 .query({ token });
 
-        assert.equal(response.status, 200);
+        assert.equal(
+            response.status,
+            200
+        );
 
         assert.equal(
             response.body.success,
@@ -255,6 +267,7 @@ test(
             await User.findById(user._id);
 
         assert.ok(verifiedUser);
+
         assert.equal(
             verifiedUser.emailVerified,
             true
@@ -267,10 +280,244 @@ test(
             });
 
         assert.ok(consumedToken);
-        assert.ok(consumedToken.usedAt);
+
+        assert.ok(
+            consumedToken.usedAt
+        );
+
         assert.equal(
             consumedToken.revokedAt,
             null
+        );
+    }
+);
+
+
+
+test(
+    "GET /api/auth/verify-email rolls back token consumption when the user no longer exists",
+    async () => {
+        const email =
+            "verify-rollback-integration@example.com";
+
+        const user = await User.create({
+            email,
+            passwordHash:
+                "integration-test-password-hash",
+            role: "user",
+            status: "active",
+            emailVerified: false
+        });
+
+        const { token } =
+            await createVerificationToken(
+                user._id,
+                "email_verification"
+            );
+
+        const tokenBeforeVerification =
+            await VerificationToken.findOne({
+                userId: user._id,
+                purpose: "email_verification"
+            });
+
+        assert.ok(tokenBeforeVerification);
+        assert.equal(
+            tokenBeforeVerification.usedAt,
+            null
+        );
+
+        /*
+            Delete the user before verification.
+
+            The verification transaction will consume the token,
+            fail to find the user, and then abort. MongoDB should
+            roll back the token consumption.
+        */
+        await User.deleteOne({
+            _id: user._id
+        });
+
+        const response =
+            await request(app)
+                .get("/api/auth/verify-email")
+                .query({ token });
+
+        assert.equal(
+            response.status,
+            400
+        );
+
+        assert.equal(
+            response.body.success,
+            false
+        );
+
+        assert.equal(
+            response.body.message,
+            "Invalid or expired verification token."
+        );
+
+        const rolledBackToken =
+            await VerificationToken.findOne({
+                userId: user._id,
+                purpose: "email_verification"
+            });
+
+        assert.ok(rolledBackToken);
+
+        /*
+            Critical assertion:
+
+            The token was temporarily consumed inside the
+            transaction, but the transaction must have rolled
+            that change back when the user lookup failed.
+        */
+        assert.equal(
+            rolledBackToken.usedAt,
+            null
+        );
+
+        assert.equal(
+            rolledBackToken.revokedAt,
+            null
+        );
+    }
+);
+
+
+test(
+    "GET /api/auth/verify-email allows only one concurrent request to consume the same token",
+    async () => {
+        const email =
+            "verify-concurrent-integration@example.com";
+
+        const user = await User.create({
+            email,
+            passwordHash:
+                "integration-test-password-hash",
+            role: "user",
+            status: "active",
+            emailVerified: false
+        });
+
+        const { token } =
+            await createVerificationToken(
+                user._id,
+                "email_verification"
+            );
+
+        const responses = await Promise.all([
+            request(app)
+                .get("/api/auth/verify-email")
+                .query({ token }),
+
+            request(app)
+                .get("/api/auth/verify-email")
+                .query({ token })
+        ]);
+
+        const statuses =
+            responses
+                .map(response => response.status)
+                .sort((a, b) => a - b);
+
+        assert.deepEqual(
+            statuses,
+            [200, 400]
+        );
+
+        const successResponses =
+            responses.filter(
+                response => response.status === 200
+            );
+
+        const failureResponses =
+            responses.filter(
+                response => response.status === 400
+            );
+
+        assert.equal(
+            successResponses.length,
+            1
+        );
+
+        assert.equal(
+            failureResponses.length,
+            1
+        );
+
+        assert.equal(
+            successResponses[0].body.success,
+            true
+        );
+
+        assert.equal(
+            successResponses[0].body.message,
+            "Email verified successfully."
+        );
+
+        assert.equal(
+            failureResponses[0].body.success,
+            false
+        );
+
+        assert.equal(
+            failureResponses[0].body.message,
+            "Invalid or expired verification token."
+        );
+
+        const verifiedUser =
+            await User.findById(user._id);
+
+        assert.ok(verifiedUser);
+
+        assert.equal(
+            verifiedUser.emailVerified,
+            true
+        );
+
+        const consumedToken =
+            await VerificationToken.findOne({
+                userId: user._id,
+                purpose: "email_verification"
+            });
+
+        assert.ok(consumedToken);
+
+        assert.ok(
+            consumedToken.usedAt
+        );
+
+        assert.equal(
+            consumedToken.revokedAt,
+            null
+        );
+
+        /*
+            Final reuse check:
+
+            Once the token has been consumed, it must remain
+            unusable even after the concurrent requests finish.
+        */
+        const reuseResponse =
+            await request(app)
+                .get("/api/auth/verify-email")
+                .query({ token });
+
+        assert.equal(
+            reuseResponse.status,
+            400
+        );
+
+        assert.equal(
+            reuseResponse.body.success,
+            false
+        );
+
+        assert.equal(
+            reuseResponse.body.message,
+            "Invalid or expired verification token."
         );
     }
 );

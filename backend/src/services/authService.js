@@ -215,11 +215,14 @@ export function createAccessToken(
         },
         config.jwt.accessSecret,
         {
-            expiresIn:
-                config.jwt.accessExpiresIn
+            algorithm: config.jwt.algorithm,
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience,
+            expiresIn: config.jwt.accessExpiresIn
         }
     );
 }
+
 
 /*
     Create a refresh token.
@@ -242,6 +245,9 @@ export function createRefreshToken(user, sessionId) {
         },
         config.jwt.refreshSecret,
         {
+            algorithm: config.jwt.algorithm,
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience,
             expiresIn: config.jwt.refreshExpiresIn
         }
     );
@@ -256,17 +262,23 @@ export function createRefreshToken(user, sessionId) {
 export function verifyAccessToken(token) {
     const payload = jwt.verify(
         token,
-        config.jwt.accessSecret
+        config.jwt.accessSecret,
+        {
+            algorithms: [config.jwt.algorithm],
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience
+        }
     );
 
- if (
-    typeof payload !== "object" ||
-    payload.type !== "access" ||
-    !payload.sub ||
-    !payload.sid
-) {
-    throw new Error("Invalid access token.");
-}
+    if (
+        typeof payload !== "object" ||
+        payload.type !== "access" ||
+        !payload.sub ||
+        !payload.sid
+    ) {
+        throw new Error("Invalid access token.");
+    }
+
     return payload;
 }
 
@@ -279,7 +291,12 @@ export function verifyAccessToken(token) {
 export function verifyRefreshToken(token) {
     const payload = jwt.verify(
         token,
-        config.jwt.refreshSecret
+        config.jwt.refreshSecret,
+        {
+            algorithms: [config.jwt.algorithm],
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience
+        }
     );
 
     if (

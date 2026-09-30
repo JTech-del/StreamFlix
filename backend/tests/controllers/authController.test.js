@@ -113,6 +113,29 @@ function createUser(
 
 }
 
+function mockVerificationTransaction() {
+
+    const session = {
+        withTransaction: mock.fn(
+            async callback => {
+                return callback();
+            }
+        ),
+
+        endSession: mock.fn(
+            async () => {}
+        )
+    };
+
+    mock.method(
+        mongoose,
+        "startSession",
+        async () => session
+    );
+
+    return session;
+}
+
 
 test(
     "login rejects invalid request data",
@@ -1360,14 +1383,16 @@ test(
         const oldHash =
             hashRefreshToken(oldToken);
 
-        const session = {
-            userId: user._id,
-            refreshTokenHash: oldHash,
-            sessionId: "refresh-session-success",
-            revokedAt: null,
-            expiresAt:
-                new Date(Date.now() + 60_000)
-        };
+   const session = {
+    userId: user._id,
+    refreshTokenHash: oldHash,
+    sessionId: "refresh-session-success",
+    revokedAt: null,
+    expiresAt:
+        new Date(Date.now() + 60_000),
+    absoluteExpiresAt:
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+};
 
         let findOneAndUpdateFilter = null;
         let findOneAndUpdateUpdate = null;
@@ -1471,6 +1496,15 @@ test(
                 findOneAndUpdateFilter.expiresAt.$gt instanceof Date
             );
 
+            assert.ok(
+    findOneAndUpdateFilter.absoluteExpiresAt.$gt instanceof Date
+);
+
+assert.equal(
+    findOneAndUpdateUpdate.$set.absoluteExpiresAt,
+    undefined
+);
+
             assert.equal(
                 findOneAndUpdateUpdate.$set.revokedAt,
                 null
@@ -1507,7 +1541,291 @@ test(
 );
 
 
+test(
+    "refreshToken caps the new refresh expiry at the absolute session lifetime",
+    async () => {
+        const user = {
+            _id: "refresh-boundary-user",
+            role: "user",
+            status: "active"
+        };
 
+        const oldToken =
+            createRefreshToken(
+                user,
+                "refresh-session-boundary"
+            );
+
+        const oldHash =
+            hashRefreshToken(oldToken);
+
+        const absoluteExpiresAt =
+            new Date(
+                Date.now() + 5_000
+            );
+
+        const session = {
+            userId: user._id,
+            refreshTokenHash: oldHash,
+            sessionId: "refresh-session-boundary",
+            revokedAt: null,
+            expiresAt:
+                new Date(Date.now() + 60_000),
+            absoluteExpiresAt
+        };
+
+        let rotatedUpdate = null;
+
+        mock.method(
+            Session,
+            "findOne",
+            () => ({
+                select: async () => session
+            })
+        );
+
+        mock.method(
+            User,
+            "findById",
+            async () => user
+        );
+
+        mock.method(
+            Session,
+            "findOneAndUpdate",
+            async (
+                filter,
+                update
+            ) => {
+                rotatedUpdate = update;
+
+                return {
+                    ...session,
+                    ...update.$set
+                };
+            }
+        );
+
+        const req =
+            createRequest({
+                refreshToken: oldToken
+            });
+
+        const res = createResponse();
+
+        try {
+            await refreshToken(req, res);
+
+            assert.equal(
+                res.statusCode,
+                200
+            );
+
+            assert.ok(
+                rotatedUpdate.$set.expiresAt instanceof Date
+            );
+
+            assert.equal(
+                rotatedUpdate.$set.expiresAt.getTime(),
+                absoluteExpiresAt.getTime()
+            );
+
+            assert.equal(
+                rotatedUpdate.$set.absoluteExpiresAt,
+                undefined
+            );
+        } finally {
+            mock.restoreAll();
+        }
+    }
+);
+
+test(
+    "refreshToken rejects a session after its absolute lifetime expires",
+    async () => {
+        const user = {
+            _id: "refresh-expired-absolute-user",
+            role: "user",
+            status: "active"
+        };
+
+        const oldToken =
+            createRefreshToken(
+                user,
+                "refresh-session-expired-absolute"
+            );
+
+        const oldHash =
+            hashRefreshToken(oldToken);
+
+        const session = {
+            userId: user._id,
+            refreshTokenHash: oldHash,
+            sessionId:
+                "refresh-session-expired-absolute",
+            revokedAt: null,
+            expiresAt:
+                new Date(Date.now() + 60_000),
+            absoluteExpiresAt:
+                new Date(Date.now() - 1_000)
+        };
+
+        let rotationAttempted = false;
+
+        mock.method(
+            Session,
+            "findOne",
+            () => ({
+                select: async () => session
+            })
+        );
+
+        mock.method(
+            User,
+            "findById",
+            async () => user
+        );
+
+        mock.method(
+            Session,
+            "findOneAndUpdate",
+            async () => {
+                rotationAttempted = true;
+
+                return null;
+            }
+        );
+
+        const req =
+            createRequest({
+                refreshToken: oldToken
+            });
+
+        const res = createResponse();
+
+        try {
+            await refreshToken(req, res);
+
+            assert.equal(
+                res.statusCode,
+                401
+            );
+
+            assert.equal(
+                res.body.success,
+                false
+            );
+
+            assert.equal(
+                res.body.message,
+                "Invalid or expired refresh token."
+            );
+
+            assert.equal(
+                rotationAttempted,
+                false
+            );
+        } finally {
+            mock.restoreAll();
+        }
+    }
+);
+
+test(
+    "refreshToken rejects refresh-token reuse when atomic rotation loses the race",
+    async () => {
+        const user = {
+            _id: "refresh-replay-user",
+            role: "user",
+            status: "active"
+        };
+
+        const sessionId =
+            "refresh-session-replay";
+
+        const oldToken =
+            createRefreshToken(
+                user,
+                sessionId
+            );
+
+        const oldHash =
+            hashRefreshToken(oldToken);
+
+        const session = {
+            userId: user._id,
+            refreshTokenHash: oldHash,
+            sessionId,
+            revokedAt: null,
+            expiresAt:
+                new Date(Date.now() + 60_000),
+            absoluteExpiresAt:
+                new Date(
+                    Date.now() +
+                    30 * 24 * 60 * 60 * 1000
+                )
+        };
+
+        mock.method(
+            Session,
+            "findOne",
+            () => ({
+                select: async () => session
+            })
+        );
+
+        mock.method(
+            User,
+            "findById",
+            async () => user
+        );
+
+        let rotationAttempts = 0;
+
+        mock.method(
+            Session,
+            "findOneAndUpdate",
+            async () => {
+                rotationAttempts += 1;
+
+                return null;
+            }
+        );
+
+        const req =
+            createRequest({
+                refreshToken: oldToken
+            });
+
+        const res = createResponse();
+
+        try {
+            await refreshToken(req, res);
+
+            assert.equal(
+                rotationAttempts,
+                1
+            );
+
+            assert.equal(
+                res.statusCode,
+                401
+            );
+
+            assert.equal(
+                res.body.success,
+                false
+            );
+
+            assert.equal(
+                res.body.message,
+                "Invalid refresh token."
+            );
+        } finally {
+            mock.restoreAll();
+        }
+    }
+);
 
 test("logout rejects invalid request data", async () => {
     const req = createRequest({});
@@ -1918,6 +2236,8 @@ test("verifyEmail rejects invalid request data", async () => {
 
 test("verifyEmail rejects an invalid or expired token", async () => {
 
+    mockVerificationTransaction();
+
     mock.method(
         VerificationToken,
         "findOneAndUpdate",
@@ -1959,6 +2279,8 @@ test("verifyEmail rejects an invalid or expired token", async () => {
 
 test("verifyEmail rejects a token when the user no longer exists", async () => {
 
+     mockVerificationTransaction();
+
     mock.method(
         VerificationToken,
         "findOneAndUpdate",
@@ -1969,11 +2291,14 @@ test("verifyEmail rejects a token when the user no longer exists", async () => {
         })
     );
 
-    mock.method(
-        User,
-        "findById",
-        async () => null
-    );
+mock.method(
+    User,
+    "findById",
+    () => ({
+        session: async () => null
+    })
+);
+
 
     const req = {
         query: {
@@ -2008,6 +2333,8 @@ test("verifyEmail rejects a token when the user no longer exists", async () => {
 
 test("verifyEmail marks an unverified user as verified", async () => {
 
+       mockVerificationTransaction();
+
     const user = {
         _id: "verify-user-123",
         email: "verify@example.com",
@@ -2027,12 +2354,13 @@ test("verifyEmail marks an unverified user as verified", async () => {
         })
     );
 
-    mock.method(
-        User,
-        "findById",
-        async () => user
-    );
-
+mock.method(
+    User,
+    "findById",
+    () => ({
+        session: async () => user
+    })
+);
     const req = {
         query: {
             token: "valid-verification-token"
@@ -2090,6 +2418,8 @@ test("verifyEmail marks an unverified user as verified", async () => {
 
 
 test("verifyEmail returns 500 when verification fails unexpectedly", async () => {
+
+    mockVerificationTransaction();
 
     mock.method(
         VerificationToken,
