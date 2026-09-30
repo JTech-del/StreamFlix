@@ -698,6 +698,281 @@ Production media will eventually use the dedicated media architecture defined in
 
 ---
 
+
+## 2026-09-02 — Video Processing Pipeline & Worker
+
+**Change:**
+
+Implemented the StreamFlix video-processing pipeline and dedicated worker architecture for production-oriented media processing.
+
+The implementation establishes the processing flow required to move uploaded/source media through a durable processing lifecycle rather than treating raw video files as directly playable application assets.
+
+**Implemented:**
+
+* Video-processing service and orchestration flow.
+* Dedicated video-processing worker.
+* Durable processing state through the Movie/processing model.
+* Processing states covering queued, processing, completed, failed, retrying, and dead-lettered workflows.
+* RabbitMQ-based asynchronous job processing.
+* Manual message acknowledgement.
+* Retry handling with controlled backoff.
+* Dead-letter handling.
+* Idempotency protection.
+* Correlation identifiers for tracing jobs across the processing lifecycle.
+* Worker-side reconciliation and recovery behavior.
+* FFmpeg-oriented processing architecture for future production media pipelines.
+* Separation between application/API concerns and background media-processing work.
+
+**Verification:**
+
+* Video-processing unit and integration tests were executed.
+* 30 video-specific tests were evaluated.
+* 28 tests passed.
+* 2 known non-security failures remain environment/fixture related:
+  * Windows orchestration teardown encountered an `EBUSY` resource-lock condition.
+  * RabbitMQ worker fixture encountered a `Movie not found` condition.
+* Broader backend testing also identified MongoDB transaction/replica-set requirements for specific integration tests.
+
+**Result:**
+
+The video-processing foundation is implemented and committed without being mixed with the subsequent authentication/security hardening work.
+
+**Commit:**
+
+`6e55a6a feat(video): add video processing pipeline and worker`
+
+**Status:** PASS
+
+**Notes:**
+
+The video-processing architecture remains part of the locked production direction. Future production media delivery will move toward FFmpeg/HLS, object storage/CDN, protected playback, and dedicated media infrastructure.
+
+---
+
+## 2026-09-29 — Authentication & Session Security Hardening
+
+**Change:**
+
+Completed the authentication and session-security hardening phase for the StreamFlix backend.
+
+This phase focused on establishing production-oriented security controls around JWT authentication, HTTP behavior, authentication abuse protection, session lifecycle management, authorization, account recovery, email verification, credential handling, and security regression coverage.
+
+**JWT Security:**
+
+* Required `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
+* Enforced a minimum secret length of 32 characters.
+* Restricted JWT signing and verification to HS256.
+* Added explicit issuer and audience validation.
+* Added access-token and refresh-token type separation.
+* Added session identifiers (`sid`) to authentication tokens.
+* Added refresh-token identifiers (`jti`).
+* Enforced configured access and refresh expiration periods.
+* Rejected wrong issuer, wrong audience, unsupported algorithm, and cross-token-type usage.
+* Verified JWT behavior with dedicated authentication-service tests.
+
+**HTTP Security:**
+
+* Added Helmet security headers.
+* Restricted CORS to the configured client origin.
+* Added explicit HTTP method/header configuration.
+* Added a configurable JSON request-body limit.
+* Added controlled handling for oversized request bodies.
+* Added controlled malformed-JSON handling.
+* Added JSON 404 responses for unknown routes.
+* Added centralized error handling.
+* Disabled directory indexing for static assets.
+* Denied dotfile access.
+* Explicitly controlled Express proxy trust behavior.
+* Removed the public TMDB proxy routes.
+
+**Authentication Abuse Protection:**
+
+Dedicated rate limits were implemented for:
+
+* Registration.
+* Login.
+* Refresh.
+* Email verification.
+* Forgot-password requests.
+* Password-reset requests.
+
+The rate-limit configuration uses standardized rate-limit headers and avoids legacy headers.
+
+Logout rate limiting remains a low-priority defense-in-depth consideration because logout already requires a valid refresh token.
+
+**Session Security:**
+
+* Added session expiration enforcement.
+* Added an absolute session lifetime.
+* Added TTL cleanup through MongoDB.
+* Scoped session operations to the authenticated user.
+* Prevented cross-user session revocation.
+* Stored refresh-token hashes rather than raw refresh tokens.
+* Implemented refresh-token rotation.
+* Added atomic refresh-token replacement.
+* Added replay protection.
+* Added session revocation.
+* Revoked active sessions after password reset.
+* Enforced session ownership against the JWT subject.
+* Capped refreshed session expiry at the absolute session lifetime.
+* Tested concurrent refresh behavior against a MongoDB replica-set environment.
+
+The concurrent-refresh test verified that simultaneous use of the same refresh token results in exactly one successful refresh while the competing request is rejected.
+
+**Session IDOR Verification:**
+
+Audited session list, revoke, logout-other-sessions, refresh, and logout flows.
+
+No user-controlled `userId` parameter was found in the audited session authorization paths.
+
+Cross-user session revocation was explicitly tested and rejected.
+
+**Registration & Account Security:**
+
+* Registration does not accept a client-controlled role.
+* New users receive the schema-defined default `user` role.
+* Password hashes are protected from normal query output.
+* Password-reset responses do not reveal whether an account exists.
+* Password-reset tokens are hashed before storage.
+* Email-verification tokens are hashed before storage.
+* Verification and reset tokens have purpose-specific expiration.
+* Previous active tokens of the same purpose are revoked when a new token is issued.
+* Token consumption is atomic.
+* Password reset invalidates active sessions.
+* Authentication tokens were audited for accidental logging or response exposure.
+
+**Admin Authorization:**
+
+All audited admin movie-management routes require both authentication and the `admin` role.
+
+Runtime verification covered:
+
+* Movie retrieval.
+* TMDB import.
+* Genre management.
+* Metadata management.
+* Media management.
+* Publishing.
+* Archiving.
+* Restoration.
+* Featured status.
+* Upcoming status.
+
+Admin authorization and movie-catalog security tests completed with:
+
+**87 tests passed.**
+
+**TMDB Credential Security:**
+
+* TMDB credentials remain server-side.
+* No TMDB access token or API key was hardcoded into source.
+* No frontend credential exposure was identified.
+* TMDB request construction encodes the API key.
+* Upstream failures do not return the credential.
+* Public TMDB proxy routes were removed.
+* TMDB functionality now remains behind the server-side service and authenticated administrative import flow.
+
+**Dependency Security:**
+
+`npm audit` was completed after dependency remediation.
+
+Final result:
+
+**0 vulnerabilities found.**
+
+The dependency remediation included updating `brace-expansion` from `5.0.9` to `5.0.12`.
+
+**Frontend Credential Handling:**
+
+The frontend was audited for:
+
+* `accessToken`
+* `refreshToken`
+* `Authorization`
+* `Bearer`
+* browser cookie access
+* authentication-token storage
+
+No browser-side authentication-token storage or hardcoded authentication credential exposure was identified.
+
+The frontend production build completed successfully.
+
+**Security Regression:**
+
+The final targeted security regression suite completed with:
+
+**103 tests passed.**
+
+**0 tests failed.**
+
+The regression covered authentication controllers, sessions, refresh rotation, registration, HTTP security, authentication middleware, rate limiting, role authorization, and JWT service behavior.
+
+**Source and Secret Audit:**
+
+A source-level audit found no hardcoded:
+
+* AWS credentials.
+* Private keys.
+* Bearer tokens.
+* Passwords.
+* API keys.
+* Authentication secrets.
+
+Environment configuration remains externalized through environment variables.
+
+**Commit:**
+
+`9061781 security(auth): harden authentication and session security`
+
+**Status:** PASS
+
+**Deferred Architecture Concerns:**
+
+The following items remain deliberately outside this security-hardening commit:
+
+* Public static video exposure during the current media migration.
+* Protected/entitlement-aware playback.
+* Future HLS/object-storage/CDN media delivery.
+* Logout rate limiting as additional defense-in-depth.
+* Redis caching.
+* Expanded observability and monitoring.
+* Subscription/payment security and verified webhooks.
+* Other production infrastructure work defined by the locked architecture.
+
+These items are not being treated as resolved by this authentication-security phase.
+
+---
+
+## Next Development Phase
+
+### Authentication & Registration Completion
+
+The next development phase is focused on completing the StreamFlix authentication and registration experience end-to-end.
+
+The implementation will proceed from the hardened backend foundation already established.
+
+The phase will cover:
+
+* Registration flow completion.
+* Email-verification experience.
+* Login flow.
+* Refresh-session handling.
+* Logout flow.
+* Password-reset experience.
+* Authenticated user state.
+* Protected frontend routes.
+* User profile foundation.
+* Session management UI.
+* Authentication error handling.
+* Secure integration between the frontend and hardened authentication API.
+* Regression testing for critical authentication workflows.
+
+Implementation must preserve the existing security controls and locked production architecture.
+
+No authentication feature should weaken JWT validation, session ownership, refresh rotation, rate limiting, authorization boundaries, or credential-handling requirements.
+
+---
+
 # Change Control Rules
 
 1. Do not remove locked architecture decisions without explicitly revisiting the decision.
