@@ -943,33 +943,152 @@ These items are not being treated as resolved by this authentication-security ph
 
 ---
 
+## 2026-09-30 — User Profile Foundation
+
+The authentication and session-security foundation is now complete, and the next backend feature phase was started with the authenticated user profile foundation.
+
+### Objective
+
+Introduce a dedicated user profile domain without mixing profile data with the account/security identity stored by the `User` model.
+
+The profile implementation must preserve the existing authentication boundary:
+
+* Profile ownership is derived exclusively from the authenticated `req.user.id`.
+* Clients must not be able to select or override the profile owner.
+* Account-security fields remain outside the profile domain.
+* Profile updates must use an explicit allowlist.
+* Profile creation must remain one-to-one with the authenticated user.
+* The implementation must be safe under concurrent first-time profile requests.
+
+### Profile Model
+
+A dedicated `Profile` model was introduced with:
+
+* `userId` — required, unique ObjectId reference to `User`.
+* `displayName` — optional, maximum 100 characters.
+* `firstName` — optional, maximum 100 characters.
+* `lastName` — optional, maximum 100 characters.
+* `bio` — optional, maximum 500 characters.
+* `avatarUrl` — optional, maximum 2048 characters.
+* `createdAt` and `updatedAt` timestamps.
+
+The profile model intentionally does not contain:
+
+* Password hashes.
+* Roles.
+* Account status.
+* Email-verification state.
+* Other authentication/session security fields.
+
+### API
+
+Authenticated profile endpoints were added:
+
+* `GET /api/profile`
+* `PATCH /api/profile`
+
+Both endpoints require the existing authentication middleware.
+
+No `userId` path parameter or client-controlled ownership field is accepted.
+
+Profile ownership is always derived from:
+
+`req.user.id`
+
+### Validation
+
+Profile updates use a dedicated Zod schema.
+
+The schema:
+
+* allows only supported profile fields.
+* trims string values.
+* enforces field-length limits.
+* permits explicit `null` values for optional profile fields.
+* rejects unknown fields through strict object validation.
+
+This prevents clients from attempting to update account/security properties through the profile API.
+
+### Profile Creation Strategy
+
+Profiles are created lazily through the profile service when an authenticated user first requests or updates their profile.
+
+The service uses a unique `userId` constraint together with an atomic upsert strategy.
+
+This avoids requiring profile creation during registration while maintaining the one-profile-per-user invariant.
+
+A concurrent first-time profile request test was added to verify that simultaneous requests result in exactly one profile document.
+
+### Security Verification
+
+The Profile integration suite verified:
+
+* Unauthenticated GET requests are rejected.
+* Unauthenticated PATCH requests are rejected.
+* Authenticated users can retrieve their own profile.
+* Authenticated users can update their own profile.
+* Client-supplied `userId` values are rejected.
+* Unsupported account/security fields are rejected.
+* Cross-user profile access is isolated.
+* Maximum supported field lengths are accepted.
+* Oversized field values are rejected.
+* Explicit `null` values are accepted where supported.
+* Empty updates do not unexpectedly modify existing data.
+* Profile responses do not expose account-security fields.
+* Concurrent first-time profile requests create exactly one profile.
+
+### Verification
+
+Profile integration testing completed with:
+
+**14 tests passed.**
+
+**0 tests failed.**
+
+The broader security regression was then executed with:
+
+**117 tests passed.**
+
+**0 tests failed.**
+
+The existing authentication, session, JWT, rate-limiting, authorization, HTTP-security, registration, refresh, and password-reset protections remained green.
+
+### Commit
+
+`d2f646a feat(profile): add authenticated user profiles`
+
+### Status
+
+**PASS**
+
+The authenticated Profile foundation is complete and committed.
+
+---
+
 ## Next Development Phase
 
-### Authentication & Registration Completion
+### Notifications
 
-The next development phase is focused on completing the StreamFlix authentication and registration experience end-to-end.
+The next development phase is focused on the StreamFlix notification foundation.
 
-The implementation will proceed from the hardened backend foundation already established.
+The implementation will begin with an audit and design pass before introducing notification models, services, routes, delivery behavior, and tests.
 
-The phase will cover:
+The phase will preserve the existing production architecture and authentication boundaries.
 
-* Registration flow completion.
-* Email-verification experience.
-* Login flow.
-* Refresh-session handling.
-* Logout flow.
-* Password-reset experience.
-* Authenticated user state.
-* Protected frontend routes.
-* User profile foundation.
-* Session management UI.
-* Authentication error handling.
-* Secure integration between the frontend and hardened authentication API.
-* Regression testing for critical authentication workflows.
+The notification implementation will be developed incrementally with:
 
-Implementation must preserve the existing security controls and locked production architecture.
+* Clear notification ownership tied to the authenticated user.
+* Controlled notification data and validation.
+* Secure authenticated access.
+* Appropriate read/unread state handling.
+* Safe update and retrieval boundaries.
+* Event-driven integration where appropriate.
+* Failure handling and recovery considerations.
+* Regression and security testing.
 
-No authentication feature should weaken JWT validation, session ownership, refresh rotation, rate limiting, authorization boundaries, or credential-handling requirements.
+The completed Profile foundation will remain separate from account/security identity data while providing the authenticated user context required by future notification features.
+
+No notification feature should weaken JWT validation, session ownership, authorization boundaries, input validation, rate limiting, error handling, or other existing security controls.
 
 ---
 
