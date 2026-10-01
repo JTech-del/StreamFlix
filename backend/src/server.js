@@ -14,6 +14,7 @@ import imageRoutes from "./routes/imageRoutes.js";
 import trailerRoutes from "./routes/trailerRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 /*==================================================
     StreamFlix Backend Server
@@ -198,6 +199,16 @@ app.use(
 app.use(
     "/api/images",
     imageRoutes
+);
+
+
+/*==================================================
+    Profile Routes
+==================================================*/
+
+app.use(
+    "/api/profile",
+    profileRoutes
 );
 
 
