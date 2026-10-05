@@ -1,3 +1,5 @@
+"use strict";
+
 import amqp from "amqplib";
 import rabbitmqConfig from "../config/rabbitmq.js";
 import rabbitmqTopology from "../config/rabbitmqTopology.js";
@@ -7,27 +9,49 @@ let channel = null;
 
 export async function connectRabbitMQ() {
     if (connection && channel) {
-        return { connection, channel };
+        return {
+            connection,
+            channel
+        };
     }
 
-    connection = await amqp.connect(rabbitmqConfig.url);
-    channel = await connection.createChannel();
+    connection = await amqp.connect(
+        rabbitmqConfig.url
+    );
+
+    channel = await connection.createConfirmChannel();
 
     console.log("RabbitMQ connected.");
 
-    return { connection, channel };
+    return {
+        connection,
+        channel
+    };
 }
 
 export function getRabbitMQChannel() {
     if (!channel) {
-        throw new Error("RabbitMQ channel is not initialized.");
+        throw new Error(
+            "RabbitMQ channel is not initialized."
+        );
     }
 
     return channel;
 }
 
+export async function waitForRabbitMQConfirms() {
+    if (!channel) {
+        throw new Error(
+            "RabbitMQ channel is not initialized."
+        );
+    }
+
+    await channel.waitForConfirms();
+}
+
 export async function assertRabbitMQTopology() {
-    const rabbitmqChannel = getRabbitMQChannel();
+    const rabbitmqChannel =
+        getRabbitMQChannel();
 
     const exchange =
         rabbitmqTopology.exchanges.videoProcessing;
@@ -55,13 +79,46 @@ export async function assertRabbitMQTopology() {
         routingKey
     );
 
+    const notificationExchange =
+        rabbitmqTopology.exchanges.notification;
+
+    const notificationQueue =
+        rabbitmqTopology.queues.notification;
+
+    const notificationRoutingKey =
+        rabbitmqTopology.routingKeys.notification;
+
+    await rabbitmqChannel.assertExchange(
+        notificationExchange.name,
+        notificationExchange.type,
+        notificationExchange.options
+    );
+
+    await rabbitmqChannel.assertQueue(
+        notificationQueue.name,
+        notificationQueue.options
+    );
+
+    await rabbitmqChannel.bindQueue(
+        notificationQueue.name,
+        notificationExchange.name,
+        notificationRoutingKey
+    );
+
     return {
-        exchange: exchange.name,
-        queue: queue.name,
-        routingKey
+        videoProcessing: {
+            exchange: exchange.name,
+            queue: queue.name,
+            routingKey
+        },
+
+        notification: {
+            exchange: notificationExchange.name,
+            queue: notificationQueue.name,
+            routingKey: notificationRoutingKey
+        }
     };
 }
-
 
 export async function closeRabbitMQ() {
     if (channel) {
@@ -74,5 +131,7 @@ export async function closeRabbitMQ() {
         connection = null;
     }
 
-    console.log("RabbitMQ connection closed.");
+    console.log(
+        "RabbitMQ connection closed."
+    );
 }

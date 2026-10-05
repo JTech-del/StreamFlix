@@ -1,24 +1,36 @@
 "use strict";
 
 import rabbitmqTopology from "../config/rabbitmqTopology.js";
-import { getRabbitMQChannel } from "./rabbitmqService.js";
 
-export async function publishVideoProcessingJob(job) {
+import {
+    getRabbitMQChannel,
+    waitForRabbitMQConfirms
+} from "./rabbitmqService.js";
+
+export async function publishVideoProcessingJob(
+    job,
+    {
+        exchangeName =
+            rabbitmqTopology.exchanges
+                .videoProcessing.name,
+        routingKey =
+            rabbitmqTopology.routingKeys
+                .videoProcessing
+    } = {}
+) {
     if (!job || !job.jobId) {
         const error = new Error(
             "A valid video processing job is required."
         );
-        error.code = "INVALID_VIDEO_PROCESSING_JOB";
+
+        error.code =
+            "INVALID_VIDEO_PROCESSING_JOB";
+
         throw error;
     }
 
-    const channel = getRabbitMQChannel();
-
-    const exchange =
-        rabbitmqTopology.exchanges.videoProcessing;
-
-    const routingKey =
-        rabbitmqTopology.routingKeys.videoProcessing;
+    const channel =
+        getRabbitMQChannel();
 
     const message = {
         jobId: job.jobId,
@@ -29,30 +41,42 @@ export async function publishVideoProcessingJob(job) {
         metadata: job.metadata ?? {}
     };
 
-    const published = channel.publish(
-        exchange.name,
-        routingKey,
-        Buffer.from(JSON.stringify(message)),
-        {
-            persistent: true,
-            contentType: "application/json",
-            messageId: job.jobId,
-            correlationId: job.correlationId ?? job.jobId,
-            type: job.type
-        }
-    );
+    const published =
+        channel.publish(
+            exchangeName,
+            routingKey,
+            Buffer.from(
+                JSON.stringify(message)
+            ),
+            {
+                persistent: true,
+                contentType:
+                    "application/json",
+                messageId:
+                    job.jobId,
+                correlationId:
+                    job.correlationId ??
+                    job.jobId,
+                type: job.type
+            }
+        );
 
     if (!published) {
         const error = new Error(
             "RabbitMQ publisher buffer is full."
         );
-        error.code = "RABBITMQ_PUBLISH_BUFFER_FULL";
+
+        error.code =
+            "RABBITMQ_PUBLISH_BUFFER_FULL";
+
         throw error;
     }
 
+    await waitForRabbitMQConfirms();
+
     return {
         jobId: job.jobId,
-        exchange: exchange.name,
+        exchange: exchangeName,
         routingKey,
         published
     };

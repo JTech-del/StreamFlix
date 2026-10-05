@@ -16,6 +16,14 @@ const rabbitmqTopology = {
             options: {
                 durable: true
             }
+        },
+
+        notification: {
+            name: "streamflix.notification",
+            type: "direct",
+            options: {
+                durable: true
+            }
         }
     },
 
@@ -38,13 +46,22 @@ const rabbitmqTopology = {
                         "video.processing"
                 }
             }
+        },
+
+        notification: {
+            name: "streamflix.notification",
+            options: {
+                durable: true
+            }
         }
     },
 
     routingKeys: {
         videoProcessing: "video.processing",
 
-        videoRetry: "video.retry"
+        videoRetry: "video.retry",
+
+        notification: "notification"
     }
 };
 

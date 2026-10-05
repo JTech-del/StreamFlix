@@ -56,6 +56,12 @@ const outboxSchema = new mongoose.Schema(
             min: 0
         },
 
+        maxAttempts: {
+            type: Number,
+            default: 3,
+            min: 1
+        },
+
         publishedAt: {
             type: Date,
             default: null
@@ -64,6 +70,12 @@ const outboxSchema = new mongoose.Schema(
         lastAttemptAt: {
             type: Date,
             default: null
+        },
+
+        nextAttemptAt: {
+            type: Date,
+            default: null,
+            index: true
         },
 
         lastError: {
@@ -83,6 +95,48 @@ const outboxSchema = new mongoose.Schema(
                 type: Date,
                 default: null
             }
+        },
+
+        dispatchLease: {
+            type: new mongoose.Schema(
+                {
+                    leaseId: {
+                        type: String,
+                        default: null,
+                        trim: true
+                    },
+
+                    owner: {
+                        name: {
+                            type: String,
+                            default: null,
+                            trim: true
+                        },
+
+                        instanceId: {
+                            type: String,
+                            default: null,
+                            trim: true
+                        }
+                    },
+
+                    acquiredAt: {
+                        type: Date,
+                        default: null
+                    },
+
+                    expiresAt: {
+                        type: Date,
+                        default: null,
+                        index: true
+                    }
+                },
+                {
+                    _id: false
+                }
+            ),
+
+            default: null
         }
     },
     {
@@ -96,8 +150,18 @@ outboxSchema.index({
 });
 
 outboxSchema.index({
+    status: 1,
+    nextAttemptAt: 1
+});
+
+outboxSchema.index({
     aggregateType: 1,
     aggregateId: 1
+});
+
+outboxSchema.index({
+    status: 1,
+    "dispatchLease.expiresAt": 1
 });
 
 const OutboxEvent = mongoose.model(

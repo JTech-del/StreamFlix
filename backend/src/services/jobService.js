@@ -21,10 +21,12 @@ export function validateJobTransition(currentStatus, nextStatus) {
             `Invalid job transition: ${currentStatus} → ${nextStatus}`
         );
     }
+
     return true;
 }
 
 export async function createJob({
+    jobId = null,
     type,
     entityType,
     entityId = null,
@@ -37,7 +39,7 @@ export async function createJob({
         throw new Error("Job type is required.");
     }
 
-    const job = new Job({
+    const jobData = {
         type,
         entityType,
         entityId,
@@ -46,7 +48,13 @@ export async function createJob({
         maxAttempts,
         correlationId,
         metadata,
-    });
+    };
+
+    if (jobId) {
+        jobData.jobId = jobId;
+    }
+
+    const job = new Job(jobData);
 
     if (session) {
         await job.save({ session });
@@ -74,6 +82,7 @@ export async function transitionJob(jobId, nextStatus, updates = {}) {
 
     return job;
 }
+
 export async function startJob(jobId, worker) {
     return transitionJob(jobId, "processing", {
         startedAt: new Date(),
@@ -125,11 +134,9 @@ export async function claimJob(
                     worker
                 }
             },
-
-{
-    returnDocument: "after"
-}
-
+            {
+                returnDocument: "after"
+            }
         );
 
     if (!job) {
@@ -138,8 +145,6 @@ export async function claimJob(
 
     return job;
 }
-
-
 
 export async function failJob(jobId, error) {
     return transitionJob(jobId, "failed", {
@@ -152,7 +157,12 @@ export async function failJob(jobId, error) {
         },
     });
 }
+
 export async function retryJob(jobId) {
+    if (!jobId) {
+        throw new Error("Job ID is required.");
+    }
+
     const job = await Job.findOne({ jobId });
 
     if (!job) {
@@ -161,26 +171,106 @@ export async function retryJob(jobId) {
 
     validateJobTransition(job.status, "retrying");
 
-    if (job.attempt >= job.maxAttempts) {
-        return transitionJob(jobId, "dead-lettered", {
-            failedAt: new Date(),
-        });
+    const currentAttempt = job.attempt;
+
+    if (currentAttempt >= job.maxAttempts) {
+        const deadLetteredJob =
+            await Job.findOneAndUpdate(
+                {
+                    jobId,
+                    status: "failed",
+                    attempt: currentAttempt
+                },
+                {
+                    $set: {
+                        status: "dead-lettered",
+                        failedAt: new Date(),
+                    }
+                },
+                {
+                    returnDocument: "after"
+                }
+            );
+
+        if (deadLetteredJob) {
+            return deadLetteredJob;
+        }
+
+        const currentJob =
+            await Job.findOne({ jobId });
+
+        if (!currentJob) {
+            throw new Error(`Job not found: ${jobId}`);
+        }
+
+        validateJobTransition(
+            currentJob.status,
+            "retrying"
+        );
+
+        throw new Error(
+            `Job retry transition could not be completed: ${jobId}`
+        );
     }
 
-    const nextAttempt = job.attempt + 1;
+    const nextAttempt =
+        currentAttempt + 1;
 
     const delayMs = Math.min(
         1000 * 2 ** (nextAttempt - 1),
         60000
     );
 
-    const nextAttemptAt = new Date(Date.now() + delayMs);
+    const nextAttemptAt =
+        new Date(Date.now() + delayMs);
 
-    return transitionJob(jobId, "retrying", {
-        attempt: nextAttempt,
-        nextAttemptAt,
-    });
+    const retryingJob =
+        await Job.findOneAndUpdate(
+            {
+                jobId,
+                status: "failed",
+                attempt: currentAttempt
+            },
+            {
+                $set: {
+                    status: "retrying",
+                    nextAttemptAt,
+                    dispatch: {
+                        attempt: null,
+                        status: "pending",
+                        publishedAt: null
+                    }
+                },
+                $inc: {
+                    attempt: 1
+                }
+            },
+            {
+                returnDocument: "after"
+            }
+        );
+
+    if (retryingJob) {
+        return retryingJob;
+    }
+
+    const currentJob =
+        await Job.findOne({ jobId });
+
+    if (!currentJob) {
+        throw new Error(`Job not found: ${jobId}`);
+    }
+
+    validateJobTransition(
+        currentJob.status,
+        "retrying"
+    );
+
+    throw new Error(
+        `Job retry transition could not be completed: ${jobId}`
+    );
 }
+
 export async function getJobById(jobId) {
     const job = await Job.findOne({ jobId });
 

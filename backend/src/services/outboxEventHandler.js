@@ -3,19 +3,19 @@
 import OutboxEvent from "../models/OutboxEvent.js";
 
 import {
-    publishVideoProcessingJob
-} from "./videoProcessingPublisher.js";
+    createMoviePublishedNotificationJobs
+} from "./notificationOrchestrationService.js";
 
 import {
     claimOutboxDispatchLease,
     releaseOutboxDispatchLease
 } from "./outboxDispatchLeaseService.js";
 
-const VIDEO_PROCESSING_EVENT =
-    "video.processing.requested";
+const MOVIE_PUBLISHED_EVENT =
+    "movie.published";
 
 const DISPATCHER_OWNER = {
-    name: "outbox-dispatcher",
+    name: "outbox-event-handler",
     instanceId: process.pid.toString()
 };
 
@@ -25,8 +25,7 @@ const RETRYABLE_BACKOFF_MAX_MS = 60000;
 const TERMINAL_ERROR_CODES = new Set([
     "UNSUPPORTED_OUTBOX_EVENT_TYPE",
     "INVALID_OUTBOX_EVENT",
-    "OUTBOX_EVENT_NOT_FOUND",
-    "INVALID_OUTBOX_EVENT_ID"
+    "OUTBOX_EVENT_NOT_FOUND"
 ]);
 
 function calculateRetryDelay(attempt) {
@@ -68,8 +67,7 @@ function getNextAttemptAt(
 
 async function finalizeSuccessfulDispatch(
     eventId,
-    leaseId,
-    publishedAt
+    leaseId
 ) {
     return OutboxEvent.findOneAndUpdate(
         {
@@ -80,7 +78,7 @@ async function finalizeSuccessfulDispatch(
         {
             $set: {
                 status: "published",
-                publishedAt,
+                publishedAt: new Date(),
                 nextAttemptAt: null,
                 lastError: {
                     code: null,
@@ -123,7 +121,7 @@ async function finalizeFailedDispatch(
                 lastError: {
                     code:
                         error?.code ??
-                        "OUTBOX_DISPATCH_FAILED",
+                        "OUTBOX_EVENT_HANDLER_FAILED",
                     message:
                         error?.message ??
                         String(error),
@@ -138,32 +136,34 @@ async function finalizeFailedDispatch(
     );
 }
 
-export async function dispatchOutboxEvent(
-    eventId,
+export async function handleMoviePublishedOutboxEvent(
+    event,
     {
-        publishJob = publishVideoProcessingJob
+        createNotificationJobs =
+            createMoviePublishedNotificationJobs
     } = {}
 ) {
-    if (!eventId) {
+    if (!event?.eventId) {
         const error = new Error(
-            "Outbox event ID is required."
+            "Outbox event is required."
         );
 
-        error.code = "INVALID_OUTBOX_EVENT_ID";
+        error.code =
+            "INVALID_OUTBOX_EVENT";
 
         throw error;
     }
 
-    const event = await OutboxEvent.findOne({
-        eventId
-    });
-
-    if (!event) {
+    if (
+        event.eventType !==
+        MOVIE_PUBLISHED_EVENT
+    ) {
         const error = new Error(
-            "Outbox event not found."
+            `Unsupported outbox event type: ${event.eventType}`
         );
 
-        error.code = "OUTBOX_EVENT_NOT_FOUND";
+        error.code =
+            "UNSUPPORTED_OUTBOX_EVENT_TYPE";
 
         throw error;
     }
@@ -171,7 +171,7 @@ export async function dispatchOutboxEvent(
     if (event.status === "published") {
         return {
             eventId: event.eventId,
-            status: event.status,
+            status: "published",
             published: false,
             alreadyPublished: true
         };
@@ -203,35 +203,20 @@ export async function dispatchOutboxEvent(
     await leasedEvent.save();
 
     try {
-        if (
-            leasedEvent.eventType !==
-            VIDEO_PROCESSING_EVENT
-        ) {
-            const error = new Error(
-                `Unsupported outbox event type: ${leasedEvent.eventType}`
-            );
-
-            error.code =
-                "UNSUPPORTED_OUTBOX_EVENT_TYPE";
-
-            throw error;
-        }
-
         const result =
-            await publishJob(
-                leasedEvent.payload
+            await createNotificationJobs(
+                leasedEvent
             );
 
         const finalized =
             await finalizeSuccessfulDispatch(
                 leasedEvent.eventId,
-                leaseId,
-                new Date()
+                leaseId
             );
 
         if (!finalized) {
             const error = new Error(
-                "Outbox event could not be finalized after successful dispatch."
+                "Outbox event could not be finalized after successful notification orchestration."
             );
 
             error.code =
@@ -243,8 +228,9 @@ export async function dispatchOutboxEvent(
         return {
             eventId: finalized.eventId,
             status: finalized.status,
-            published: result.published,
-            alreadyPublished: false
+            published: true,
+            alreadyPublished: false,
+            ...result
         };
     } catch (error) {
         const finalized =
@@ -265,6 +251,19 @@ export async function dispatchOutboxEvent(
 
         throw error;
     }
+}
+
+export function getOutboxEventHandler(
+    eventType
+) {
+    if (
+        eventType ===
+        MOVIE_PUBLISHED_EVENT
+    ) {
+        return handleMoviePublishedOutboxEvent;
+    }
+
+    return null;
 }
 
 export {

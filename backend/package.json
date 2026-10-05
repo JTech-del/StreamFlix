@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node --test",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "outbox-dispatcher": "node src/workers/outboxDispatchRunner.js",
+    "notification-worker": "node src/workers/notificationWorkerRunner.js"
   },
   "keywords": [],
   "author": "",

@@ -15,7 +15,7 @@ import trailerRoutes from "./routes/trailerRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
-
+import notificationRoutes from "./routes/notificationRoutes.js";
 /*==================================================
     StreamFlix Backend Server
 ==================================================*/
@@ -211,6 +211,14 @@ app.use(
     profileRoutes
 );
 
+/*==================================================
+    Notification Routes
+==================================================*/
+
+app.use(
+    "/api/notifications",
+    notificationRoutes
+);
 
 /*==================================================
     404 Handler
