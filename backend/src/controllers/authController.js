@@ -44,8 +44,6 @@ durationToMilliseconds
 import {
     registerSchema,
     loginSchema,
-    refreshTokenSchema,
-    logoutSchema,
     verifyEmailSchema,
     forgotPasswordSchema,
     resetPasswordSchema
@@ -53,6 +51,63 @@ import {
 import {
     sendPasswordResetEmail
 } from "../services/email/passwordResetEmailService.js";
+
+const REFRESH_COOKIE_NAME = "streamflix_refresh_token";
+
+const refreshCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite:
+        process.env.NODE_ENV === "production"
+            ? "none"
+            : "lax",
+    path: "/api/auth",
+    maxAge:
+        durationToMilliseconds(
+            config.jwt.refreshExpiresIn
+        )
+};
+
+function getCookieValue(
+    req,
+    cookieName
+) {
+
+    const cookieHeader =
+        req.headers.cookie;
+
+    if (!cookieHeader) {
+        return null;
+    }
+
+    const cookies =
+        cookieHeader
+            .split(";")
+            .map(
+                cookie =>
+                    cookie.trim()
+            );
+
+    const target =
+        cookies.find(
+            cookie =>
+                cookie.startsWith(
+                    `${cookieName}=`
+                )
+        );
+
+    if (!target) {
+        return null;
+    }
+
+    return decodeURIComponent(
+        target.slice(
+            cookieName.length + 1
+        )
+    );
+
+}
+
 
 /*==================================================
     Register User
@@ -445,6 +500,7 @@ export async function forgotPassword(
 
             return res.status(200).json({
 
+
                 success: true,
 
                 message:
@@ -771,6 +827,17 @@ const accessToken =
 
 
         /*------------------------------------------
+            Set Refresh Token Cookie
+        ------------------------------------------*/
+
+        res.cookie(
+            REFRESH_COOKIE_NAME,
+            refreshToken,
+            refreshCookieOptions
+        );
+
+
+        /*------------------------------------------
             Safe User Response
         ------------------------------------------*/
 
@@ -783,8 +850,6 @@ const accessToken =
             data: {
 
                 accessToken,
-
-                refreshToken,
 
                 sessionId,
 
@@ -1032,43 +1097,28 @@ export async function refreshToken(
 ) {
 
     /*----------------------------------------------
-        Validate Request
+        Read Refresh Token Cookie
     ----------------------------------------------*/
 
-    const validation =
-        refreshTokenSchema.safeParse(
-            req.body
+    const token =
+        getCookieValue(
+            req,
+            REFRESH_COOKIE_NAME
         );
 
 
-    if (!validation.success) {
+    if (!token) {
 
-        return res.status(400).json({
+        return res.status(401).json({
 
             success: false,
 
             message:
-                "Invalid refresh token request.",
-
-            errors:
-                validation.error.issues.map(
-                    issue => ({
-                        field:
-                            issue.path.join("."),
-
-                        message:
-                            issue.message
-                    })
-                )
+                "Invalid or expired refresh token."
 
         });
 
     }
-
-
-    const {
-        refreshToken: token
-    } = validation.data;
 
 
     try {
@@ -1342,7 +1392,18 @@ const accessToken =
     );
 
         /*------------------------------------------
-            Return Token Pair
+            Set Rotated Refresh Token Cookie
+        ------------------------------------------*/
+
+        res.cookie(
+            REFRESH_COOKIE_NAME,
+            newRefreshToken,
+            refreshCookieOptions
+        );
+
+
+        /*------------------------------------------
+            Return Access Token
         ------------------------------------------*/
 
         return res.status(200).json({
@@ -1355,9 +1416,6 @@ const accessToken =
             data: {
 
                 accessToken,
-
-                refreshToken:
-                    newRefreshToken,
 
                 sessionId:
                     session.sessionId
@@ -1398,43 +1456,28 @@ export async function logout(
 ) {
 
     /*----------------------------------------------
-        Validate Request
+        Read Refresh Token Cookie
     ----------------------------------------------*/
 
-    const validation =
-        logoutSchema.safeParse(
-            req.body
+    const token =
+        getCookieValue(
+            req,
+            REFRESH_COOKIE_NAME
         );
 
 
-    if (!validation.success) {
+    if (!token) {
 
-        return res.status(400).json({
+        return res.status(401).json({
 
             success: false,
 
             message:
-                "Invalid logout request.",
-
-            errors:
-                validation.error.issues.map(
-                    issue => ({
-                        field:
-                            issue.path.join("."),
-
-                        message:
-                            issue.message
-                    })
-                )
+                "Invalid or expired refresh token."
 
         });
 
     }
-
-
-    const {
-        refreshToken: token
-    } = validation.data;
 
 
     try {
@@ -1521,6 +1564,19 @@ if (
 
 
         /*------------------------------------------
+            Clear Refresh Token Cookie
+        ------------------------------------------*/
+
+        res.clearCookie(
+            REFRESH_COOKIE_NAME,
+            {
+                ...refreshCookieOptions,
+                maxAge: undefined
+            }
+        );
+
+
+        /*------------------------------------------
             Logout Response
         ------------------------------------------*/
 
@@ -1563,15 +1619,4 @@ import {
 import {
     sendVerificationEmail
 } from "../services/email/verificationEmailService.js";
-
-
-
-
-
-
-
-
-
-
-
 

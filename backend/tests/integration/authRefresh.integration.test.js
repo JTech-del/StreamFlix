@@ -90,17 +90,19 @@ test(
             lastUsedAt: new Date()
         });
 
+        const refreshCookie =
+            `streamflix_refresh_token=${encodeURIComponent(
+                refreshToken
+            )}`;
+
         const sendRefresh =
             () =>
                 request(app)
                     .post("/api/auth/refresh")
                     .set(
-                        "content-type",
-                        "application/json"
-                    )
-                    .send({
-                        refreshToken
-                    });
+                        "cookie",
+                        refreshCookie
+                    );
 
         const [
             firstResponse,
@@ -153,12 +155,43 @@ test(
             successfulResponse.body.data.accessToken
         );
 
+        const setCookie =
+            successfulResponse.headers[
+                "set-cookie"
+            ];
+
         assert.ok(
-            successfulResponse.body.data.refreshToken
+            setCookie
+        );
+
+        const rotatedCookie =
+            setCookie.find(
+                cookie =>
+                    cookie.startsWith(
+                        "streamflix_refresh_token="
+                    )
+            );
+
+        assert.ok(
+            rotatedCookie
+        );
+
+        const rotatedRefreshToken =
+            decodeURIComponent(
+                rotatedCookie
+                    .split(";")[0]
+                    .slice(
+                        "streamflix_refresh_token="
+                            .length
+                    )
+            );
+
+        assert.ok(
+            rotatedRefreshToken
         );
 
         assert.notEqual(
-            successfulResponse.body.data.refreshToken,
+            rotatedRefreshToken,
             refreshToken
         );
 
@@ -174,7 +207,7 @@ test(
         assert.equal(
             storedSession.refreshTokenHash,
             hashRefreshToken(
-                successfulResponse.body.data.refreshToken
+                rotatedRefreshToken
             )
         );
 
@@ -187,12 +220,9 @@ test(
             await request(app)
                 .post("/api/auth/refresh")
                 .set(
-                    "content-type",
-                    "application/json"
-                )
-                .send({
-                    refreshToken
-                });
+                    "cookie",
+                    refreshCookie
+                );
 
         assert.equal(
             oldTokenResponse.status,

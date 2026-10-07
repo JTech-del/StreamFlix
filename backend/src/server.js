@@ -73,6 +73,7 @@ app.use(
 app.use(
     cors({
         origin: config.http.corsOrigin,
+        credentials: true,
         methods: [
             "GET",
             "HEAD",
@@ -89,7 +90,6 @@ app.use(
         optionsSuccessStatus: 204
     })
 );
-
 
 /*==================================================
     Request Body Parsing

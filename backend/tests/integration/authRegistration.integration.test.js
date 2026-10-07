@@ -40,6 +40,25 @@ const User = (await import("../../src/models/User.js")).default;
 const VerificationToken =
     (await import("../../src/models/VerificationToken.js")).default;
 
+function getRefreshCookie(response) {
+    const setCookie =
+        response.headers["set-cookie"];
+
+    assert.ok(setCookie);
+
+    const refreshCookie =
+        setCookie.find(
+            cookie =>
+                cookie.startsWith(
+                    "streamflix_refresh_token="
+                )
+        );
+
+    assert.ok(refreshCookie);
+
+    return refreshCookie.split(";")[0];
+}
+
 await connectDatabase();
 
 test.after(async () => {
@@ -562,9 +581,28 @@ test(
         );
 
         assert.equal(
-            typeof response.body.data.refreshToken,
-            "string"
+            response.body.data.refreshToken,
+            undefined
         );
+
+        const refreshCookie =
+            getRefreshCookie(response);
+
+        assert.match(
+            refreshCookie,
+            /^streamflix_refresh_token=/
+        );
+
+
+        const refreshToken =
+            decodeURIComponent(
+                refreshCookie
+                    .slice(
+                        "streamflix_refresh_token=".length
+                    )
+            );
+
+        assert.ok(refreshToken);
 
         assert.equal(
             typeof response.body.data.sessionId,
@@ -618,7 +656,7 @@ test(
 
         assert.notEqual(
             session.refreshTokenHash,
-            response.body.data.refreshToken
+            refreshToken
         );
 
         assert.equal(
@@ -668,8 +706,16 @@ test(
         assert.equal(loginResponse.status, 200);
         assert.equal(loginResponse.body.success, true);
 
+        const loginRefreshCookie =
+            getRefreshCookie(loginResponse);
+
         const oldRefreshToken =
-            loginResponse.body.data.refreshToken;
+            decodeURIComponent(
+                loginRefreshCookie
+                    .slice(
+                        "streamflix_refresh_token=".length
+                    )
+            );
 
         const sessionId =
             loginResponse.body.data.sessionId;
@@ -677,9 +723,7 @@ test(
         const refreshResponse =
             await request(app)
                 .post("/api/auth/refresh")
-                .send({
-                    refreshToken: oldRefreshToken
-                });
+                .set("cookie", loginRefreshCookie);
 
         assert.equal(refreshResponse.status, 200);
         assert.equal(refreshResponse.body.success, true);
@@ -690,8 +734,8 @@ test(
         );
 
         assert.equal(
-            typeof refreshResponse.body.data.refreshToken,
-            "string"
+            refreshResponse.body.data.refreshToken,
+            undefined
         );
 
         assert.equal(
@@ -699,8 +743,16 @@ test(
             sessionId
         );
 
+        const rotatedRefreshCookie =
+            getRefreshCookie(refreshResponse);
+
         const newRefreshToken =
-            refreshResponse.body.data.refreshToken;
+            decodeURIComponent(
+                rotatedRefreshCookie
+                    .slice(
+                        "streamflix_refresh_token=".length
+                    )
+            );
 
         assert.notEqual(
             newRefreshToken,
@@ -725,9 +777,10 @@ test(
         const oldTokenResponse =
             await request(app)
                 .post("/api/auth/refresh")
-                .send({
-                    refreshToken: oldRefreshToken
-                });
+                .set(
+                    "cookie",
+                    loginRefreshCookie
+                );
 
         assert.equal(
             oldTokenResponse.status,
@@ -772,8 +825,8 @@ test(
         assert.equal(loginResponse.status, 200);
         assert.equal(loginResponse.body.success, true);
 
-        const refreshToken =
-            loginResponse.body.data.refreshToken;
+        const refreshCookie =
+            getRefreshCookie(loginResponse);
 
         const sessionId =
             loginResponse.body.data.sessionId;
@@ -781,10 +834,7 @@ test(
         const logoutResponse =
             await request(app)
                 .post("/api/auth/logout")
-                .send({
-                    refreshToken
-                });
-
+                .set("cookie", refreshCookie);
         assert.equal(logoutResponse.status, 200);
         assert.equal(logoutResponse.body.success, true);
 
@@ -810,9 +860,7 @@ test(
         const refreshAfterLogout =
             await request(app)
                 .post("/api/auth/refresh")
-                .send({
-                    refreshToken
-                });
+                .set("cookie", refreshCookie);
 
         assert.equal(
             refreshAfterLogout.status,
@@ -877,8 +925,8 @@ test(
             true
         );
 
-        const refreshToken =
-            loginResponse.body.data.refreshToken;
+        const refreshCookie =
+            getRefreshCookie(loginResponse);
 
         const sessionId =
             loginResponse.body.data.sessionId;
@@ -954,9 +1002,7 @@ test(
         const refreshAfterReset =
             await request(app)
                 .post("/api/auth/refresh")
-                .send({
-                    refreshToken
-                });
+                .set("cookie", refreshCookie);
 
         assert.equal(
             refreshAfterReset.status,
@@ -1053,9 +1099,9 @@ test(
 
         assert.equal(secondLogin.status, 200);
 
-        const secondRefreshToken = secondLogin.body.data.refreshToken;
         const secondSessionId = secondLogin.body.data.sessionId;
-
+        const secondRefreshCookie =
+            getRefreshCookie(secondLogin);
         assert.notEqual(firstSessionId, secondSessionId);
 
         const logoutOthersResponse = await request(app)
@@ -1075,8 +1121,7 @@ test(
 
         const refreshResponse = await request(app)
             .post("/api/auth/refresh")
-            .send({ refreshToken: secondRefreshToken });
-
+            .set("cookie", secondRefreshCookie);
         assert.equal(refreshResponse.status, 401);
         assert.equal(refreshResponse.body.success, false);
     }
@@ -1106,8 +1151,9 @@ test(
         assert.equal(loginResponse.status, 200);
 
         const accessToken = loginResponse.body.data.accessToken;
-        const refreshToken = loginResponse.body.data.refreshToken;
         const sessionId = loginResponse.body.data.sessionId;
+        const refreshCookie =
+            getRefreshCookie(loginResponse);
 
         const revokeResponse = await request(app)
             .delete(`/api/sessions/${sessionId}`)
@@ -1128,7 +1174,7 @@ test(
 
         const refreshResponse = await request(app)
             .post("/api/auth/refresh")
-            .send({ refreshToken });
+            .set("cookie", refreshCookie);
 
         assert.equal(refreshResponse.status, 401);
         assert.equal(refreshResponse.body.success, false);
@@ -1179,8 +1225,11 @@ test(
 
         assert.equal(loginB.status, 200);
 
-        const sessionIdB = loginB.body.data.sessionId;
-        const refreshTokenB = loginB.body.data.refreshToken;
+        const sessionIdB =
+            loginB.body.data.sessionId;
+
+        const refreshCookieB =
+            getRefreshCookie(loginB);
 
         const revokeResponse = await request(app)
             .delete(`/api/sessions/${sessionIdB}`)
@@ -1188,7 +1237,10 @@ test(
 
         assert.equal(revokeResponse.status, 404);
         assert.equal(revokeResponse.body.success, false);
-        assert.equal(revokeResponse.body.message, "Session not found.");
+        assert.equal(
+            revokeResponse.body.message,
+            "Session not found."
+        );
 
         const sessionB = await Session.findOne({
             sessionId: sessionIdB
@@ -1200,15 +1252,12 @@ test(
 
         const refreshResponse = await request(app)
             .post("/api/auth/refresh")
-            .send({
-                refreshToken: refreshTokenB
-            });
+            .set("cookie", refreshCookieB);
 
         assert.equal(refreshResponse.status, 200);
         assert.equal(refreshResponse.body.success, true);
     }
 );
-
 test(
     "POST /api/admin/movies/import-tmdb rejects an authenticated non-admin user",
     async () => {
