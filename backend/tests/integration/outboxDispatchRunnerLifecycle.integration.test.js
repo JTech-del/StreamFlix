@@ -2,19 +2,19 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
-import {
-    startOutboxDispatchRunner,
-    stopOutboxDispatchRunner
-} from "../../src/workers/outboxDispatchRunner.js";
-
-import {
-    connectDatabase,
-    disconnectDatabase
-} from "../../src/config/database.js";
+let mongoServer;
+let startOutboxDispatchRunner;
+let stopOutboxDispatchRunner;
+let connectDatabase;
+let disconnectDatabase;
 
 
 test.before(async () => {
+    mongoServer = await startIsolatedMongo("streamflix_outbox_dispatch_lifecycle_test");
+    ({ startOutboxDispatchRunner, stopOutboxDispatchRunner } = await import("../../src/workers/outboxDispatchRunner.js"));
+    ({ connectDatabase, disconnectDatabase } = await import("../../src/config/database.js"));
     await connectDatabase();
 });
 
@@ -22,6 +22,7 @@ test.before(async () => {
 test.after(async () => {
     await stopOutboxDispatchRunner();
     await disconnectDatabase();
+    await mongoServer?.stop();
 });
 
 

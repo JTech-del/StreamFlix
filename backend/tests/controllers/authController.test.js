@@ -38,6 +38,10 @@ function createResponse() {
 
         body: null,
 
+        cookies: {},
+
+        clearedCookies: [],
+
         status(code) {
 
             this.statusCode = code;
@@ -52,6 +56,16 @@ function createResponse() {
 
             return this;
 
+        },
+
+        cookie(name, value, options) {
+            this.cookies[name] = { value, options };
+            return this;
+        },
+
+        clearCookie(name, options) {
+            this.clearedCookies.push({ name, options });
+            return this;
         }
 
     };
@@ -63,13 +77,20 @@ function createRequest(
     body = {}
 ) {
 
+    const requestBody = { ...body };
+    const headers = { "user-agent": "node-test-agent" };
+
+    // Model refresh credentials in the HttpOnly cookie used by the current API.
+    if (typeof requestBody.refreshToken === "string") {
+        headers.cookie = `streamflix_refresh_token=${encodeURIComponent(requestBody.refreshToken)}`;
+        delete requestBody.refreshToken;
+    }
+
     return {
 
-        body,
+        body: requestBody,
 
-        headers: {
-            "user-agent": "node-test-agent"
-        },
+        headers,
 
         ip: "127.0.0.1"
 
@@ -506,7 +527,7 @@ test(
 
 
 test(
-    "login creates a session and returns tokens for a valid verified user",
+    "login creates a session, returns an access token, and sets an HttpOnly refresh cookie",
     async () => {
 
         const password =
@@ -585,14 +606,10 @@ test(
                 res.body.data.accessToken.length > 0
             );
 
-            assert.equal(
-                typeof res.body.data.refreshToken,
-                "string"
-            );
-
-            assert.ok(
-                res.body.data.refreshToken.length > 0
-            );
+            assert.equal(res.body.data.refreshToken, undefined);
+            assert.equal(typeof res.cookies.streamflix_refresh_token?.value, "string");
+            assert.ok(res.cookies.streamflix_refresh_token.value.length > 0);
+            assert.equal(res.cookies.streamflix_refresh_token.options.httpOnly, true);
 
             assert.equal(
                 typeof res.body.data.sessionId,
@@ -775,7 +792,7 @@ test(
 
         assert.equal(
             res.statusCode,
-            400
+            401
         );
 
         assert.equal(
@@ -785,7 +802,7 @@ test(
 
         assert.equal(
             res.body.message,
-            "Invalid refresh token request."
+            "Invalid or expired refresh token."
         );
 
     }
@@ -1454,7 +1471,7 @@ test(
             );
 
             assert.equal(
-                typeof res.body.data.refreshToken,
+                typeof res.cookies.streamflix_refresh_token?.value,
                 "string"
             );
 
@@ -1465,7 +1482,7 @@ test(
 
             assert.notEqual(
                 hashRefreshToken(
-                    res.body.data.refreshToken
+                    res.cookies.streamflix_refresh_token.value
                 ),
                 oldHash
             );
@@ -1473,7 +1490,7 @@ test(
             assert.equal(
                 findOneAndUpdateUpdate.$set.refreshTokenHash,
                 hashRefreshToken(
-                    res.body.data.refreshToken
+                    res.cookies.streamflix_refresh_token.value
                 )
             );
 
@@ -1833,9 +1850,9 @@ test("logout rejects invalid request data", async () => {
 
     await logout(req, res);
 
-    assert.equal(res.statusCode, 400);
+    assert.equal(res.statusCode, 401);
     assert.equal(res.body.success, false);
-    assert.equal(res.body.message, "Invalid logout request.");
+    assert.equal(res.body.message, "Invalid or expired refresh token.");
 });
 
 test("logout rejects an invalid refresh JWT", async () => {

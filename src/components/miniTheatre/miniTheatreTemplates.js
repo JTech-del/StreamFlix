@@ -188,17 +188,23 @@ export const miniTheatreTemplates = {
 
                 preload="metadata"
 
+                referrerpolicy="no-referrer"
+
             >
 
-                <source
-
-               src="${movie.streamUrl || ""}"
-
-                    type="video/mp4"
-
-                >
-
             </video>
+
+
+            <iframe
+                class="mini-theatre__youtube-embed"
+                title="YouTube trailer"
+                hidden
+                loading="eager"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+            ></iframe>
+
 
         </div>
 
@@ -853,9 +859,9 @@ export const miniTheatreTemplates = {
     ⛶
 
 </button>
- 
 
-</div> 
+
+</div>
 
         </div>
 

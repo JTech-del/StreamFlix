@@ -91,19 +91,17 @@ export const upcomingCinemaTemplates = {
                     data-upcoming-preview
                 >
 
-                    <video
-                        class="upcoming-cinema__video"
-                        src="${movie.trailerUrl || ""}"
-                        muted
-                        autoplay
-                        loop
-                        playsinline
-                        preload="auto"
-                        aria-label="${
-                            movie.title ||
-                            "Upcoming movie"
-                        } trailer preview"
-                    ></video>
+
+                   <video
+    class="upcoming-cinema__video"
+    poster="${movie.backdropUrl || movie.posterUrl || movie.backdrop || movie.poster || ""}"
+    muted
+    playsinline
+    preload="none"
+    aria-label="${
+        movie.title || "Upcoming movie"
+    } trailer preview"
+></video>
 
 
 

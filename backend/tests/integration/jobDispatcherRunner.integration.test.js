@@ -4,13 +4,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import mongoose from "mongoose";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
 import Job from "../../src/models/Job.js";
 
-import {
-    connectDatabase,
-    disconnectDatabase
-} from "../../src/config/database.js";
+let mongoServer;
+let connectDatabase;
+let disconnectDatabase;
+let runJobDispatcherCycle;
 
 import {
     connectRabbitMQ,
@@ -18,13 +19,10 @@ import {
     assertRabbitMQTopology
 } from "../../src/services/rabbitmqService.js";
 
-import {
-    runJobDispatcherCycle
-} from "../../src/workers/jobDispatcherRunner.js";
-
-
 test.before(async () => {
-
+    mongoServer = await startIsolatedMongo("streamflix_job_dispatcher_test");
+    ({ connectDatabase, disconnectDatabase } = await import("../../src/config/database.js"));
+    ({ runJobDispatcherCycle } = await import("../../src/workers/jobDispatcherRunner.js"));
     await connectDatabase();
 
     await connectRabbitMQ();
@@ -38,6 +36,7 @@ test.after(async () => {
     await closeRabbitMQ();
 
     await disconnectDatabase();
+    await mongoServer?.stop();
 });
 
 

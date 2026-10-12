@@ -25,10 +25,19 @@
 /*==================================================
     Core Components
 ==================================================*/
-
 import {
     NavbarController
 } from "../components/navbar/navbarController.js";
+
+import {
+    ProfileView
+} from "../components/profile/profileView.js";
+
+import {
+    ProfileController
+} from "../components/profile/profileController.js";
+
+import "../components/profile/profile.css";
 
 import {
     HeroController
@@ -46,7 +55,17 @@ import {
     miniTheatreController
 } from "../components/miniTheatre/index.js";
 
+import { ApplicationViewController } from "./applicationViewController.js";
 
+import {
+    NotificationsView
+} from "../components/notifications/notificationsView.js";
+
+import {
+    NotificationsController
+} from "../components/notifications/notificationsController.js";
+
+import "../components/notifications/notifications.css";
 /*==================================================
     Movie Services
 ==================================================*/
@@ -91,6 +110,7 @@ import {
 } from "../components/mediaRail/mediaRailEventTypes.js";
 
 
+
 /*==================================================
     Footer Import
 ==================================================*/
@@ -126,6 +146,16 @@ class AppController {
         this.hero = null;
 
         this.search = null;
+
+        this.applicationView = null;
+
+        this.profileView = null;
+
+        this.profileController = null;
+
+        this.notificationsView = null;
+
+        this.notificationsController = null;
 
         this.thumbnail = null;
 
@@ -190,13 +220,22 @@ class AppController {
             Cache DOM
         ------------------------------------------*/
 
-        this.cacheElements();
+      this.cacheElements();
+
+console.log(
+    "2 - cacheElements"
+);
 
 
-        console.log(
-            "2 - cacheElements"
-        );
+/*------------------------------------------
+    Application View
+------------------------------------------*/
 
+this.initializeApplicationView();
+
+console.log(
+    "2.5 - application view"
+);
 
         /*------------------------------------------
             Load Movies
@@ -360,6 +399,46 @@ class AppController {
 
     }
 
+        /*==================================================
+        Profile
+    ==================================================*/
+
+    initializeProfile() {
+
+        if (!this.elements.applicationView) {
+
+            console.error(
+                "Profile application mount point not found."
+            );
+
+            return;
+
+        }
+
+
+        this.profileView =
+            new ProfileView({
+
+                mountElement:
+                    this.elements.applicationView
+
+            });
+
+
+        this.profileController =
+            new ProfileController({
+
+                view:
+                    this.profileView
+
+            });
+
+
+        this.profileView.mount();
+
+        this.profileController.init();
+
+    }
 
     /*==================================================
         Cache DOM Elements
@@ -373,6 +452,13 @@ class AppController {
                 "navbar"
             ),
 
+homeView: document.getElementById(
+    "home-view"
+),
+
+applicationView: document.getElementById(
+    "application-view"
+),
 
             main: document.getElementById(
                 "main-content"
@@ -476,13 +562,20 @@ class AppController {
         }
 
 
-        this.navbar =
-            new NavbarController(
-                this.elements.navbar
-            );
+    this.navbar =
+    new NavbarController(
+        this.elements.navbar
+    );
 
+this.navbar.setNotificationsHandler(
+    () => this.openNotifications()
+);
 
-        this.navbar.init();
+this.navbar.setProfileHandler(
+    () => this.openProfile()
+);
+
+this.navbar.init();
 
     }
 
@@ -537,7 +630,41 @@ class AppController {
         }
 
     }
+/*==================================================
+    Application View
+==================================================*/
 
+initializeApplicationView() {
+
+    if (
+        !this.elements.homeView ||
+        !this.elements.applicationView
+    ) {
+
+        console.error(
+            "Application view mount points not found."
+        );
+
+        return;
+
+    }
+
+
+    this.applicationView =
+        new ApplicationViewController({
+
+            homeElement:
+                this.elements.homeView,
+
+            applicationElement:
+                this.elements.applicationView
+
+        });
+
+
+    this.applicationView.init();
+
+}
 
     /*==================================================
         Hero
@@ -1325,6 +1452,66 @@ class AppController {
         }
 
     }
+openNotifications() {
+
+    console.log("Navbar → Notifications");
+
+    if (!this.applicationView) {
+        return;
+    }
+
+    if (!this.notificationsView) {
+
+        this.notificationsView =
+            new NotificationsView({
+                mountElement:
+                    this.elements.applicationView
+            });
+
+        this.notificationsController =
+            new NotificationsController({
+                view:
+                    this.notificationsView
+            });
+
+        this.notificationsController.init();
+
+    }
+
+    this.applicationView.showView(
+        "notifications",
+        () => {
+
+            this.notificationsView.mount();
+
+        }
+    );
+
+}
+
+
+openProfile() {
+
+    console.log("Navbar → Profile");
+
+
+    if (!this.applicationView) {
+
+        return;
+
+    }
+
+
+    if (!this.profileView) {
+
+        this.initializeProfile();
+
+    }
+
+
+    this.applicationView.showApplicationView();
+
+}
 
 }
 

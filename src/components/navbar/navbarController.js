@@ -45,6 +45,7 @@ export class NavbarController {
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleNavigationClick = this.handleNavigationClick.bind(this);
+        this.handleActionClick = this.handleActionClick.bind(this);
 
     }
 
@@ -134,13 +135,10 @@ export class NavbarController {
 
         if (this.elements.actions) {
 
-            this.elements.actions.addEventListener(
-
-                "click",
-
-                this.handleActionClick.bind(this)
-
-            );
+          this.elements.actions.addEventListener(
+    "click",
+    this.handleActionClick
+);
 
         }
 
@@ -167,19 +165,39 @@ export class NavbarController {
 
             const action = button.dataset.action;
 
-            switch (action) {
+          switch (action) {
 
-                case "search":
+    case "search":
 
-                    if (this.onSearchToggle) {
+        if (this.onSearchToggle) {
 
-                        this.onSearchToggle();
+            this.onSearchToggle();
 
-                    }
+        }
 
-                    break;
+        break;
 
-            }
+    case "notifications":
+
+        if (this.onNotifications) {
+
+            this.onNotifications();
+
+        }
+
+        break;
+
+    case "profile":
+
+        if (this.onProfile) {
+
+            this.onProfile();
+
+        }
+
+        break;
+
+}
 
         }
         /*==============================================
@@ -360,5 +378,48 @@ export class NavbarController {
         this.view.destroy();
 
     }
+
+/*==============================================
+    Set Notifications Handler
+==============================================*/
+
+setNotificationsHandler(callback) {
+
+    if (typeof callback !== "function") {
+
+        console.error(
+            "Notifications handler must be a function."
+        );
+
+        return;
+
+    }
+
+    this.onNotifications = callback;
+
+}
+
+
+/*==============================================
+    Set Profile Handler
+==============================================*/
+
+setProfileHandler(callback) {
+
+    if (typeof callback !== "function") {
+
+        console.error(
+            "Profile handler must be a function."
+        );
+
+        return;
+
+    }
+
+    this.onProfile = callback;
+
+}
+
+
 
 }

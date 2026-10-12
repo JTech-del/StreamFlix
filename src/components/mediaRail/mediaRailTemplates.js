@@ -235,6 +235,8 @@ export const mediaRailTemplates = {
 
     item(movie, index = 0) {
 
+        const playbackDisabled = !movie?.playbackAvailable || !movie?.video || !movie?.streamUrl;
+
         const title =
             getMovieTitle(movie);
 
@@ -353,11 +355,13 @@ export const mediaRailTemplates = {
 
                         data-action="theatre"
 
+                        ${playbackDisabled ? "disabled" : ""}
+
                         data-movie-id="${id}"
 
-                        aria-label="Watch ${title} in Theatre"
+                        aria-label="${playbackDisabled ? `Full movie unavailable for ${title}` : `Watch ${title} in Theatre`}"
 
-                        title="Watch in Theatre"
+                        title="${playbackDisabled ? "Full movie unavailable" : "Watch in Theatre"}"
 
                     >
 
@@ -371,7 +375,7 @@ export const mediaRailTemplates = {
 
                         <span>
 
-                            Theatre
+                            ${playbackDisabled ? "Unavailable" : "Theatre"}
 
                         </span>
 
@@ -611,6 +615,8 @@ export const mediaRailTemplates = {
 
     playlist(movie, index = 0) {
 
+        const playbackDisabled = !movie?.playbackAvailable || !movie?.video || !movie?.streamUrl;
+
         const title =
             getMovieTitle(movie);
 
@@ -705,11 +711,13 @@ export const mediaRailTemplates = {
 
                             data-action="theatre"
 
+                            ${playbackDisabled ? "disabled" : ""}
+
                             data-movie-id="${id}"
 
-                            aria-label="Watch ${title} in Theatre"
+                            aria-label="${playbackDisabled ? `Full movie unavailable for ${title}` : `Watch ${title} in Theatre`}"
 
-                            title="Watch in Theatre"
+                            title="${playbackDisabled ? "Full movie unavailable" : "Watch in Theatre"}"
 
                         >
 
@@ -720,6 +728,10 @@ export const mediaRailTemplates = {
                                 aria-hidden="true"
 
                             ></i>
+
+                            <span class="mediaRail__action-label">
+                                ${playbackDisabled ? "Unavailable" : "Theatre"}
+                            </span>
 
                         </button>
 
@@ -804,6 +816,8 @@ export const mediaRailTemplates = {
 
     poster(movie, index = 0) {
 
+        const playbackDisabled = !movie?.playbackAvailable || !movie?.video || !movie?.streamUrl;
+
         const title =
             getMovieTitle(movie);
 
@@ -867,11 +881,13 @@ export const mediaRailTemplates = {
 
                         data-action="theatre"
 
+                        ${playbackDisabled ? "disabled" : ""}
+
                         data-movie-id="${id}"
 
-                        aria-label="Watch ${title} in Theatre"
+                        aria-label="${playbackDisabled ? `Full movie unavailable for ${title}` : `Watch ${title} in Theatre`}"
 
-                        title="Watch in Theatre"
+                        title="${playbackDisabled ? "Full movie unavailable" : "Watch in Theatre"}"
 
                     >
 
@@ -882,6 +898,10 @@ export const mediaRailTemplates = {
                             aria-hidden="true"
 
                         ></i>
+
+                        <span>
+                            ${playbackDisabled ? "Unavailable" : "Theatre"}
+                        </span>
 
                     </button>
 

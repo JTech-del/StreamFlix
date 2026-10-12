@@ -1,5 +1,7 @@
 "use strict";
 
+import { apiRequest } from "../services/apiService.js";
+
 
 /*==================================================
     StreamFlix
@@ -28,7 +30,7 @@
     Backend Configuration
 ==================================================*/
 const BACKEND_BASE_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:5000";
+    import.meta.env?.VITE_API_URL || "http://localhost:5000";
 
 
 const API_BASE_URL =
@@ -172,6 +174,25 @@ export function getStreamUrl(movieId) {
         `${API_BASE_URL}/videos/${encodeURIComponent(movieId)}`
     );
 
+}
+
+// Request a fresh, short-lived movie-scoped grant through the normal Bearer API.
+// The grant itself is returned only to the caller and is never logged or persisted.
+export async function getAuthorizedStreamUrl(movieId) {
+    if (movieId === null || movieId === undefined || movieId === "") {
+        throw new Error("A movie ID is required.");
+    }
+
+    const result = await apiRequest(
+        `/videos/${encodeURIComponent(movieId)}/authorization`,
+        { method: "POST" }
+    );
+
+    if (typeof result?.data?.grant !== "string") {
+        throw new Error("Playback authorization was unavailable.");
+    }
+
+    return `${API_BASE_URL}/videos/${encodeURIComponent(movieId)}?grant=${encodeURIComponent(result.data.grant)}`;
 }
 
 

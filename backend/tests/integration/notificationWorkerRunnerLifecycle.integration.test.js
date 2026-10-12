@@ -4,23 +4,26 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import mongoose from "mongoose";
-
-import {
-    start,
-    shutdown
-} from "../../src/workers/notificationWorkerRunner.js";
-
-import {
-    getDatabaseState
-} from "../../src/config/database.js";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
 import {
     getRabbitMQChannel
 } from "../../src/services/rabbitmqService.js";
 
+let mongoServer;
+let start;
+let shutdown;
+let getDatabaseState;
+
+test.before(async () => {
+    mongoServer = await startIsolatedMongo("streamflix_notification_runner_test");
+    ({ start, shutdown } = await import("../../src/workers/notificationWorkerRunner.js"));
+    ({ getDatabaseState } = await import("../../src/config/database.js"));
+});
 
 test.after(async () => {
-    await shutdown("TEST_CLEANUP");
+    await shutdown?.("TEST_CLEANUP");
+    await mongoServer?.stop();
 });
 
 
@@ -29,7 +32,13 @@ test(
     async () => {
 
         const result =
-            await start();
+            await start({
+                startWorker: async () => ({
+                    worker: "notification-worker",
+                    queue: "streamflix.notification",
+                    prefetch: 1
+                })
+            });
 
         assert.equal(
             result.worker,

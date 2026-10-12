@@ -3,6 +3,17 @@
 import "dotenv/config";
 
 const REQUIRED_SECRET_MIN_LENGTH = 32;
+const playbackGrantTtlSeconds = Number(
+    process.env.PLAYBACK_GRANT_TTL_SECONDS || 900
+);
+
+if (
+    !Number.isInteger(playbackGrantTtlSeconds) ||
+    playbackGrantTtlSeconds < 60 ||
+    playbackGrantTtlSeconds > 3600
+) {
+    throw new Error("PLAYBACK_GRANT_TTL_SECONDS must be an integer from 60 to 3600.");
+}
 
 function requireSecret(name) {
     const value = process.env[name];
@@ -67,9 +78,13 @@ session: {
 },
 
     http: {
-        corsOrigin:
-            process.env.CLIENT_URL ||
-            "http://localhost:5173",
+    corsOrigin: (
+    process.env.CLIENT_URL ||
+    "http://localhost:5173,http://localhost:5174"
+)
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
 
         jsonLimit:
             process.env.JSON_BODY_LIMIT ||
@@ -81,6 +96,9 @@ session: {
                 false
             )
     },
+
+    // Short-lived movie grants avoid putting the general access token in media URLs.
+    playbackGrantTtlSeconds,
 
     email: {
         resendApiKey: process.env.RESEND_API_KEY,

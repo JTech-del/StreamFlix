@@ -21,7 +21,7 @@ import {
 
 let shuttingDown = false;
 
-export async function start() {
+export async function start({ startWorker = startNotificationWorker } = {}) {
     await connectDatabase();
 
     await connectRabbitMQ();
@@ -29,7 +29,7 @@ export async function start() {
     await assertRabbitMQTopology();
 
     const worker =
-        await startNotificationWorker();
+        await startWorker();
 
     console.log(
         `Notification worker started: ${worker.worker}`

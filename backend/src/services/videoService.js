@@ -304,6 +304,11 @@ function resolveVideoFile(
 
 }
 
+// Catalogue responses use this to avoid advertising missing or invalid files.
+export function hasMovieVideoFile(fileName) {
+    return resolveVideoFile(fileName, "movie") !== null;
+}
+
 
 /*==================================================
     Create Video Stream Information

@@ -43,16 +43,21 @@ test("Helmet security headers are present", async () => {
 
 
 test("configured CORS origin is accepted", async () => {
+    const configuredOrigins = (process.env.CLIENT_URL || "http://localhost:5173,http://localhost:5174")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+    const allowedOrigin = configuredOrigins[0];
 
     const response = await request(app)
         .get("/api/health")
-        .set("Origin", process.env.CLIENT_URL || "http://localhost:5173");
+        .set("Origin", allowedOrigin);
 
     assert.equal(response.status, 200);
 
     assert.equal(
         response.headers["access-control-allow-origin"],
-        process.env.CLIENT_URL || "http://localhost:5173"
+        allowedOrigin
     );
 
 });

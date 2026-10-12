@@ -29,7 +29,7 @@ import {
     getPosterUrl,
     getBackdropUrl,
     getLogoUrl,
-    getTrailerUrl
+    getMediaUrl
 } from "../api/movieApi.js";
 
 
@@ -70,22 +70,21 @@ function normalizeMovie(movie) {
         ------------------------------------------*/
 
         backendId: movie.id,
+/*------------------------------------------
+    Poster URL
+------------------------------------------*/
 
+posterUrl: movie.poster
+    ? getMediaUrl(movie.poster)
+    : null,
 
-        /*------------------------------------------
-            Poster URL
-        ------------------------------------------*/
+/*------------------------------------------
+    Backdrop URL
+------------------------------------------*/
 
-        posterUrl: movie.poster ?
-            getPosterUrl(movie.id) : null,
-
-
-        /*------------------------------------------
-            Backdrop URL
-        ------------------------------------------*/
-
-        backdropUrl: movie.backdrop ?
-            getBackdropUrl(movie.id) : null,
+backdropUrl: movie.backdrop
+    ? getMediaUrl(movie.backdrop)
+    : null,
 
 
         /*------------------------------------------
@@ -111,9 +110,12 @@ function normalizeMovie(movie) {
 
             /api/trailers/:movieId
         ------------------------------------------*/
+trailerUrl: movie.trailerUrl
+    ? getMediaUrl(movie.trailerUrl)
+    : null,
 
-        trailerUrl: movie.trailer ?
-            getTrailerUrl(movie.id) : null
+trailerProvider: movie.trailerProvider ?? null
+
 
     };
 

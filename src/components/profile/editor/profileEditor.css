@@ -1,0 +1,372 @@
+
+.profile-editor {
+    width: min(100%, 900px);
+    margin: 0 auto;
+    padding: 1.25rem;
+    color: var(--color-text);
+}
+
+.profile-editor__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-editor__eyebrow {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.profile-editor__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1.15;
+}
+
+.profile-editor__description {
+    max-width: 650px;
+    margin: 0.6rem 0 0;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.profile-editor__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-800);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition:
+        background var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.profile-editor__close:hover {
+    background: var(--hover-surface);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: var(--color-text);
+}
+
+.profile-editor__close:active {
+    transform: scale(0.96);
+}
+
+.profile-editor__close:focus-visible,
+.profile-editor__button:focus-visible,
+.profile-editor__field input:focus-visible,
+.profile-editor__field textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.profile-editor__form {
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-900);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-editor__avatar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.profile-editor__avatar-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    color: var(--color-text);
+    font-size: 1.15rem;
+    font-weight: 800;
+    box-shadow: var(--shadow-glow);
+}
+
+.profile-editor__avatar strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.profile-editor__avatar p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.profile-editor__fields {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.profile-editor__field {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-editor__field label {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.profile-editor__field input,
+.profile-editor__field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-800);
+    color: var(--color-text);
+    font: inherit;
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.profile-editor__field input {
+    min-height: 46px;
+    padding: 0 0.9rem;
+}
+
+.profile-editor__field textarea {
+    min-height: 130px;
+    padding: 0.8rem 0.9rem;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.profile-editor__field input::placeholder,
+.profile-editor__field textarea::placeholder {
+    color: var(--color-text-muted);
+}
+
+.profile-editor__field input:hover,
+.profile-editor__field textarea:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.profile-editor__field input:focus,
+.profile-editor__field textarea:focus {
+    border-color: var(--color-primary);
+    background: var(--color-surface-700);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+    outline: none;
+}
+
+.profile-editor__field input[aria-invalid="true"],
+.profile-editor__field textarea[aria-invalid="true"] {
+    border-color: var(--color-primary);
+}
+
+.profile-editor__input-prefix {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-800);
+    overflow: hidden;
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.profile-editor__input-prefix:focus-within {
+    border-color: var(--color-primary);
+    background: var(--color-surface-700);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.profile-editor__input-prefix > span {
+    padding-left: 0.9rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.profile-editor__input-prefix input {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.profile-editor__input-prefix input:focus {
+    box-shadow: none;
+    background: transparent;
+}
+
+.profile-editor__hint {
+    margin-top: 0.45rem;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.profile-editor__field-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.profile-editor__counter {
+    flex: 0 0 auto;
+    margin-top: 0.45rem;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.profile-editor__error {
+    min-height: 1.15rem;
+    margin-top: 0.35rem;
+    color: #ff6b75;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.profile-editor__status {
+    min-height: 1.4rem;
+    margin-top: 1rem;
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.profile-editor__footer {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    padding-top: 1.25rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.profile-editor__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 46px;
+    padding: 0.7rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.profile-editor__button:active {
+    transform: scale(0.98);
+}
+
+.profile-editor__button--primary {
+    border: 1px solid var(--color-primary);
+    background: var(--gradient-primary);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-editor__button--primary:hover {
+    box-shadow: var(--shadow-glow);
+}
+
+.profile-editor__button--secondary {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-800);
+    color: var(--color-text-secondary);
+}
+
+.profile-editor__button--secondary:hover {
+    background: var(--hover-surface);
+    color: var(--color-text);
+}
+
+@media (min-width: 600px) {
+
+    .profile-editor {
+        padding: 1.5rem;
+    }
+
+    .profile-editor__form {
+        padding: 1.5rem;
+    }
+
+    .profile-editor__footer {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+
+    .profile-editor__button {
+        min-width: 130px;
+    }
+
+}
+
+@media (min-width: 900px) {
+
+    .profile-editor {
+        padding: 2rem;
+    }
+
+    .profile-editor__form {
+        padding: 2rem;
+    }
+
+    .profile-editor__fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 1.5rem;
+    }
+
+    .profile-editor__field:last-child {
+        grid-column: 1 / -1;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .profile-editor__close,
+    .profile-editor__button,
+    .profile-editor__field input,
+    .profile-editor__field textarea,
+    .profile-editor__input-prefix {
+        transition: none;
+    }
+
+}

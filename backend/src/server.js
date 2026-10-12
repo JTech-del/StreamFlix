@@ -16,6 +16,8 @@ import authRoutes from "./routes/authRoutes.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import paystackWebhookRoutes from "./routes/paystackWebhookRoutes.js";
 /*==================================================
     StreamFlix Backend Server
 ==================================================*/
@@ -62,9 +64,12 @@ app.set(
 ==================================================*/
 
 app.use(
-    helmet()
+    helmet({
+        crossOriginResourcePolicy: {
+            policy: "cross-origin"
+        }
+    })
 );
-
 
 /*==================================================
     CORS
@@ -85,10 +90,23 @@ app.use(
         ],
         allowedHeaders: [
             "Content-Type",
-            "Authorization"
+            "Authorization",
+            "Idempotency-Key",
+            "Range"
         ],
+        exposedHeaders: ["Accept-Ranges", "Content-Range", "Content-Length"],
         optionsSuccessStatus: 204
     })
+);
+
+/*==================================================
+    Paystack Webhook Routes
+    Must run before the global JSON parser
+==================================================*/
+
+app.use(
+    "/api/webhooks/paystack",
+    paystackWebhookRoutes
 );
 
 /*==================================================
@@ -221,6 +239,15 @@ app.use(
 );
 
 /*==================================================
+    Payment Routes
+==================================================*/
+
+app.use(
+    "/api/payments",
+    paymentRoutes
+);
+
+/*==================================================
     404 Handler
 ==================================================*/
 
@@ -288,7 +315,9 @@ app.use(
                 "Client request error:",
                 {
                     method: req.method,
-                    path: req.originalUrl,
+                    // Do not log query strings: movie playback grants use the query
+                    // only for the native media request and are bearer credentials.
+                    path: req.path,
                     statusCode,
                     type: error?.type
                 }

@@ -2,17 +2,16 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import mongoose from "mongoose";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
 import OutboxEvent from "../../src/models/OutboxEvent.js";
 
 import {
-    connectDatabase,
-    disconnectDatabase
-} from "../../src/config/database.js";
-
-import {
     recoverDueOutboxEvents
 } from "../../src/services/outboxRecoveryService.js";
+
+let mongoServer;
 
 function createEventData(overrides = {}) {
     return {
@@ -33,7 +32,8 @@ function createEventData(overrides = {}) {
 }
 
 test.before(async () => {
-    await connectDatabase();
+    mongoServer = await startIsolatedMongo("streamflix_outbox_recovery_test");
+    await mongoose.connect(process.env.MONGODB_URI);
 });
 
 test.beforeEach(async () => {
@@ -47,7 +47,8 @@ test.after(async () => {
         eventType: "movie.published"
     });
 
-    await disconnectDatabase();
+    await mongoose.disconnect();
+    await mongoServer?.stop();
 });
 
 test(

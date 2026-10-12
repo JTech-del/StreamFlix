@@ -1,5 +1,39 @@
 "use strict";
 
+function escapeAttribute(value) {
+    return String(value ?? "").replace(/[&\"<>']/g, (character) => ({
+        "&": "&amp;",
+        "\"": "&quot;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;"
+    })[character]);
+}
+
+function trailerPreviewMarkup(movie, trailerUrl, title) {
+    try {
+        const url = new URL(trailerUrl);
+        if (
+            url.origin === "https://www.youtube-nocookie.com" &&
+            /^\/embed\/[A-Za-z0-9_-]{11}$/.test(url.pathname)
+        ) {
+            const embedUrl = new URL(url.pathname, url.origin);
+            embedUrl.searchParams.set("autoplay", "1");
+            embedUrl.searchParams.set("mute", "1");
+            embedUrl.searchParams.set("playsinline", "1");
+            embedUrl.searchParams.set("controls", "0");
+            embedUrl.searchParams.set("loop", "1");
+            embedUrl.searchParams.set("playlist", url.pathname.slice("/embed/".length));
+            return `<iframe class="trailer-rail__video trailer-rail__video--embed" src="${escapeAttribute(embedUrl)}" title="${escapeAttribute(title)} trailer preview" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+        }
+
+        if (!["http:", "https:"].includes(url.protocol)) return "";
+        return `<video class="trailer-rail__video" data-trailer-video src="${escapeAttribute(url)}" poster="${escapeAttribute(movie.backdropUrl || movie.posterUrl || movie.backdrop || movie.poster || "")}" muted loop playsinline preload="none" aria-label="${escapeAttribute(title)} trailer preview"></video>`;
+    } catch {
+        return "";
+    }
+}
+
 
 /*==================================================
     StreamFlix
@@ -174,6 +208,12 @@ export const trailerRailTemplates = {
                 movie.trailerUrl ||
                 "";
 
+            const trailerPreview = trailerPreviewMarkup(
+                movie,
+                trailerUrl,
+                title
+            );
+
 
             return `
 
@@ -199,25 +239,7 @@ export const trailerRailTemplates = {
                     class="trailer-rail__media"
                 >
 
-                    <video
-
-                        class="trailer-rail__video"
-
-                        data-trailer-video
-
-                        src="${trailerUrl}"
-
-                        muted
-
-                        loop
-
-                        playsinline
-
-                        preload="metadata"
-
-                        aria-label="${title} trailer"
-
-                    ></video>
+                 ${trailerPreview}
 
 
                     <!--==================================

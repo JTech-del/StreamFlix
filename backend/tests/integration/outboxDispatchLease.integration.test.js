@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import test, { after, before, beforeEach } from "node:test";
 
 import mongoose from "mongoose";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
-import { connectDatabase } from "../../src/config/database.js";
 import OutboxEvent from "../../src/models/OutboxEvent.js";
 
 import {
@@ -14,8 +14,11 @@ import {
     recoverExpiredOutboxDispatchLeases
 } from "../../src/services/outboxDispatchLeaseService.js";
 
+let mongoServer;
+
 before(async () => {
-    await connectDatabase();
+    mongoServer = await startIsolatedMongo("streamflix_outbox_lease_test");
+    await mongoose.connect(process.env.MONGODB_URI);
 });
 
 beforeEach(async () => {
@@ -23,7 +26,8 @@ beforeEach(async () => {
 });
 
 after(async () => {
-    await mongoose.connection.close();
+    await mongoose.disconnect();
+    await mongoServer?.stop();
 });
 
 async function createPendingEvent(overrides = {}) {

@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /*==================================================
     StreamFlix
@@ -21,6 +21,76 @@
 
 import { miniTheatreTemplates }
 from "./miniTheatreTemplates.js";
+
+let youtubeIframeApiPromise = null;
+
+function loadYouTubeIframeApi() {
+    if (window.YT?.Player) {
+        return Promise.resolve(window.YT);
+    }
+
+    if (youtubeIframeApiPromise) {
+        return youtubeIframeApiPromise;
+    }
+
+    youtubeIframeApiPromise = new Promise((resolve, reject) => {
+        const previousReady = window.onYouTubeIframeAPIReady;
+        let settled = false;
+
+        const cleanupTimeout = window.setTimeout(() => {
+            fail(new Error("YouTube IFrame API timed out."));
+        }, 15000);
+
+        const fail = (error) => {
+            if (settled) return;
+
+            settled = true;
+            window.clearTimeout(cleanupTimeout);
+            window.onYouTubeIframeAPIReady = previousReady || null;
+            youtubeIframeApiPromise = null;
+            reject(error);
+        };
+
+        window.onYouTubeIframeAPIReady = () => {
+            try {
+                previousReady?.();
+            } catch (error) {
+                console.warn("Previous YouTube API callback failed.", error);
+            }
+
+            if (window.YT?.Player) {
+                settled = true;
+                window.clearTimeout(cleanupTimeout);
+                window.onYouTubeIframeAPIReady = previousReady || null;
+                resolve(window.YT);
+            } else {
+                fail(new Error("YouTube IFrame API did not initialize."));
+            }
+        };
+
+        let script = document.querySelector(
+            'script[src="https://www.youtube.com/iframe_api"]'
+        );
+
+        if (!script) {
+            script = document.createElement("script");
+            script.src = "https://www.youtube.com/iframe_api";
+            script.async = true;
+        }
+
+        script.addEventListener(
+            "error",
+            () => fail(new Error("Failed to load YouTube IFrame API.")),
+            { once: true }
+        );
+
+        if (!script.isConnected) {
+            document.head.appendChild(script);
+        }
+    });
+
+    return youtubeIframeApiPromise;
+}
 
 
 class MiniTheatreView {
@@ -68,6 +138,8 @@ class MiniTheatreView {
             poster: null,
 
             video: null,
+
+            youtubeEmbed: null,
 
             title: null,
 
@@ -342,8 +414,13 @@ class MiniTheatreView {
             screen.querySelector(
                 ".mini-theatre__video"
             );
-
-
+/*-----------------------------------------
+YouTube Embed
+-------------------------------------------*/
+this.elements.youtubeEmbed =
+    screen.querySelector(
+        ".mini-theatre__youtube-embed"
+    );
         /*------------------------------------------
             Content
         ------------------------------------------*/
@@ -997,6 +1074,15 @@ class MiniTheatreView {
 
     resetVideo() {
 
+        // Stop and unload any active YouTube trailer.
+        const youtubeEmbed =
+            this.elements.youtubeEmbed;
+
+        if (youtubeEmbed) {
+            youtubeEmbed.hidden = true;
+            youtubeEmbed.removeAttribute("src");
+        }
+
         const video =
             this.elements.video;
 
@@ -1046,6 +1132,54 @@ class MiniTheatreView {
         }
 
     }
+
+resetYouTubeEmbed() {
+    const iframe = this.elements.youtubeEmbed;
+    const player = this.youtubePlayer;
+
+    this.youtubePlayer = null;
+
+    if (player && typeof player.destroy === "function") {
+        try {
+            player.destroy();
+        } catch (error) {
+            console.warn("Mini Theatre: Failed to destroy YouTube player.", error);
+        }
+    }
+
+    if (iframe) {
+        iframe.hidden = true;
+        iframe.removeAttribute("src");
+    }
+}
+
+showPlaybackError(message, onRetry) {
+    const screen = this.elements.screen;
+    if (!screen) return;
+
+    this.clearPlaybackError();
+    const notice = document.createElement("div");
+    notice.className = "mini-theatre__playback-error";
+    notice.setAttribute("role", "alert");
+    const text = document.createElement("p");
+    text.textContent = message;
+    notice.appendChild(text);
+
+    if (typeof onRetry === "function") {
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "Retry";
+        retry.addEventListener("click", onRetry, { once: true });
+        notice.appendChild(retry);
+    }
+
+    screen.appendChild(notice);
+}
+
+clearPlaybackError() {
+    this.elements.screen?.querySelectorAll(".mini-theatre__playback-error")
+        .forEach((notice) => notice.remove());
+}
 
 
     /*==============================================
@@ -1169,7 +1303,137 @@ class MiniTheatreView {
         }
 
     }
+    /*==============================================
+        Play Youtube Trailer
+    ==============================================*/
 
+async playYouTubeTrailer(embedUrl, { onEnded, onError } = {}) {
+    const iframe = this.elements.youtubeEmbed;
+
+    if (!iframe || typeof embedUrl !== "string") {
+        return false;
+    }
+
+    let requestedUrl;
+
+    try {
+        requestedUrl = new URL(embedUrl);
+    } catch {
+        return false;
+    }
+
+    const match =
+        requestedUrl.origin === "https://www.youtube-nocookie.com"
+            ? requestedUrl.pathname.match(/^\/embed\/([A-Za-z0-9_-]{11})$/)
+            : null;
+
+    if (!match) {
+        console.error("Mini Theatre: Rejected invalid YouTube embed URL.");
+        return false;
+    }
+
+    // Rebuild the URL instead of trusting arbitrary query parameters.
+    const safeUrl = new URL(
+        `https://www.youtube-nocookie.com/embed/${match[1]}`
+    );
+
+    safeUrl.searchParams.set("autoplay", "1");
+    safeUrl.searchParams.set("rel", "0");
+    safeUrl.searchParams.set("playsinline", "1");
+    safeUrl.searchParams.set("enablejsapi", "1");
+    safeUrl.searchParams.set("origin", window.location.origin);
+
+    const video = this.elements.video;
+    const poster = this.elements.poster;
+
+    if (video) {
+        video.pause();
+        video.hidden = true;
+    }
+
+    if (poster) {
+        poster.hidden = true;
+    }
+
+    iframe.hidden = false;
+    iframe.src = safeUrl.toString();
+
+    try {
+        const YT = await loadYouTubeIframeApi();
+
+        return await new Promise((resolve, reject) => {
+            let ready = false;
+
+            const timeoutId = window.setTimeout(() => {
+                if (!ready) {
+                    reject(new Error("YouTube player initialization timed out."));
+                }
+            }, 15000);
+
+            try {
+                this.youtubePlayer = new YT.Player(iframe, {
+                    events: {
+                        onReady: (event) => {
+                            ready = true;
+                            window.clearTimeout(timeoutId);
+
+                            this.youtubePlayer = event.target;
+
+                            try {
+                                event.target.playVideo();
+                            } catch (error) {
+                                console.warn(
+                                    "YouTube autoplay could not be requested.",
+                                    error
+                                );
+                            }
+
+                            resolve(true);
+                        },
+
+                        onStateChange: (event) => {
+                            if (
+                                event.data === YT.PlayerState.ENDED &&
+                                typeof onEnded === "function"
+                            ) {
+                                onEnded();
+                            }
+                        },
+
+                        onError: (event) => {
+                            const error = new Error(
+                                `YouTube player error: ${event.data}`
+                            );
+
+                            if (!ready) {
+                                window.clearTimeout(timeoutId);
+                                reject(error);
+                                return;
+                            }
+
+                            if (typeof onError === "function") {
+                                Promise.resolve(onError(error)).catch(
+                                    (callbackError) => {
+                                        console.error(
+                                            "Trailer error handler failed.",
+                                            callbackError
+                                        );
+                                    }
+                                );
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                window.clearTimeout(timeoutId);
+                reject(error);
+            }
+        });
+    } catch (error) {
+        this.resetYouTubeEmbed();
+        throw error;
+    }
+}
 
     /*==============================================
         Play Video
@@ -1408,14 +1672,7 @@ class MiniTheatreView {
         }
 
 
-        if (!movie.id) {
-
-            console.error(
-                "Mini Theatre: Movie has no ID.",
-                movie
-            );
-
-
+        if (!movie.id || !movie.video || !movie.streamUrl) {
             video.removeAttribute(
                 "src"
             );
@@ -1426,8 +1683,7 @@ class MiniTheatreView {
         }
 
 
-        const streamUrl =
-            `http://localhost:5000/api/videos/${movie.id}`;
+        const streamUrl = movie.streamUrl;
 
 
         /*
@@ -1479,11 +1735,6 @@ class MiniTheatreView {
 
         video.load();
 
-
-        console.log(
-            "Mini Theatre stream URL:",
-            streamUrl
-        );
 
     }
 
@@ -1711,6 +1962,13 @@ class MiniTheatreView {
         video.addEventListener(
             "error",
             () => {
+
+                // Unloading a source during a movie switch can dispatch an
+                // error after the src attribute has already been removed.
+                // That is cleanup, not a decoder failure for the new title.
+                if (!video.currentSrc && !video.getAttribute("src")) {
+                    return;
+                }
 
                 console.error(
                     "Mini Theatre: Video element error.",

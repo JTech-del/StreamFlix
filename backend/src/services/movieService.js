@@ -74,11 +74,22 @@ function normalizeMovie(movie) {
             External Metadata
         --------------------------------------------
         */
-
         external: {
             tmdbId: movie.external?.tmdbId ?? null,
             tmdbRating: movie.external?.tmdbRating ?? null,
-            imdbId: movie.external?.imdbId ?? null
+            imdbId: movie.external?.imdbId ?? null,
+
+            tmdbGenres: Array.isArray(movie.external?.tmdbGenres)
+                ? movie.external.tmdbGenres
+                : [],
+
+            tmdbPosterPath: movie.external?.tmdbPosterPath ?? null,
+            tmdbBackdropPath: movie.external?.tmdbBackdropPath ?? null,
+
+            // YouTube trailer metadata from TMDB
+            tmdbTrailerKey: movie.external?.tmdbTrailerKey ?? null,
+            tmdbTrailerType: movie.external?.tmdbTrailerType ?? null,
+            tmdbTrailerOfficial: movie.external?.tmdbTrailerOfficial ?? false
         },
 
         featured: Boolean(movie.featured),
@@ -95,7 +106,8 @@ function normalizeMovie(movie) {
         --------------------------------------------
         */
 
-        video: media.video || null,
+        video: media.playbackApproved === true ? (media.video || null) : null,
+        playbackApproved: media.playbackApproved === true,
         trailer: media.trailer || null,
 
         poster: media.poster || null,
@@ -137,7 +149,17 @@ export async function getMovies() {
         })
         .lean();
 
-    return movies.map(normalizeMovie);
+    const normalized = movies.map(normalizeMovie);
+    const videoCounts = new Map();
+    for (const record of movies) {
+        const filename = record.media?.video;
+        if (filename) videoCounts.set(filename, (videoCounts.get(filename) || 0) + 1);
+    }
+    return normalized.map((movie, index) =>
+        movies[index].media?.video && videoCounts.get(movies[index].media.video) > 1
+            ? { ...movie, video: null, playbackApproved: false }
+            : movie
+    );
 }
 
 
@@ -160,7 +182,16 @@ export async function getMovieById(movieId) {
         })
         .lean();
 
-    return normalizeMovie(movie);
+    const normalized = normalizeMovie(movie);
+    if (normalized?.video) {
+        const duplicateCount = await Movie.countDocuments({
+            id: { $ne: numericId },
+            status: "published",
+            "media.video": normalized.video
+        });
+        if (duplicateCount > 0) normalized.video = null;
+    }
+    return normalized;
 }
 
 
@@ -185,4 +216,18 @@ export async function getMovieBySlug(slug) {
         .lean();
 
     return normalizeMovie(movie);
+}
+
+// Used by the public trailer resolver to ensure trailer references never
+// expose a file that is also mapped as a full-length movie, including assets
+// that are still unapproved or otherwise unavailable for playback.
+export async function getPublishedMovieVideoReferences() {
+    const records = await Movie.find({
+        status: "published",
+        "media.video": { $type: "string" }
+    }).select("media.video").lean();
+
+    return records
+        .map((record) => record.media?.video)
+        .filter((filename) => typeof filename === "string" && filename.length > 0);
 }

@@ -1,68 +1,44 @@
+
 "use strict";
-
-/*==================================================
-    StreamFlix
-
-    Video Routes
-
-    Movie:
-
-        GET /api/videos/:movieId
-
-    Trailer:
-
-        GET /api/videos/trailers/:movieId
-
-==================================================*/
 
 import express from "express";
 
 import {
     streamVideo,
-    streamTrailer
+    streamTrailer,
+    issuePlaybackAuthorization
 } from "../controllers/videoController.js";
 
+import {
+    requireAuthentication
+} from "../middleware/authMiddleware.js";
+
+import {
+    requireMovieEntitlement
+} from "../middleware/playbackEntitlementMiddleware.js";
+import { requirePlaybackAuthentication } from "../middleware/playbackGrantMiddleware.js";
 
 const router = express.Router();
 
-
-/*==================================================
-    Trailer Video
-
-    IMPORTANT:
-
-    This route comes before the generic
-    /:movieId route.
-
-    Example:
-
-    GET /api/videos/trailers/7
-
-==================================================*/
-
+// Public trailer preview remains available without purchase.
 router.get(
     "/trailers/:movieId",
     streamTrailer
 );
 
-
-/*==================================================
-    Movie Video
-
-    Example:
-
-    GET /api/videos/1
-
-==================================================*/
+// Full movie playback requires a valid session and entitlement.
+router.post(
+    "/:movieId/authorization",
+    requireAuthentication,
+    requireMovieEntitlement,
+    issuePlaybackAuthorization
+);
 
 router.get(
     "/:movieId",
+    requirePlaybackAuthentication,
+    requireMovieEntitlement,
     streamVideo
 );
-
-
-/*==================================================
-    Export Router
-==================================================*/
 
 export default router;

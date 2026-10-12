@@ -139,6 +139,7 @@ test(
             {
                 video: "/videos/restore-test.mp4",
                 trailer: "/trailers/restore-test.mp4",
+                playbackApproved: false,
                 poster: "/images/restore-test-poster.jpg",
                 backdrop: "/images/restore-test-backdrop.jpg",
                 background: "/images/restore-test-background.jpg",

@@ -133,6 +133,11 @@
     background: #111;
 }
 
+.trailer-rail__video--embed {
+    border: 0;
+    pointer-events: none;
+}
+
 
 /*==================================================
     Media Overlay

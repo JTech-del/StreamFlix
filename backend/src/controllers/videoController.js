@@ -25,8 +25,59 @@ import fs from "node:fs";
 
 import {
     getVideoStream,
-    getTrailerStream
+    getTrailerStream,
+    hasMovieVideoFile
 } from "../services/videoService.js";
+import { getMovieById } from "../services/movieService.js";
+import { createPlaybackGrant } from "../services/playbackGrantService.js";
+import config from "../config/config.js";
+
+function pipeVideoFile(req, res, video, statusCode, headers, options = {}) {
+    res.writeHead(statusCode, headers);
+    if (req.method === "HEAD") return res.end();
+
+    const stream = fs.createReadStream(video.filePath, options);
+    const closeStream = () => stream.destroy();
+    res.once("close", closeStream);
+    stream.once("error", () => {
+        res.removeListener("close", closeStream);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, message: "Failed to stream video." });
+        } else {
+            res.destroy();
+        }
+    });
+    stream.once("close", () => res.removeListener("close", closeStream));
+    return stream.pipe(res);
+}
+
+export async function issuePlaybackAuthorization(req, res) {
+    const movieId = Number(req.params.movieId);
+    if (!/^[1-9]\d*$/.test(req.params.movieId || "") || !Number.isSafeInteger(movieId)) {
+        return res.status(400).json({ success: false, message: "Invalid movie ID." });
+    }
+
+    try {
+        const movie = await getMovieById(movieId);
+        if (!movie || !movie.video || !hasMovieVideoFile(movie.video)) {
+            return res.status(404).json({ success: false, message: "Movie video is unavailable." });
+        }
+
+        const grant = createPlaybackGrant({
+            userId: req.user.id,
+            sessionId: req.user.sessionId,
+            movieId
+        });
+        res.set("Cache-Control", "no-store, private");
+        res.set("Referrer-Policy", "no-referrer");
+        return res.json({
+            success: true,
+            data: { grant, expiresIn: config.playbackGrantTtlSeconds }
+        });
+    } catch {
+        return res.status(503).json({ success: false, message: "Playback authorization is temporarily unavailable." });
+    }
+}
 
 
 /*==================================================
@@ -38,6 +89,9 @@ function sendVideoStream(
     res,
     video
 ) {
+
+    res.set("Cache-Control", "no-store, private");
+    res.set("Referrer-Policy", "no-referrer");
 
     /*----------------------------------------------
         Video Not Found
@@ -86,28 +140,11 @@ function sendVideoStream(
 
     if (video.status === 200) {
 
-        res.writeHead(
-
-            200,
-
-            {
-
-                "Content-Type": video.contentType,
-
-                "Content-Length": video.fileSize,
-
-                "Accept-Ranges": "bytes"
-
-            }
-
-        );
-
-
-        return fs
-            .createReadStream(
-                video.filePath
-            )
-            .pipe(res);
+        return pipeVideoFile(req, res, video, 200, {
+            "Content-Type": video.contentType,
+            "Content-Length": video.fileSize,
+            "Accept-Ranges": "bytes"
+        });
 
     }
 
@@ -116,40 +153,12 @@ function sendVideoStream(
         Partial Video
     ----------------------------------------------*/
 
-    res.writeHead(
-
-        206,
-
-        {
-
-            "Content-Range": `bytes ${video.start}-${video.end}/${video.fileSize}`,
-
-            "Accept-Ranges": "bytes",
-
-            "Content-Length": video.contentLength,
-
-            "Content-Type": video.contentType
-
-        }
-
-    );
-
-
-    return fs
-        .createReadStream(
-
-            video.filePath,
-
-            {
-
-                start: video.start,
-
-                end: video.end
-
-            }
-
-        )
-        .pipe(res);
+    return pipeVideoFile(req, res, video, 206, {
+        "Content-Range": `bytes ${video.start}-${video.end}/${video.fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": video.contentLength,
+        "Content-Type": video.contentType
+    }, { start: video.start, end: video.end });
 
 }
 
@@ -189,10 +198,7 @@ export async function streamVideo(
 
     } catch (error) {
 
-        console.error(
-            "Movie video streaming failed:",
-            error
-        );
+        console.error("Movie video streaming failed.");
 
 
         return res.status(500).json({

@@ -2,19 +2,19 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { startIsolatedMongo } from "../helpers/isolatedMongo.js";
 
-import {
-    startJobDispatcherRunner,
-    stopJobDispatcherRunner
-} from "../../src/workers/jobDispatcherRunner.js";
-
-import {
-    connectDatabase,
-    disconnectDatabase
-} from "../../src/config/database.js";
+let mongoServer;
+let startJobDispatcherRunner;
+let stopJobDispatcherRunner;
+let connectDatabase;
+let disconnectDatabase;
 
 
 test.before(async () => {
+    mongoServer = await startIsolatedMongo("streamflix_job_dispatcher_lifecycle_test");
+    ({ startJobDispatcherRunner, stopJobDispatcherRunner } = await import("../../src/workers/jobDispatcherRunner.js"));
+    ({ connectDatabase, disconnectDatabase } = await import("../../src/config/database.js"));
     await connectDatabase();
 });
 
@@ -22,6 +22,7 @@ test.before(async () => {
 test.after(async () => {
     await stopJobDispatcherRunner();
     await disconnectDatabase();
+    await mongoServer?.stop();
 });
 
 

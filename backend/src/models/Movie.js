@@ -21,6 +21,14 @@
 
 import mongoose from "mongoose";
 
+const playbackApprovalSchema = new mongoose.Schema({
+    titleIdentityVerified: { type: Boolean, default: true },
+    rightsVerified: { type: Boolean, default: true },
+    evidenceReference: { type: String, required: true, trim: true, maxlength: 500 },
+    attestedBy: { type: mongoose.Schema.Types.ObjectId, required: true },
+    attestedAt: { type: Date, required: true }
+}, { _id: false });
+
 
 /*==================================================
     Media Schema
@@ -45,6 +53,18 @@ const mediaSchema = new mongoose.Schema(
             type: String,
             default: null,
             trim: true
+        },
+
+        // Admin attestation that this full-length asset matches the title and is licensed.
+        playbackApproved: {
+            type: Boolean,
+            default: false
+        },
+
+        // Auditable admin attestation; evidenceReference points to the review record.
+        playbackApproval: {
+            type: playbackApprovalSchema,
+            default: undefined
         },
 
         trailer: {
@@ -266,6 +286,37 @@ external: {
         min: 0,
         max: 10
     },
+
+tmdbPosterPath: {
+    type: String,
+    default: null,
+    trim: true
+},
+
+tmdbBackdropPath: {
+    type: String,
+    default: null,
+    trim: true
+},
+
+tmdbTrailerKey: {
+    type: String,
+    default: null,
+    trim: true,
+    maxlength: 11,
+    match: /^[A-Za-z0-9_-]{11}$/
+},
+
+tmdbTrailerType: {
+    type: String,
+    enum: ["Trailer", "Teaser", null],
+    default: null
+},
+
+tmdbTrailerOfficial: {
+    type: Boolean,
+    default: false
+},
 
     imdbId: {
         type: String,
