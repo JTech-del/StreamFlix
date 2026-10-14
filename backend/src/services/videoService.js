@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /*==================================================
     StreamFlix
@@ -32,10 +32,14 @@
 ==================================================*/
 
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { getMovieById } from "./movieService.js";
+import {
+    getMovieById,
+    getPublishedMovieVideoReferences
+} from "./movieService.js";
 
 
 /*==================================================
@@ -88,6 +92,170 @@ const VIDEO_DIRECTORIES = Object.freeze({
     )
 
 });
+
+const MAX_CACHED_MEDIA_DIGESTS = 128;
+const MAX_IN_FLIGHT_MEDIA_DIGESTS = 32;
+const mediaDigestCache = new Map();
+const inFlightMediaDigests = new Map();
+const mediaHandleClosePromises = new WeakMap();
+
+function closeMediaHandle(fileHandle) {
+    if (!fileHandle) return Promise.resolve();
+    if (mediaHandleClosePromises.has(fileHandle)) {
+        return mediaHandleClosePromises.get(fileHandle);
+    }
+
+    const closePromise = fileHandle.close().catch((error) => {
+        if (fileHandle.fd === -1) return;
+        throw error;
+    });
+    mediaHandleClosePromises.set(fileHandle, closePromise);
+    return closePromise;
+}
+
+function getMediaIdentity(filePath, stats) {
+    return [
+        filePath,
+        stats.dev,
+        stats.ino,
+        stats.size,
+        stats.mtimeNs,
+        stats.ctimeNs,
+        stats.birthtimeNs
+    ].map(String).join(":");
+}
+
+function sameMediaVersion(left, right) {
+    return ["dev", "ino", "size", "mtimeNs", "ctimeNs", "birthtimeNs"]
+        .every((field) => left[field] === right[field]);
+}
+
+async function assertMediaVersionIsStable(openedFile) {
+    const currentStats = await openedFile.fileHandle.stat({ bigint: true });
+    if (!sameMediaVersion(openedFile.stats, currentStats)) {
+        throw new Error("Media file changed during integrity verification.");
+    }
+}
+
+async function openMediaFile(filePath) {
+    const fileHandle = await fs.promises.open(filePath, "r");
+    try {
+        const stats = await fileHandle.stat({ bigint: true });
+        if (!stats.isFile() || stats.size <= 0n || stats.size > BigInt(Number.MAX_SAFE_INTEGER)) {
+            throw new Error("Media file is not a supported regular file.");
+        }
+        return {
+            fileHandle,
+            stats,
+            fileSize: Number(stats.size),
+            identity: getMediaIdentity(filePath, stats)
+        };
+    } catch (error) {
+        await closeMediaHandle(fileHandle);
+        throw error;
+    }
+}
+
+async function calculateFileDigest(fileHandle, initialStats) {
+    const hash = createHash("sha256");
+    const buffer = Buffer.allocUnsafe(1024 * 1024);
+    let position = 0;
+    const expectedSize = Number(initialStats.size);
+
+    while (position < expectedSize) {
+        const { bytesRead } = await fileHandle.read(
+            buffer,
+            0,
+            Math.min(buffer.length, expectedSize - position),
+            position
+        );
+        if (bytesRead === 0) throw new Error("Media file changed during integrity verification.");
+        hash.update(buffer.subarray(0, bytesRead));
+        position += bytesRead;
+    }
+
+    const finalStats = await fileHandle.stat({ bigint: true });
+    if (!sameMediaVersion(initialStats, finalStats)) {
+        throw new Error("Media file changed during integrity verification.");
+    }
+    return hash.digest("hex");
+}
+
+async function getFileDigest(openedFile) {
+    const { fileHandle, stats, identity } = openedFile;
+
+    // Validate this caller's handle even when another request has
+    // already calculated, or is currently calculating, the digest.
+    await assertMediaVersionIsStable(openedFile);
+
+    if (mediaDigestCache.has(identity)) {
+        const digest = mediaDigestCache.get(identity);
+        await assertMediaVersionIsStable(openedFile);
+
+        mediaDigestCache.delete(identity);
+        mediaDigestCache.set(identity, digest);
+        return digest;
+    }
+
+    const existingDigestPromise = inFlightMediaDigests.get(identity);
+    if (existingDigestPromise) {
+        const digest = await existingDigestPromise;
+        await assertMediaVersionIsStable(openedFile);
+        return digest;
+    }
+
+    if (inFlightMediaDigests.size >= MAX_IN_FLIGHT_MEDIA_DIGESTS) {
+        throw new Error("Media integrity verification is at capacity.");
+    }
+
+    let digestPromise;
+    digestPromise = (async () => {
+        try {
+            const digest = await calculateFileDigest(fileHandle, stats);
+            await assertMediaVersionIsStable(openedFile);
+
+            mediaDigestCache.set(identity, digest);
+            while (mediaDigestCache.size > MAX_CACHED_MEDIA_DIGESTS) {
+                mediaDigestCache.delete(mediaDigestCache.keys().next().value);
+            }
+
+            return digest;
+        } finally {
+            if (inFlightMediaDigests.get(identity) === digestPromise) {
+                inFlightMediaDigests.delete(identity);
+            }
+        }
+    })();
+
+    inFlightMediaDigests.set(identity, digestPromise);
+    return digestPromise;
+}
+
+async function isFullMovieDuplicate(openedTrailer) {
+    const videoReferences = await getPublishedMovieVideoReferences();
+    const matchingSizeFiles = [...new Set(videoReferences)]
+        .map((filename) => resolveVideoFile(filename, "movie"))
+        .filter((movieFile) => movieFile?.fileSize === openedTrailer.fileSize);
+
+    if (matchingSizeFiles.length === 0) return false;
+
+    const trailerDigest = await getFileDigest(openedTrailer);
+
+    for (const movieFile of matchingSizeFiles) {
+        let openedMovie;
+        try {
+            openedMovie = await openMediaFile(movieFile.filePath);
+            if (openedMovie.fileSize !== openedTrailer.fileSize) continue;
+            const movieDigest = await getFileDigest(openedMovie);
+            await assertMediaVersionIsStable(openedMovie);
+            if (trailerDigest === movieDigest) return true;
+        } finally {
+            await closeMediaHandle(openedMovie?.fileHandle);
+        }
+    }
+
+    return false;
+}
 
 
 /*==================================================
@@ -192,9 +360,7 @@ function resolveVideoFile(
 
     if (!isValidVideoType(type)) {
 
-        console.error(
-            `Video service: Unsupported video type "${type}".`
-        );
+        console.error("Video service: Unsupported media category.");
 
         return null;
 
@@ -211,10 +377,7 @@ function resolveVideoFile(
 
     if (!safeFilename) {
 
-        console.error(
-            "Video service: Invalid video filename:",
-            fileName
-        );
+        console.error("Video service: Invalid media filename.");
 
         return null;
 
@@ -246,10 +409,7 @@ function resolveVideoFile(
 
     if (!contentType) {
 
-        console.error(
-            "Video service: Unsupported video extension:",
-            videoPath
-        );
+        console.error("Video service: Unsupported media extension.");
 
         return null;
 
@@ -262,10 +422,7 @@ function resolveVideoFile(
 
     if (!fs.existsSync(videoPath)) {
 
-        console.error(
-            "Video service: Video file not found:",
-            videoPath
-        );
+        console.error("Video service: Media file is unavailable.");
 
         return null;
 
@@ -282,10 +439,7 @@ function resolveVideoFile(
 
     if (!stats.isFile()) {
 
-        console.error(
-            "Video service: Path is not a file:",
-            videoPath
-        );
+        console.error("Video service: Media file is unavailable.");
 
         return null;
 
@@ -297,6 +451,8 @@ function resolveVideoFile(
         filePath: videoPath,
 
         fileSize: stats.size,
+
+        modifiedAt: stats.mtimeMs,
 
         contentType
 
@@ -355,26 +511,24 @@ function createStreamInformation(
         Parse Range
     ----------------------------------------------*/
 
-    const rangeParts =
-        range
-        .replace(/bytes=/, "")
-        .split("-");
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+    if (!match || (!match[1] && !match[2])) {
+        return { found: true, invalidRange: true, fileSize };
+    }
 
-
-    const start =
-        parseInt(
-            rangeParts[0],
-            10
-        );
-
-
-    const requestedEnd =
-        rangeParts[1] ?
-        parseInt(
-            rangeParts[1],
-            10
-        ) :
-        null;
+    let start;
+    let requestedEnd;
+    if (!match[1]) {
+        const suffixLength = Number(match[2]);
+        if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0) {
+            return { found: true, invalidRange: true, fileSize };
+        }
+        start = Math.max(0, fileSize - suffixLength);
+        requestedEnd = fileSize - 1;
+    } else {
+        start = Number(match[1]);
+        requestedEnd = match[2] ? Number(match[2]) : null;
+    }
 
 
     /*----------------------------------------------
@@ -382,7 +536,7 @@ function createStreamInformation(
     ----------------------------------------------*/
 
     if (
-        Number.isNaN(start) ||
+        !Number.isSafeInteger(start) ||
         start < 0 ||
         start >= fileSize
     ) {
@@ -488,88 +642,48 @@ export async function getVideoStream(
     movieId,
     range
 ) {
-
-    /*----------------------------------------------
-        Get Movie
-    ----------------------------------------------*/
-
-    const movie =
-        await getMovieById(
-            movieId
-        );
-
+    const movie = await getMovieById(movieId);
 
     if (!movie) {
-
-        console.error(
-            `Video service: Movie ${movieId} not found.`
-        );
-
-        return {
-
-            found: false
-
-        };
-
+        console.error(`Video service: Movie ${movieId} not found.`);
+        return { found: false };
     }
-
-
-    /*----------------------------------------------
-        Validate Movie Video
-    ----------------------------------------------*/
 
     if (!movie.video) {
-
-        console.error(
-            `Video service: Movie ${movieId} has no video.`
-        );
-
-        return {
-
-            found: false
-
-        };
-
+        console.error(`Video service: Movie ${movieId} has no video.`);
+        return { found: false };
     }
 
-
-    /*----------------------------------------------
-        Resolve Movie Video
-    ----------------------------------------------*/
-
-    const videoFile =
-        resolveVideoFile(
-            movie.video,
-            "movie"
-        );
-
-
+    const videoFile = resolveVideoFile(movie.video, "movie");
     if (!videoFile) {
-
-        return {
-
-            found: false
-
-        };
-
+        return { found: false };
     }
 
+    let openedVideo;
+    try {
+        openedVideo = await openMediaFile(videoFile.filePath);
+        await assertMediaVersionIsStable(openedVideo);
 
-    console.log(
-        `Video service [movie ${movieId}]:`,
-        videoFile.filePath
-    );
+        const streamInfo = createStreamInformation({
+            ...videoFile,
+            fileSize: openedVideo.fileSize
+        }, range);
 
+        if (streamInfo.invalidRange) {
+            await closeMediaHandle(openedVideo.fileHandle);
+            return streamInfo;
+        }
 
-    /*----------------------------------------------
-        Create Stream Information
-    ----------------------------------------------*/
-
-    return createStreamInformation(
-        videoFile,
-        range
-    );
-
+        // The controller streams from this handle, not by reopening
+        // the pathname after resolution.
+        return {
+            ...streamInfo,
+            fileHandle: openedVideo.fileHandle
+        };
+    } catch (error) {
+        await closeMediaHandle(openedVideo?.fileHandle).catch(() => {});
+        throw error;
+    }
 }
 
 
@@ -647,20 +761,34 @@ export async function getTrailerStream(
 
     }
 
+    let openedTrailer;
+    try {
+        openedTrailer = await openMediaFile(trailerFile.filePath);
+        if (await isFullMovieDuplicate(openedTrailer)) {
+            console.warn("Video service: Refusing to serve a full-movie file as a public trailer.");
+            await closeMediaHandle(openedTrailer.fileHandle);
+            return { found: false };
+        }
 
-    console.log(
-        `Video service [trailer ${movieId}]:`,
-        trailerFile.filePath
-    );
+        await assertMediaVersionIsStable(openedTrailer);
 
+        const streamInfo = createStreamInformation({
+            ...trailerFile,
+            fileSize: openedTrailer.fileSize
+        }, range);
+        if (streamInfo.invalidRange) {
+            await closeMediaHandle(openedTrailer.fileHandle);
+            return streamInfo;
+        }
 
-    /*----------------------------------------------
-        Create Stream Information
-    ----------------------------------------------*/
-
-    return createStreamInformation(
-        trailerFile,
-        range
-    );
+        // Keep this opened file version for the response; a path replacement
+        // after verification cannot redirect the stream to different content.
+        return { ...streamInfo, fileHandle: openedTrailer.fileHandle };
+    } catch {
+        // Fail closed if the duplicate-content check cannot complete.
+        console.error("Video service: Trailer integrity verification failed.");
+        await closeMediaHandle(openedTrailer?.fileHandle).catch(() => {});
+        return { found: false };
+    }
 
 }
